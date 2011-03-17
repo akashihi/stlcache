@@ -1,6 +1,5 @@
 #define BOOST_TEST_MODULE "STLCacheMapWrapper"
 #include <boost/test/unit_test.hpp>
-#include <iostream>
 
 #include "stlcache.hpp"
 
