@@ -6,13 +6,17 @@
 using namespace std;
 
 #include "exceptions.hpp"
+#include "policy.hpp"
 
 namespace stlcache {
-    template<class Key, class Data, class Policy, class Compare = less<Key>, class Allocator = allocator<pair<const Key, Data> > >
+    template<class Key, class Data, class Policy = policy_none<Key>, class Compare = less<Key>, class Allocator = allocator<pair<const Key, Data> > >
     class cache {
         typedef map<Key,Data,Compare,Allocator> storageType; 
          storageType _storage;
          std::size_t _maxEntries;
+         std::size_t _currEntries;
+         Policy _policy;
+
 
     public:
         typedef Key                                                                key_type;
@@ -48,21 +52,44 @@ namespace stlcache {
         //Cache API
         void clear() throw() {
             _storage.clear();
+            _policy.clear();
+            this->_currEntries=0;
         }
 
         void swap ( cache<Key,Data,Policy,Compare,Allocator>& mp ) throw() {
             _storage.swap(mp._storage);
+            _policy.swap(mp._policy);
+
             std::size_t m=this->_maxEntries;
             this->_maxEntries=mp._maxEntries;
             mp._maxEntries=m;
+
+            this->_currEntries=this->size();
+            mp._currEntries=mp.size();
         }
 
         size_type erase ( const key_type& x ) throw() {
+            _policy.remove(x);
+
+            _currEntries--;
+
             return _storage.erase(x);
         }
 
         bool insert(Key _k, Data _d) throw() {
-            return _storage.insert(value_type(_k,_d)).second;
+            while (this->_currEntries >= this->_maxEntries) {
+                this->erase(_policy.victim());
+            }
+
+            _policy.insert(_k);
+
+
+            bool result=_storage.insert(value_type(_k,_d)).second;
+            if (result) {
+                _currEntries++;
+            }
+
+            return result;
         }
 
         size_type max_size() const throw() {
@@ -70,7 +97,8 @@ namespace stlcache {
         }
 
         size_type size() const throw() {
-            return _storage.size();
+            assert(this->_currEntries==_storage.size());
+            return this->_currEntries;
         }
 
         bool empty() const throw() {
@@ -81,21 +109,29 @@ namespace stlcache {
             if (!check(_k)) {
                 throw stlcache_invalid_key("Key is not in cache",_k);
             }
+            _policy.touch((*(_storage.find(_k))).first);
             return (*(_storage.find(_k))).second;
         }
 
         const bool check(const Key& _k) throw() {
+            _policy.touch((*(_storage.find(_k))).first);
             return _storage.find(_k)!=_storage.end();
+        }
+
+        void touch(const Key& _k) throw() {
+            _policy.touch((*(_storage.find(_k))).first);
         }
 
         //Container interface
         cache<Key,Data,Policy,Compare,Allocator>& operator= ( const cache<Key,Data,Policy,Compare,Allocator>& x) throw() {
             this->_storage=x._storage;
             this->_maxEntries=x._maxEntries;
+            this->_currEntries=this->_storage.size();
         }
         explicit cache(const size_type size, const Compare& comp = Compare(), const Allocator& alloc = Allocator()) throw() {
             this->_storage=storageType(comp,alloc);
             this->_maxEntries=size;
+            this->_currEntries=0;
         }
         cache(const cache<Key,Data,Policy,Compare,Allocator>& x) throw() {
             *this=x;

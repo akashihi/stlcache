@@ -13,6 +13,12 @@ namespace stlcache{
         template <class Key>  stlcache_invalid_key(const std::string &what, const Key& _k) : std::runtime_error(what),k(&_k) {  }
         template <class Key> const Key& key() { return *((Key*)k); }
     };
+
+    class stlcache_invalid_policy : public std::runtime_error {
+    public:
+        stlcache_invalid_policy(const std::string &what) : std::runtime_error(what) {  }
+    };
+
 }
 
 #endif /* STLCACHE_EXCEPTIONS_HPP_INCLUDED */
