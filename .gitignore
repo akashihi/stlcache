@@ -1,4 +1,6 @@
 *.vpj
 *.vpw
 *.vpwhist
+*.vpwhistu
 *.vtg
+build
