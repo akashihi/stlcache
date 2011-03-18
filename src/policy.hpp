@@ -10,29 +10,29 @@ using namespace std;
 namespace stlcache {
     template <class Key> class policy {
     public:
-        virtual void insert(const Key& _k)=0;
-        virtual void remove(const Key& _k)=0;
-        virtual void touch(const Key& _k)=0;
-        virtual void clear()=0;
-        virtual void swap(policy<Key>& _p)=0;
+        virtual void insert(const Key& _k) throw() =0;
+        virtual void remove(const Key& _k) throw() =0;
+        virtual void touch(const Key& _k) throw() =0;
+        virtual void clear() throw() =0;
+        virtual void swap(policy<Key>& _p) throw(stlcache_invalid_policy)=0;
 
-        virtual const Key& victim()=0;
+        virtual const Key& victim() throw() =0;
     };
 
     template <class Key> class policy_none : public policy<Key> {
         set<Key> _entries;
     public:
-        virtual void insert(const Key& _k) {
+        virtual void insert(const Key& _k) throw() {
             _entries.insert(_k);
         }
-        virtual void remove(const Key& _k) {
+        virtual void remove(const Key& _k) throw() {
             _entries.erase(_k);
         }
-        virtual void touch(const Key& _k) { /* Not used here */  }
-        virtual void clear() {
+        virtual void touch(const Key& _k) throw() { /* Not used here */  }
+        virtual void clear() throw() {
             _entries.clear();
         }
-        virtual void swap(policy<Key>& _p) {
+        virtual void swap(policy<Key>& _p) throw(stlcache_invalid_policy) {
             try {
                 policy_none<Key>& _pn=dynamic_cast<policy_none<Key>& >(_p);
                 _entries.swap(_pn._entries);
@@ -41,7 +41,7 @@ namespace stlcache {
             }
         }
 
-        virtual const Key& victim() {
+        virtual const Key& victim() throw() {
             return *(_entries.rbegin());
         }
     };

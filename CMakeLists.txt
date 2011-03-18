@@ -29,4 +29,8 @@ ADD_EXECUTABLE(test_policy src/test_policy.cpp)
 target_link_libraries(test_policy ${Boost_LIBRARIES})
 ADD_TEST(Policy test_policy)
 
+ADD_EXECUTABLE(test_lru src/test_lru.cpp)
+target_link_libraries(test_lru ${Boost_LIBRARIES})
+ADD_TEST(LRU test_lru)
+
 endif(Boost_FOUND)
