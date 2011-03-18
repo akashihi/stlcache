@@ -38,6 +38,9 @@ namespace stlcache {
             _entries.pop_back();
             return _victim;
         }
+
+    protected:
+        list<Key>& entries() { return this->_entries; }
     };
 }
 

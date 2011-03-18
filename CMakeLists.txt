@@ -33,4 +33,8 @@ ADD_EXECUTABLE(test_lru src/test_lru.cpp)
 target_link_libraries(test_lru ${Boost_LIBRARIES})
 ADD_TEST(LRU test_lru)
 
+ADD_EXECUTABLE(test_mru src/test_mru.cpp)
+target_link_libraries(test_mru ${Boost_LIBRARIES})
+ADD_TEST(MRU test_mru)
+
 endif(Boost_FOUND)
