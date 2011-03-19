@@ -111,17 +111,17 @@ namespace stlcache {
             if (!check(_k)) {
                 throw stlcache_invalid_key("Key is not in cache",_k);
             }
-            _policy.touch((*(_storage.find(_k))).first);
+            _policy.touch(_k);
             return (*(_storage.find(_k))).second;
         }
 
         const bool check(const Key& _k) throw() {
-            _policy.touch((*(_storage.find(_k))).first);
+            _policy.touch(_k);
             return _storage.find(_k)!=_storage.end();
         }
 
         void touch(const Key& _k) throw() {
-            _policy.touch((*(_storage.find(_k))).first);
+            _policy.touch(_k);
         }
 
         //Container interface
@@ -129,6 +129,7 @@ namespace stlcache {
             this->_storage=x._storage;
             this->_maxEntries=x._maxEntries;
             this->_currEntries=this->_storage.size();
+            return *this;
         }
         explicit cache(const size_type size, const Compare& comp = Compare(), const Allocator& alloc = Allocator()) throw() {
             this->_storage=storageType(comp,alloc);
