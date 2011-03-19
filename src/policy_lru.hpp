@@ -33,8 +33,8 @@ namespace stlcache {
             }
         }
 
-        virtual const Key& victim() throw() {
-            const Key& _victim=_entries.back();
+        virtual const Key victim() throw() {
+            const Key _victim=_entries.back();
             _entries.pop_back();
             return _victim;
         }

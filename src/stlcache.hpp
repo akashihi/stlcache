@@ -71,13 +71,11 @@ namespace stlcache {
         }
 
         size_type erase ( const key_type& x ) throw() {
-            size_type ret=_storage.erase(x); //We have to remove 'x' from storage firt, cause removing it from the _policy  breaks the reference
-
             _policy.remove(x);
 
             _currEntries--;
 
-            return ret;
+            return _storage.erase(x);
         }
 
         bool insert(Key _k, Data _d) throw() {
