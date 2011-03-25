@@ -6,6 +6,7 @@ project (stlcache)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
 #Check for libraries presence
+SET(BOOST_ROOT "D:\\Boost")
 SET(Boost_USE_STATIC_LIBS ON)
 SET(Boost_USE_MULTITHREADED ON)
 FIND_PACKAGE(Boost 1.42.0 COMPONENTS system unit_test_framework)
@@ -36,5 +37,9 @@ ADD_TEST(LRU test_lru)
 ADD_EXECUTABLE(test_mru src/test_mru.cpp)
 target_link_libraries(test_mru ${Boost_LIBRARIES})
 ADD_TEST(MRU test_mru)
+
+ADD_EXECUTABLE(test_lfu src/test_lfu.cpp)
+target_link_libraries(test_lfu ${Boost_LIBRARIES})
+ADD_TEST(LFU test_lfu)
 
 endif(Boost_FOUND)
