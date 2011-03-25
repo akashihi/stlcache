@@ -65,10 +65,17 @@ namespace stlcache {
             }
         }
 
-        virtual const Key victim() const throw()  {            
+        virtual const _victim<Key> victim() const throw()  {
+            if (_entries.begin()==_entries.end()) {
+                return _victim<Key>();
+            }
             keySet pad=(*(_entries.begin())).second; //Begin returns entry with lowest id, just what we need:)
 
-            return *(pad.begin());
+            if (pad.begin()==pad.end()) {
+                return _victim<Key>();
+            }
+
+            return _victim<Key>(*(pad.begin()));
         }
     };
 }

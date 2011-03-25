@@ -79,9 +79,13 @@ namespace stlcache {
             return _storage.erase(x);
         }
 
-        bool insert(Key _k, Data _d) throw() {
+        bool insert(Key _k, Data _d) throw(stlcache_cache_full) {
             while (this->_currEntries >= this->_maxEntries) {
-                this->erase(_policy.victim());
+                _victim<Key> victim=_policy.victim();
+                if (!victim) {
+                    throw stlcache_cache_full("The cache is full and no element can be expired at the moment. Remove some elements manually");
+                }
+                this->erase(*victim);
             }
 
             _policy.insert(_k);

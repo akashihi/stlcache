@@ -24,6 +24,11 @@ namespace stlcache{
         stlcache_invalid_policy(const std::string &what) : std::runtime_error(what) {  }
     };
 
+    class stlcache_cache_full : public std::runtime_error {
+    public:
+        stlcache_cache_full(const std::string &what) : std::runtime_error(what) {  }
+    };
+
 }
 
 #endif /* STLCACHE_EXCEPTIONS_HPP_INCLUDED */
