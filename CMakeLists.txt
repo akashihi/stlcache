@@ -26,6 +26,10 @@ ADD_EXECUTABLE(test_map src/test_map.cpp)
 target_link_libraries(test_map ${Boost_LIBRARIES})
 ADD_TEST(Map test_map)
 
+ADD_EXECUTABLE(test_victim src/test_victim.cpp)
+target_link_libraries(test_victim ${Boost_LIBRARIES})
+ADD_TEST(Victim test_victim)
+
 ADD_EXECUTABLE(test_policy src/test_policy.cpp)
 target_link_libraries(test_policy ${Boost_LIBRARIES})
 ADD_TEST(Policy test_policy)

@@ -7,6 +7,11 @@ namespace stlcache{
         stlcache_error(const std::string &what) : std::runtime_error(what) {  }
     };
     
+    class stlcache_empty_victim : public std::runtime_error {
+    public:
+        stlcache_empty_victim(const std::string &what) : std::runtime_error(what) {  }
+    };
+
     class stlcache_invalid_key : public std::runtime_error {
         const void* k;
     public:
