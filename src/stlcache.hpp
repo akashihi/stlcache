@@ -73,11 +73,12 @@ namespace stlcache {
         }
 
         size_type erase ( const key_type& x ) throw() {
+            size_type ret=_storage.erase(x);
             _policy.remove(x);
 
             _currEntries--;
 
-            return _storage.erase(x);
+            return ret;
         }
 
         bool insert(Key _k, Data _d) throw(stlcache_cache_full) {
