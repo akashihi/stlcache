@@ -77,6 +77,11 @@ namespace stlcache {
 
             return _victim<Key>(*(pad.begin()));
         }
+
+    protected:
+        const map<unsigned long long,keySet >& entries() const {
+            return this->_entries;
+        }
     };
 }
 

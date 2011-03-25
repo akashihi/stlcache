@@ -10,6 +10,7 @@ using namespace std;
 #include "policy_lru.hpp"
 #include "policy_mru.hpp"
 #include "policy_lfu.hpp"
+#include "policy_lfustar.hpp"
 
 namespace stlcache {
     template<class Key, class Data, class Policy = policy_none<Key>, class Compare = less<Key>, class Allocator = allocator<pair<const Key, Data> > >
