@@ -7,11 +7,11 @@ using namespace std;
 
 namespace stlcache {
     template <class Key> class _victim {
-        Key* _value;
+        Key _value;
         bool _isInitialized;
     public:
         _victim() : _value(NULL), _isInitialized(false) { };
-        _victim(const Key& _v) : _value(const_cast<Key*>(&_v)),_isInitialized(true) { };
+        _victim(const Key& _v) : _value(const_cast<Key&>(_v)),_isInitialized(true) { };
 
         _victim(const _victim& _source) : _value(_source._value),_isInitialized(_source._isInitialized)  { }
         _victim<Key>& operator= ( const _victim<Key>& _source) throw() {
@@ -31,7 +31,7 @@ namespace stlcache {
             if(!this->_isInitialized) {
                 throw stlcache_empty_victim("Tried to access empty victim");
             }
-            return *this->_value;
+            return this->_value;
         }
         const Key& operator*() const throw(stlcache_empty_victim) {
             return this->value();
