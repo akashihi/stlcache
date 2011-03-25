@@ -16,7 +16,7 @@ namespace stlcache {
         virtual void clear() throw() =0;
         virtual void swap(policy<Key>& _p) throw(stlcache_invalid_policy)=0;
 
-        virtual const Key victim() throw() =0;
+        virtual const Key victim() const throw()  =0;
     };
 
     template <class Key> class policy_none : public policy<Key> {
@@ -41,8 +41,8 @@ namespace stlcache {
             }
         }
 
-        virtual const Key victim() throw() {
-			Key& ret=*(_entries.rbegin());
+        virtual const Key victim() const throw() {
+			Key ret=*(_entries.rbegin());
             return ret;
         }
     };
