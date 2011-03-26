@@ -65,7 +65,7 @@ namespace stlcache {
             }
         }
 
-        virtual const _victim<Key> victim() const throw()  {
+        virtual const _victim<Key> victim() throw()  {
             if (_entries.begin()==_entries.end()) {
                 return _victim<Key>();
             }
@@ -81,6 +81,29 @@ namespace stlcache {
     protected:
         const map<unsigned long long,keySet >& entries() const {
             return this->_entries;
+        }
+        virtual unsigned long long untouch(const Key& _k) throw() { 
+            unsigned long long ref = _backEntries[_k];
+
+            if (!(ref>1)) {
+                return ref; //1 is a minimal reference value
+            }
+
+            keySet pad = _entries[ref];
+            pad.erase(_k);
+            _entries.erase(ref);
+            _entries.insert(std::pair<unsigned long long, keySet>(ref,pad));
+
+            ref--;
+            pad = _entries[ref];
+            pad.insert(_k);
+            _entries.erase(ref);
+            _entries.insert(std::pair<unsigned long long, keySet>(ref,pad));
+
+            _backEntries.erase(_k);
+            _backEntries[_k]=ref;
+
+            return ref;
         }
     };
 }

@@ -10,7 +10,7 @@ using namespace std;
 namespace stlcache {
     template <class Key> class policy_mru : public policy_lru<Key> {
     public:
-        virtual const _victim<Key> victim() const throw()  {
+        virtual const _victim<Key> victim() throw()  {
             return _victim<Key>(this->entries().front());
         }
     };
