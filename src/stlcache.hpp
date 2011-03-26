@@ -1,6 +1,10 @@
 #ifndef STLCACHE_STLCACHE_HPP_INCLUDED
 #define STLCACHE_STLCACHE_HPP_INCLUDED
 
+#ifdef _MSC_VER
+#pragma warning( disable : 4290 )
+#endif /* _MSC_VER */
+
 #include <map>
 
 using namespace std;
@@ -11,6 +15,7 @@ using namespace std;
 #include "policy_mru.hpp"
 #include "policy_lfu.hpp"
 #include "policy_lfustar.hpp"
+#include "policy_lfuaging.hpp"
 
 namespace stlcache {
     template<class Key, class Data, class Policy = policy_none<Key>, class Compare = less<Key>, class Allocator = allocator<pair<const Key, Data> > >
