@@ -45,6 +45,9 @@ ADD_EXECUTABLE(test_lfu src/test_lfu.cpp)
 target_link_libraries(test_lfu ${Boost_LIBRARIES})
 ADD_TEST(LFU test_lfu)
 
+ADD_EXECUTABLE(test_lfustar src/test_lfustar.cpp)
+target_link_libraries(test_lfustar ${Boost_LIBRARIES})
+ADD_TEST(LFU* test_lfustar)
 
 ADD_EXECUTABLE(test_lfuaging src/test_lfuaging.cpp)
 target_link_libraries(test_lfuaging ${Boost_LIBRARIES})
