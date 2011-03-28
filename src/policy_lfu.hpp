@@ -40,7 +40,9 @@ namespace stlcache {
             keySet pad = _entries[ref];
             pad.erase(_k);
             _entries.erase(ref);
-            _entries.insert(std::pair<unsigned long long, keySet>(ref,pad));
+			if (!pad.empty()>0) {
+				_entries.insert(std::pair<unsigned long long, keySet>(ref,pad));
+			}
 
             ref++;
 			if (_entries.find(ref)!=_entries.end()) {
