@@ -9,13 +9,13 @@
 
 using namespace std;
 
-#include "exceptions.hpp"
-#include "policy.hpp"
-#include "policy_lru.hpp"
-#include "policy_mru.hpp"
-#include "policy_lfu.hpp"
-#include "policy_lfustar.hpp"
-#include "policy_lfuaging.hpp"
+#include <exceptions.hpp>
+#include <policy.hpp>
+#include <policy_lru.hpp>
+#include <policy_mru.hpp>
+#include <policy_lfu.hpp>
+#include <policy_lfustar.hpp>
+#include <policy_lfuaging.hpp>
 
 namespace stlcache {
     template<class Key, class Data, class Policy = policy_none<Key>, class Compare = less<Key>, class Allocator = allocator<pair<const Key, Data> > >

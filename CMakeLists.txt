@@ -12,9 +12,8 @@ SET(Boost_USE_MULTITHREADED ON)
 FIND_PACKAGE(Boost 1.42.0 COMPONENTS system unit_test_framework)
 
 #Build configuration
-#FILE(GLOB LOCAL_INCLUDES ${CMAKE_SOURCE_DIR}/src/*)
 include_directories(${CMAKE_BINARY_DIR}
-#		    ${LOCAL_INCLUDES}
+		    ${CMAKE_SOURCE_DIR}/src
 		    ${Boost_INCLUDE_DIRS}
 )
 
@@ -46,8 +45,9 @@ ADD_EXECUTABLE(test_lfu src/test_lfu.cpp)
 target_link_libraries(test_lfu ${Boost_LIBRARIES})
 ADD_TEST(LFU test_lfu)
 
-ADD_EXECUTABLE(test_lfustar src/test_lfustar.cpp)
-target_link_libraries(test_lfustar ${Boost_LIBRARIES})
-ADD_TEST(LFU* test_lfustar)
+
+ADD_EXECUTABLE(test_lfuaging src/test_lfuaging.cpp)
+target_link_libraries(test_lfuaging ${Boost_LIBRARIES})
+ADD_TEST(LFU-Aging test_lfuaging)
 
 endif(Boost_FOUND)

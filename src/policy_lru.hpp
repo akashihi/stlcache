@@ -5,7 +5,7 @@
 
 using namespace std;
 
-#include "policy.hpp"
+#include <policy.hpp>
 
 namespace stlcache {
     template <class Key> class policy_lru : public policy<Key> {
