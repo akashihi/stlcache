@@ -52,6 +52,11 @@ namespace stlcache {
             }
         }
         virtual const _victim<Key> victim() throw()  {
+			this->expire();
+            return policy_lfu<Key>::victim();
+        }
+	protected:
+		virtual void expire() {
             if ((_oldestEntry+age)<time(NULL)) {
                 list<Key> toErase;
                 list<Key> toInsert;
@@ -84,8 +89,7 @@ namespace stlcache {
                     _timeKeeper.insert(std::pair<Key,time_t>(*it,time(NULL)));
                 }
             }
-            return policy_lfu<Key>::victim();
-        }
+		}
     };
 }
 
