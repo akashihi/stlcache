@@ -47,7 +47,7 @@ namespace stlcache {
                 _pn.age=a;
 
                 policy_lfu<Key>::swap(_pn);
-            } catch (const std::bad_cast& e) {
+            } catch (const std::bad_cast& ) {
                 throw stlcache_invalid_policy("Attempted to swap incompatible policies");
             }
         }

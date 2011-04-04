@@ -14,7 +14,7 @@ namespace stlcache {
         map<unsigned long long,keySet > _entries;
         map<Key, unsigned long long> _backEntries;
     public:
-        virtual void insert(const Key& _k) throw() {
+        virtual void insert(const Key& _k) throw(stlcache_invalid_key) {
             //1 - is initial reference value
             keySet pad=_entries[1];
             pad.insert(_k);
