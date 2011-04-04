@@ -37,7 +37,7 @@ namespace stlcache {
             try {
                 policy_none<Key>& _pn=dynamic_cast<policy_none<Key>& >(_p);
                 _entries.swap(_pn._entries);
-            } catch (const std::bad_cast& e) {
+            } catch (const std::bad_cast& ) {
                 throw stlcache_invalid_policy("Attempted to swap incompatible policies");
             }
         }
