@@ -11,6 +11,10 @@ using namespace std;
 #include <policy_lfuaging.hpp>
 #include <policy_lfustar.hpp>
 
+#ifdef _MSC_VER
+#pragma warning( disable : 4250 )
+#endif /* _MSC_VER */
+
 namespace stlcache {
     template <class Key,time_t Age=3600> class policy_lfuagingstar : public virtual policy_lfuaging<Key,Age>, virtual policy_lfustar<Key> {
     public:
