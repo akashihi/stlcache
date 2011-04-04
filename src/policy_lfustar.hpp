@@ -9,7 +9,7 @@ using namespace std;
 #include <policy.hpp>
 
 namespace stlcache {
-    template <class Key> class policy_lfustar : public policy_lfu<Key> {
+    template <class Key> class policy_lfustar : public virtual policy_lfu<Key> {
         typedef set<Key> keySet;
     public:
         virtual const _victim<Key> victim() throw()  {

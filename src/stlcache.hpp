@@ -16,6 +16,7 @@ using namespace std;
 #include <policy_lfu.hpp>
 #include <policy_lfustar.hpp>
 #include <policy_lfuaging.hpp>
+#include <policy_lfuagingstar.hpp>
 
 namespace stlcache {
     template<class Key, class Data, class Policy = policy_none<Key>, class Compare = less<Key>, class Allocator = allocator<pair<const Key, Data> > >

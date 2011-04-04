@@ -10,7 +10,7 @@ using namespace std;
 #include <policy.hpp>
 
 namespace stlcache {
-    template <class Key,time_t Age=3600> class policy_lfuaging : public policy_lfu<Key> {
+    template <class Key,time_t Age=3600> class policy_lfuaging : public virtual policy_lfu<Key> {
         typedef set<Key> keySet;
         map<Key,time_t> _timeKeeper;
         time_t _oldestEntry;
