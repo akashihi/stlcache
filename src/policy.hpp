@@ -11,7 +11,7 @@ using namespace std;
 namespace stlcache {
     template <class Key> class policy {
     public:
-        virtual void insert(const Key& _k) throw() =0;
+        virtual void insert(const Key& _k) throw(stlcache_invalid_key) =0;
         virtual void remove(const Key& _k) throw() =0;
         virtual void touch(const Key& _k) throw() =0;
         virtual void clear() throw() =0;
@@ -23,7 +23,7 @@ namespace stlcache {
     template <class Key> class policy_none : public policy<Key> {
         set<Key> _entries;
     public:
-        virtual void insert(const Key& _k) throw() {
+        virtual void insert(const Key& _k) throw(stlcache_invalid_key) {
             _entries.insert(_k);
         }
         virtual void remove(const Key& _k) throw() {

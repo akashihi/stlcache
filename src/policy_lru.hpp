@@ -11,7 +11,7 @@ namespace stlcache {
     template <class Key> class policy_lru : public policy<Key> {
         list<Key> _entries;
     public:
-        virtual void insert(const Key& _k) throw() {
+        virtual void insert(const Key& _k) throw(stlcache_invalid_key) {
             _entries.push_front(_k);
         }
         virtual void remove(const Key& _k) throw() {
