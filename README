@@ -1,1 +1,46 @@
 STL-based caches for C++
+
+Simple and straitforward implementation of map-like container with limited 
+number of entries and several entry expiration policies.
+
+===Expiration policies===
+
+ * None - Removes some random item on cache overflow.
+ * LRU - Removes least recently used (fetched or touched) element 
+   on cache overflow.
+ * MRU - Removes most recently used element on cache overflow.
+ * LFU - Removes least frequently used element. Policy keeps the number
+   of element references and removes the entry with smallest reference count.
+ * LFU* - Like LFU, but element for removal is randomly selected from elements
+   with reference count equal to 1
+ * LFU-Aging - Operates like LFU and implements entry reference 
+   count decreasing on some timeout. So entry with refcount equal to X will
+   be lowered to X-1 after TIMEOUT time.
+ * LFU*-Aging - Combination of LFU* and LFU-Aging.
+ * Adaptinve - Naive implementation of Adaptive Replacement Cache.
+
+LFU* and LFU*-Aging star may not be able to find a entry for removal on cache
+overflow and will throw a stlcache::stlcache_cache_full exception.
+
+===Usage===
+#include <stlcache/stlcache.hpp>
+
+using namespace stlcache;
+
+cache<int,string,policy_none<int> > cache_none(3); //int is a Key type, string is a Data type, constructor argument - sizeof cache
+cache<int,string,policy_lru<int> > cache_lru(3); //
+cache<int,string,policy_mru<int> > cache_mru(3);
+cache<int,string,policy_lfu<int> > cache_lfu(3);
+cache<int,string,policy_lfustar<int> > cache_lfustar(3);
+cache<int,string,policy_lfuaging<int,10> > cache_lfuaging(3); //10 is a expiration time in seconds. Default value - 3600 seconds (1 hour)
+cache<int,string,policy_lfuagingstar<int,10> > cache_lfuagingstar(3);
+cache<int,string,policy_adaptive<int> > cache_adaptive(3);
+
+void foo() {
+   cache_lfu.insert(1,"Test data 1"); //Puts data to the cache
+   cache_lfu.touch(1); //Increase refcount
+   if (cache_lfu.check(1)) { //Return true, for key present in cache
+	string cachedData = cache_lfu.fetch(1); //Will throw stlcache::stlcache_invalid_key when non-existent key is fetched
+   }
+   cache_lfu.erase(1); //Removes entry from cache
+}
