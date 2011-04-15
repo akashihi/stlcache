@@ -18,6 +18,8 @@ using namespace std;
 namespace stlcache {
     template <class Key,time_t Age=3600> class policy_lfuagingstar : public virtual policy_lfuaging<Key,Age>, virtual policy_lfustar<Key> {
     public:
+        policy_lfuagingstar(const size_t& size ) throw() : policy_lfuaging<Key,Age>(size), policy_lfustar<Key>(size),policy_lfu<Key>(size) { }
+
         virtual const _victim<Key> victim() throw()  {
 			policy_lfuaging<Key,Age>::expire();
             return policy_lfustar<Key>::victim();

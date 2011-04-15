@@ -26,7 +26,7 @@ namespace stlcache {
         policy_lfuaging(const policy_lfuaging<Key,Age>& x)  throw() : policy_lfu<Key>(x) {
             *this=x;
         }
-        policy_lfuaging() throw() { 
+        policy_lfuaging(const size_t& size ) throw() : policy_lfu<Key>(size) { 
             this->age=Age;
             this->_oldestEntry=time(NULL);
         }

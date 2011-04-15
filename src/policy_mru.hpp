@@ -10,6 +10,8 @@ using namespace std;
 namespace stlcache {
     template <class Key> class policy_mru : public policy_lru<Key> {
     public:
+        policy_mru(const size_t& size ) throw() : policy_lru<Key>(size) { }
+
         virtual const _victim<Key> victim() throw()  {
             return _victim<Key>(this->entries().front());
         }

@@ -12,6 +12,8 @@ namespace stlcache {
     template <class Key> class policy_lfustar : public virtual policy_lfu<Key> {
         typedef set<Key> keySet;
     public:
+        policy_lfustar(const size_t& size ) throw() : policy_lfu<Key>(size) { }
+
         virtual const _victim<Key> victim() throw()  {
             //LFU* only operates on entries with references count equal to 1
 

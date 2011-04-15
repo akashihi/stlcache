@@ -30,7 +30,7 @@ namespace stlcache {
         policy_none(const policy_none<Key>& x) throw() {
             *this=x;
         }
-        policy_none() throw() { }
+        policy_none(const size_t& size ) throw() { }
 
         virtual void insert(const Key& _k) throw(stlcache_invalid_key) {
             _entries.insert(_k);

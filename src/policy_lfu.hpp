@@ -22,7 +22,7 @@ namespace stlcache {
         policy_lfu(const policy_lfu<Key>& x) throw() {
             *this=x;
         }
-        policy_lfu() throw() { }
+        policy_lfu(const size_t& size ) throw() { }
 
         virtual void insert(const Key& _k) throw(stlcache_invalid_key) {
             //1 - is initial reference value

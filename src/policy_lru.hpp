@@ -18,7 +18,7 @@ namespace stlcache {
         policy_lru(const policy_none<Key>& x) throw() {
             *this=x;
         }
-        policy_lru() throw() { }
+        policy_lru(const size_t& size ) throw() { }
 
         virtual void insert(const Key& _k) throw(stlcache_invalid_key) {
             _entries.push_front(_k);

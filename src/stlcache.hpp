@@ -149,7 +149,7 @@ namespace stlcache {
             this->_storage=storageType(comp,alloc);
             this->_maxEntries=size;
             this->_currEntries=0;
-            this->_policy=new Policy();
+            this->_policy=new Policy(size);
         }
         cache(const cache<Key,Data,Policy,Compare,Allocator>& x) throw() {
             *this=x;
