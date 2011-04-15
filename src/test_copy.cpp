@@ -145,4 +145,20 @@ BOOST_AUTO_TEST_CASE(copyLFUAgingStar) {
     BOOST_REQUIRE_THROW(c2.fetch(3),stlcache_invalid_key); //Must be removed by LFU policy (cause every item have been touched and refcount for key 3 is 1)
 }
 
+BOOST_AUTO_TEST_CASE(copyAdaptive) {
+    cache<int,string,policy_adaptive<int> > c1(3);
+
+    c1.insert(1,"data1");
+    c1.insert(2,"data2");
+    c1.insert(3,"data3");
+
+    c1.touch(3); //At this stage key4 moved from T1 to T2 and T1 still bigger list and lru entry is key1;
+
+    cache<int,string,policy_adaptive<int> > c2(c1);
+
+    c2.insert(4,"data4");
+
+    BOOST_REQUIRE_THROW(c2.fetch(1),stlcache_invalid_key);
+}
+
 BOOST_AUTO_TEST_SUITE_END();
