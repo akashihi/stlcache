@@ -23,6 +23,15 @@ namespace stlcache {
     template <class Key> class policy_none : public policy<Key> {
         set<Key> _entries;
     public:
+        policy_none<Key>& operator= ( const policy_none<Key>& x) throw() {
+            this->_entries=x._entries;
+            return *this;
+        }
+        policy_none(const policy_none<Key>& x) throw() {
+            *this=x;
+        }
+        policy_none() throw() { }
+
         virtual void insert(const Key& _k) throw(stlcache_invalid_key) {
             _entries.insert(_k);
         }

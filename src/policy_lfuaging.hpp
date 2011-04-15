@@ -16,10 +16,21 @@ namespace stlcache {
         time_t _oldestEntry;
         time_t age;
     public:
-        policy_lfuaging() {
+        policy_lfuaging<Key,Age>& operator= ( const policy_lfuaging<Key,Age>& x) throw() {
+            policy_lfu<Key>::operator=(x);
+            this->_timeKeeper=x._timeKeeper;
+            this->_oldestEntry=x._oldestEntry;
+            this->age=x.age;
+            return *this;
+        }
+        policy_lfuaging(const policy_lfuaging<Key,Age>& x)  throw() : policy_lfu<Key>(x) {
+            *this=x;
+        }
+        policy_lfuaging() throw() { 
             this->age=Age;
             this->_oldestEntry=time(NULL);
         }
+
         virtual void remove(const Key& _k) throw() {
             _timeKeeper.erase(_k);
             policy_lfu<Key>::remove(_k);

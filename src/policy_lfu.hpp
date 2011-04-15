@@ -14,6 +14,16 @@ namespace stlcache {
         map<unsigned long long,keySet > _entries;
         map<Key, unsigned long long> _backEntries;
     public:
+        policy_lfu<Key>& operator= ( const policy_lfu<Key>& x) throw() {
+            this->_entries=x._entries;
+            this->_backEntries=x._backEntries;
+            return *this;
+        }
+        policy_lfu(const policy_lfu<Key>& x) throw() {
+            *this=x;
+        }
+        policy_lfu() throw() { }
+
         virtual void insert(const Key& _k) throw(stlcache_invalid_key) {
             //1 - is initial reference value
             keySet pad=_entries[1];

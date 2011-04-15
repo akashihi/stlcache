@@ -25,7 +25,7 @@ namespace stlcache {
          storageType _storage;
          std::size_t _maxEntries;
          std::size_t _currEntries;
-         Policy _policy;
+         Policy* _policy;
 
 
     public:
@@ -62,13 +62,13 @@ namespace stlcache {
         //Cache API
         void clear() throw() {
             _storage.clear();
-            _policy.clear();
+            _policy->clear();
             this->_currEntries=0;
         }
 
         void swap ( cache<Key,Data,Policy,Compare,Allocator>& mp ) throw() {
             _storage.swap(mp._storage);
-            _policy.swap(mp._policy);
+            _policy->swap(*mp._policy);
 
             std::size_t m=this->_maxEntries;
             this->_maxEntries=mp._maxEntries;
@@ -80,7 +80,7 @@ namespace stlcache {
 
         size_type erase ( const key_type& x ) throw() {
             size_type ret=_storage.erase(x);
-            _policy.remove(x);
+            _policy->remove(x);
 
             _currEntries--;
 
@@ -89,14 +89,14 @@ namespace stlcache {
 
         bool insert(Key _k, Data _d) throw(stlcache_cache_full) {
             while (this->_currEntries >= this->_maxEntries) {
-                _victim<Key> victim=_policy.victim();
+                _victim<Key> victim=_policy->victim();
                 if (!victim) {
                     throw stlcache_cache_full("The cache is full and no element can be expired at the moment. Remove some elements manually");
                 }
                 this->erase(*victim);
             }
 
-            _policy.insert(_k);
+            _policy->insert(_k);
 
 
             bool result=_storage.insert(value_type(_k,_d)).second;
@@ -124,17 +124,17 @@ namespace stlcache {
             if (!check(_k)) {
                 throw stlcache_invalid_key("Key is not in cache",_k);
             }
-            _policy.touch(_k);
+            _policy->touch(_k);
             return (*(_storage.find(_k))).second;
         }
 
         const bool check(const Key& _k) throw() {
-            _policy.touch(_k);
+            _policy->touch(_k);
             return _storage.find(_k)!=_storage.end();
         }
 
         void touch(const Key& _k) throw() {
-            _policy.touch(_k);
+            _policy->touch(_k);
         }
 
         //Container interface
@@ -142,15 +142,21 @@ namespace stlcache {
             this->_storage=x._storage;
             this->_maxEntries=x._maxEntries;
             this->_currEntries=this->_storage.size();
+            this->_policy=new Policy(*x._policy);
             return *this;
         }
         explicit cache(const size_type size, const Compare& comp = Compare(), const Allocator& alloc = Allocator()) throw() {
             this->_storage=storageType(comp,alloc);
             this->_maxEntries=size;
             this->_currEntries=0;
+            this->_policy=new Policy();
         }
         cache(const cache<Key,Data,Policy,Compare,Allocator>& x) throw() {
             *this=x;
+        }
+        //Clean-up
+        ~cache() {
+            delete _policy;
         }
     };
 }

@@ -57,4 +57,8 @@ ADD_EXECUTABLE(test_lfuagingstar src/test_lfuagingstar.cpp)
 target_link_libraries(test_lfuagingstar ${Boost_LIBRARIES})
 ADD_TEST(LFU*-Aging test_lfuagingstar)
 
+ADD_EXECUTABLE(test_copy src/test_copy.cpp)
+target_link_libraries(test_copy ${Boost_LIBRARIES})
+ADD_TEST(Copy test_copy)
+
 endif(Boost_FOUND)
