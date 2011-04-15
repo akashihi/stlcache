@@ -11,11 +11,11 @@ namespace stlcache {
     template <class Key> class policy_lru : public policy<Key> {
         list<Key> _entries;
     public:
-        policy_lru<Key>& operator= ( const policy_none<Key>& x) throw() {
+        policy_lru<Key>& operator= ( const policy_lru<Key>& x) throw() {
             this->_entries=x._entries;
             return *this;
         }
-        policy_lru(const policy_none<Key>& x) throw() {
+        policy_lru(const policy_lru<Key>& x) throw() {
             *this=x;
         }
         policy_lru(const size_t& size ) throw() { }
