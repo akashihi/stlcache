@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE "STLCacheVictim"
 #include <boost/test/unit_test.hpp>
 
-#include "stlcache.hpp"
+#include <stlcache/stlcache.hpp>
 
 using namespace stlcache;
 

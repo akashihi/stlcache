@@ -9,7 +9,7 @@
 #define WAIT_A_SECOND Sleep(2000);
 #endif /* _MSC_VER */
 
-#include "stlcache.hpp"
+#include <stlcache/stlcache.hpp>
 
 using namespace stlcache;
 

@@ -6,7 +6,7 @@
 
 using namespace std;
 
-#include <policy.hpp>
+#include <stlcache/policy.hpp>
 
 namespace stlcache {
     template <class Key> class policy_lfustar : public virtual policy_lfu<Key> {

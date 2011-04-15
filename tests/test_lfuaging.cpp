@@ -1,14 +1,23 @@
 #define BOOST_TEST_MODULE "STLCachePolicyLFU*"
+
+#ifndef _MSC_VER
+#include <unistd.h>
+#define WAIT_A_SECOND sleep(2);
+#else
+#include <windows.h>
+#define WAIT_A_SECOND Sleep(2000);
+#endif /* _MSC_VER */
+
 #include <boost/test/unit_test.hpp>
 
-#include "stlcache.hpp"
+#include <stlcache/stlcache.hpp>
 
 using namespace stlcache;
 
 BOOST_AUTO_TEST_SUITE(STLCacheSuite)
 
 BOOST_AUTO_TEST_CASE(lastInserted) {
-    cache<int,string,policy_lfustar<int> > c1(3);
+    cache<int,string,policy_lfuaging<int> > c1(3);
 
     c1.insert(1,"data1");
     c1.insert(2,"data2");
@@ -19,7 +28,7 @@ BOOST_AUTO_TEST_CASE(lastInserted) {
 }
 
 BOOST_AUTO_TEST_CASE(touch) {
-    cache<int,string,policy_lfustar<int> > c1(3);
+    cache<int,string,policy_lfuaging<int> > c1(3);
 
     c1.insert(1,"data1");
     c1.insert(2,"data2");
@@ -33,25 +42,27 @@ BOOST_AUTO_TEST_CASE(touch) {
     BOOST_REQUIRE_THROW(c1.fetch(3),stlcache_invalid_key); //Must be removed by LFU policy (cause 1&2 are touched)
 }
 
-BOOST_AUTO_TEST_CASE(veryfrequent) {
-    cache<int,string,policy_lfustar<int> > c1(3);
+BOOST_AUTO_TEST_CASE(expire) {
+    cache<int,string,policy_lfuaging<int,1> > c1(3);
 
     c1.insert(1,"data1");
     c1.insert(2,"data2");
     c1.insert(3,"data3");
 
+    c1.touch(1); //For key one refcount is 3 now
+    c1.touch(1); 
     c1.touch(1);
+    c1.touch(2); //For key two refcount is 3 now
     c1.touch(2);
+    c1.touch(2);
+    c1.touch(3); //For key three refcount is 2 now
     c1.touch(3);
 
-    BOOST_REQUIRE_THROW(c1.insert(4,"data4"),stlcache_cache_full); //Because every entry in cache have reference counter bigger then one and 
-                                                                                                    //lfustar policy works only on entries with refcount equal to 1
+    WAIT_A_SECOND;
 
-    c1.erase(1);
-    BOOST_REQUIRE_NO_THROW(c1.insert(4,"data4"));
+    c1.insert(4,"data4");
 
-    BOOST_REQUIRE_THROW(c1.fetch(1),stlcache_invalid_key);
-    BOOST_REQUIRE_NO_THROW(c1.fetch(4));
+    BOOST_REQUIRE_THROW(c1.fetch(3),stlcache_invalid_key); //Must be removed by LFU policy (cause every item have been touched and refcount for key 3 is 2)
 }
 
 BOOST_AUTO_TEST_SUITE_END();

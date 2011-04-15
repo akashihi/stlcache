@@ -9,15 +9,15 @@
 
 using namespace std;
 
-#include <exceptions.hpp>
-#include <policy.hpp>
-#include <policy_lru.hpp>
-#include <policy_mru.hpp>
-#include <policy_lfu.hpp>
-#include <policy_lfustar.hpp>
-#include <policy_lfuaging.hpp>
-#include <policy_lfuagingstar.hpp>
-#include <policy_adaptive.hpp>
+#include <stlcache/exceptions.hpp>
+#include <stlcache/policy.hpp>
+#include <stlcache/policy_lru.hpp>
+#include <stlcache/policy_mru.hpp>
+#include <stlcache/policy_lfu.hpp>
+#include <stlcache/policy_lfustar.hpp>
+#include <stlcache/policy_lfuaging.hpp>
+#include <stlcache/policy_lfuagingstar.hpp>
+#include <stlcache/policy_adaptive.hpp>
 
 namespace stlcache {
     template<class Key, class Data, class Policy = policy_none<Key>, class Compare = less<Key>, class Allocator = allocator<pair<const Key, Data> > >

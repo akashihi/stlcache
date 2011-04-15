@@ -7,7 +7,7 @@
 
 using namespace std;
 
-#include <policy.hpp>
+#include <stlcache/policy.hpp>
 
 namespace stlcache {
     template <class Key,time_t Age=3600> class policy_lfuaging : public virtual policy_lfu<Key> {

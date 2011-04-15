@@ -5,8 +5,8 @@
 
 using namespace std;
 
-#include <exceptions.hpp>
-#include <victim.hpp>
+#include <stlcache/exceptions.hpp>
+#include <stlcache/victim.hpp>
 
 namespace stlcache {
     template <class Key> class policy {
