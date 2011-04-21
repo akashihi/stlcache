@@ -27,9 +27,15 @@ using namespace std;
 #include <stlcache/policy_adaptive.hpp>
 
 namespace stlcache {
-    template<class Key, class Data, class Policy = policy_none<Key>, class Compare = less<Key>, class Allocator = allocator<pair<const Key, Data> > >
+    template<
+        class Key, 
+        class Data, 
+        class Policy = policy_none<Key>, 
+        class Compare = less<Key>, 
+        template <typename T> class Allocator = allocator 
+    >
     class cache {
-        typedef map<Key,Data,Compare,Allocator> storageType; 
+        typedef map<Key,Data,Compare,Allocator<pair<const Key, Data> > > storageType; 
          storageType _storage;
          std::size_t _maxEntries;
          std::size_t _currEntries;
@@ -41,7 +47,7 @@ namespace stlcache {
         typedef Data                                                               mapped_type;
         typedef pair<const Key, Data>                                         value_type;
         typedef Compare                                                          key_compare;
-        typedef Allocator                                                          allocator_type;
+        typedef Allocator<pair<const Key, Data> >                          allocator_type;
         typedef typename storageType::value_compare                                value_compare;
         typedef typename storageType::reference                                        reference;
         typedef typename storageType::const_reference                               const_reference;
@@ -153,8 +159,8 @@ namespace stlcache {
             this->_policy=new Policy(*x._policy);
             return *this;
         }
-        explicit cache(const size_type size, const Compare& comp = Compare(), const Allocator& alloc = Allocator()) throw() {
-            this->_storage=storageType(comp,alloc);
+        explicit cache(const size_type size, const Compare& comp = Compare()) throw() {
+            this->_storage=storageType(comp, Allocator<pair<const Key, Data> >());
             this->_maxEntries=size;
             this->_currEntries=0;
             this->_policy=new Policy(size);
