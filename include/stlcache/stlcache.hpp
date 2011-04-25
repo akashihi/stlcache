@@ -18,19 +18,19 @@ using namespace std;
 
 #include <stlcache/exceptions.hpp>
 #include <stlcache/policy.hpp>
-#include <stlcache/policy_lru.hpp>
+/*#include <stlcache/policy_lru.hpp>
 #include <stlcache/policy_mru.hpp>
 #include <stlcache/policy_lfu.hpp>
 #include <stlcache/policy_lfustar.hpp>
 #include <stlcache/policy_lfuaging.hpp>
 #include <stlcache/policy_lfuagingstar.hpp>
-#include <stlcache/policy_adaptive.hpp>
+#include <stlcache/policy_adaptive.hpp>*/
 
 namespace stlcache {
     template<
         class Key, 
         class Data, 
-        class Policy = policy_none<Key>, 
+        template <typename K,template <typename T> class Allocator> class Policy, 
         class Compare = less<Key>, 
         template <typename T> class Allocator = allocator 
     >
@@ -39,7 +39,7 @@ namespace stlcache {
          storageType _storage;
          std::size_t _maxEntries;
          std::size_t _currEntries;
-         Policy* _policy;
+         Policy<Key,Allocator>* _policy;
 
 
     public:
@@ -156,14 +156,14 @@ namespace stlcache {
             this->_storage=x._storage;
             this->_maxEntries=x._maxEntries;
             this->_currEntries=this->_storage.size();
-            this->_policy=new Policy(*x._policy);
+            this->_policy=new Policy<Key,Allocator>(*x._policy);
             return *this;
         }
         explicit cache(const size_type size, const Compare& comp = Compare()) throw() {
             this->_storage=storageType(comp, Allocator<pair<const Key, Data> >());
             this->_maxEntries=size;
             this->_currEntries=0;
-            this->_policy=new Policy(size);
+            this->_policy=new Policy<Key,Allocator>(size);
         }
         cache(const cache<Key,Data,Policy,Compare,Allocator>& x) throw() {
             *this=x;
