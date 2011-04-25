@@ -16,17 +16,17 @@ using namespace std;
 #include <stlcache/policy.hpp>
 
 namespace stlcache {
-    template <class Key> class policy_lfu : public policy<Key> {
-        typedef set<Key> keySet;
-        map<unsigned long long,keySet > _entries;
-        map<Key, unsigned long long> _backEntries;
+    template <class Key,template <typename T> class Allocator> class policy_lfu : public policy<Key,Allocator> {
+        typedef set<Key,less<Key>,Allocator<Key> > keySet;
+        map<unsigned long long,keySet, less<unsigned long long>, Allocator<pair<const unsigned long long, keySet> > > _entries;
+        map<Key, unsigned long long, less<Key>, Allocator<pair<const Key, unsigned long long> > > _backEntries;
     public:
-        policy_lfu<Key>& operator= ( const policy_lfu<Key>& x) throw() {
+        policy_lfu<Key,Allocator>& operator= ( const policy_lfu<Key,Allocator>& x) throw() {
             this->_entries=x._entries;
             this->_backEntries=x._backEntries;
             return *this;
         }
-        policy_lfu(const policy_lfu<Key>& x) throw() {
+        policy_lfu(const policy_lfu<Key,Allocator>& x) throw() {
             *this=x;
         }
         policy_lfu(const size_t& size ) throw() { }
@@ -80,9 +80,9 @@ namespace stlcache {
             _entries.clear();
             _backEntries.clear();
         }
-        virtual void swap(policy<Key>& _p) throw(stlcache_invalid_policy) {
+        virtual void swap(policy<Key,Allocator>& _p) throw(stlcache_invalid_policy) {
             try {
-                policy_lfu<Key>& _pn=dynamic_cast<policy_lfu<Key>& >(_p);
+                policy_lfu<Key,Allocator>& _pn=dynamic_cast<policy_lfu<Key,Allocator>& >(_p);
                 _entries.swap(_pn._entries);
                 _backEntries.swap(_pn._backEntries);
             } catch (const std::bad_cast& ) {

@@ -23,13 +23,13 @@ using namespace std;
 #endif /* _MSC_VER */
 
 namespace stlcache {
-    template <class Key,time_t Age=3600> class policy_lfuagingstar : public virtual policy_lfuaging<Key,Age>, virtual policy_lfustar<Key> {
+    template <time_t Age,class Key,template <typename T> class Allocator> class policy_lfuagingstar : public virtual policy_lfuaging<Age,Key,Allocator>, virtual policy_lfustar<Key,Allocator> {
     public:
-        policy_lfuagingstar(const size_t& size ) throw() : policy_lfuaging<Key,Age>(size), policy_lfustar<Key>(size),policy_lfu<Key>(size) { }
+        policy_lfuagingstar(const size_t& size ) throw() : policy_lfuaging<Age,Key,Allocator>(size), policy_lfustar<Key,Allocator>(size),policy_lfu<Key,Allocator>(size) { }
 
         virtual const _victim<Key> victim() throw()  {
-			policy_lfuaging<Key,Age>::expire();
-            return policy_lfustar<Key>::victim();
+			policy_lfuaging<Age,Key,Allocator>::expire();
+            return policy_lfustar<Key,Allocator>::victim();
         }
     };
 }

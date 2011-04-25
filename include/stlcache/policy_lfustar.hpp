@@ -16,10 +16,10 @@ using namespace std;
 #include <stlcache/policy.hpp>
 
 namespace stlcache {
-    template <class Key> class policy_lfustar : public virtual policy_lfu<Key> {
-        typedef set<Key> keySet;
+    template <class Key,template <typename T> class Allocator> class policy_lfustar : public virtual policy_lfu<Key,Allocator> {
+        typedef set<Key,less<Key>,Allocator<Key> > keySet;
     public:
-        policy_lfustar(const size_t& size ) throw() : policy_lfu<Key>(size) { }
+        policy_lfustar(const size_t& size ) throw() : policy_lfu<Key,Allocator>(size) { }
 
         virtual const _victim<Key> victim() throw()  {
             //LFU* only operates on entries with references count equal to 1
