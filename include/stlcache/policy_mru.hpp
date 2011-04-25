@@ -15,9 +15,9 @@ using namespace std;
 #include <stlcache/policy_lru.hpp>
 
 namespace stlcache {
-    template <class Key> class policy_mru : public policy_lru<Key> {
+    template <class Key,template <typename T> class Allocator> class policy_mru : public policy_lru<Key,Allocator> {
     public:
-        policy_mru(const size_t& size ) throw() : policy_lru<Key>(size) { }
+        policy_mru(const size_t& size ) throw() : policy_lru<Key,Allocator>(size) { }
 
         virtual const _victim<Key> victim() throw()  {
             return _victim<Key>(this->entries().front());
