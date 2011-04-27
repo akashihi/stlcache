@@ -24,7 +24,7 @@ using namespace std;
 #include <stlcache/policy_lfustar.hpp>
 #include <stlcache/policy_lfuaging.hpp>
 #include <stlcache/policy_lfuagingstar.hpp>
-/*#include <stlcache/policy_adaptive.hpp>*/
+#include <stlcache/policy_adaptive.hpp>
 
 namespace stlcache {
     template<

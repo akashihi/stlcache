@@ -15,20 +15,20 @@ using namespace std;
 #include <stlcache/policy.hpp>
 
 namespace stlcache {
-    template <class Key> class policy_adaptive : public policy<Key> {
+    template <class Key,template <typename T> class Allocator> class _policy_adaptive_type : public policy<Key,Allocator> {
         size_t _size;
-        policy_lru<Key> T1;
-        set<Key> t1Entries;
-        policy_lru<Key> B1;
-        set<Key> b1Entries;
+        _policy_lru_type<Key,Allocator> T1;
+        set<Key,less<Key>,Allocator<Key> > t1Entries;
+        _policy_lru_type<Key,Allocator> B1;
+        set<Key,less<Key>,Allocator<Key> > b1Entries;
 
-        policy_lfu<Key> T2;
-        set<Key> t2Entries;
-        policy_lfu<Key> B2;
-        set<Key> b2Entries;
+        _policy_lfu_type<Key,Allocator> T2;
+        set<Key,less<Key>,Allocator<Key> > t2Entries;
+        _policy_lfu_type<Key,Allocator> B2;
+        set<Key,less<Key>,Allocator<Key> > b2Entries;
 
     public:
-        policy_adaptive<Key>& operator= ( const policy_adaptive<Key>& x) throw() {
+        _policy_adaptive_type<Key,Allocator>& operator= ( const _policy_adaptive_type<Key,Allocator>& x) throw() {
             this->_size=x._size;
 
             this->T1=x.T1;
@@ -42,7 +42,7 @@ namespace stlcache {
 
             return *this;
         }
-        policy_adaptive(const policy_adaptive<Key>& x) throw() : T1(x.T1),T2(x.T2),B1(x.B1),B2(x.B2) {
+        _policy_adaptive_type(const _policy_adaptive_type<Key,Allocator>& x) throw() : T1(x.T1),T2(x.T2),B1(x.B1),B2(x.B2) {
             this->_size=x._size;
 
             this->t1Entries=x.t1Entries;
@@ -50,7 +50,7 @@ namespace stlcache {
             this->t2Entries=x.t2Entries;
             this->b2Entries=x.b2Entries;
         }
-        policy_adaptive(const size_t& size ) throw() : T1(size),T2(size),B1(size),B2(size) { 
+        _policy_adaptive_type(const size_t& size ) throw() : T1(size),T2(size),B1(size),B2(size) { 
             this->_size=size;
         }
 
@@ -120,9 +120,9 @@ namespace stlcache {
             B2.clear();
             b2Entries.clear();
         }
-        virtual void swap(policy<Key>& _p) throw(stlcache_invalid_policy) {
+        virtual void swap(policy<Key,Allocator>& _p) throw(stlcache_invalid_policy) {
             try {
-                policy_adaptive<Key>& _pn=dynamic_cast<policy_adaptive<Key>& >(_p);
+                _policy_adaptive_type<Key,Allocator>& _pn=dynamic_cast<_policy_adaptive_type<Key,Allocator>& >(_p);
                 T1.swap(_pn.T1);
                 T2.swap(_pn.T2);
                 B1.swap(_pn.B1);
@@ -143,6 +143,13 @@ namespace stlcache {
                 return T2.victim();
             }
         }
+    };
+    struct policy_adaptive {
+        template <typename Key, template <typename T> class Allocator>
+            struct bind : _policy_adaptive_type<Key,Allocator> { 
+                bind(const bind& x) : _policy_adaptive_type<Key,Allocator>(x)  { }
+                bind(const size_t& size) : _policy_adaptive_type<Key,Allocator>(size) { }
+            };
     };
 }
 
