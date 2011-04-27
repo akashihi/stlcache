@@ -41,6 +41,7 @@ namespace stlcache {
          std::size_t _currEntries;
          typedef typename Policy::template bind<Key,Allocator> policy_type;
          policy_type* _policy;
+         Allocator<policy_type> policyAlloc;
 
     public:
         typedef Key                                                                key_type;
@@ -156,21 +157,28 @@ namespace stlcache {
             this->_storage=x._storage;
             this->_maxEntries=x._maxEntries;
             this->_currEntries=this->_storage.size();
-            this->_policy=new policy_type(*x._policy);
+
+            policy_type localPolicy(*x._policy);
+            this->_policy = policyAlloc.allocate(1);
+            policyAlloc.construct(this->_policy,localPolicy);
             return *this;
         }
         explicit cache(const size_type size, const Compare& comp = Compare()) throw() {
             this->_storage=storageType(comp, Allocator<pair<const Key, Data> >());
             this->_maxEntries=size;
             this->_currEntries=0;
-            this->_policy=new policy_type(size);
+
+            policy_type localPolicy(size);
+            this->_policy = policyAlloc.allocate(1);
+            policyAlloc.construct(this->_policy,localPolicy);
         }
         cache(const cache<Key,Data,Policy,Compare,Allocator>& x) throw() {
             *this=x;
         }
         //Clean-up
         ~cache() {
-            delete _policy;
+            policyAlloc.destroy(this->_policy);
+            policyAlloc.deallocate(this->_policy,1);
         }
     };
 }
