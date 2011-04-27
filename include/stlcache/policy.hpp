@@ -16,28 +16,28 @@ using namespace std;
 #include <stlcache/victim.hpp>
 
 namespace stlcache {
-    template <class Key> class policy {
+    template <class Key,template <typename T> class Allocator> class policy {
     public:
         virtual void insert(const Key& _k) throw(stlcache_invalid_key) =0;
         virtual void remove(const Key& _k) throw() =0;
         virtual void touch(const Key& _k) throw() =0;
         virtual void clear() throw() =0;
-        virtual void swap(policy<Key>& _p) throw(stlcache_invalid_policy)=0;
+        virtual void swap(policy<Key,Allocator>& _p) throw(stlcache_invalid_policy)=0;
 
         virtual const _victim<Key> victim() throw()  =0;
     };
 
-    template <class Key> class policy_none : public policy<Key> {
-        set<Key> _entries;
+    template <class Key, template <typename T> class Allocator> class _policy_none_type : public policy<Key,Allocator> {
+        set<Key,less<Key>,Allocator<Key> > _entries;
     public:
-        policy_none<Key>& operator= ( const policy_none<Key>& x) throw() {
+        _policy_none_type<Key,Allocator>& operator= ( const _policy_none_type<Key,Allocator>& x) throw() {
             this->_entries=x._entries;
             return *this;
         }
-        policy_none(const policy_none<Key>& x) throw() {
+        _policy_none_type(const _policy_none_type<Key,Allocator>& x) throw() {
             *this=x;
         }
-        policy_none(const size_t& size ) throw() { }
+        _policy_none_type(const size_t& size ) throw() { }
 
         virtual void insert(const Key& _k) throw(stlcache_invalid_key) {
             _entries.insert(_k);
@@ -49,9 +49,9 @@ namespace stlcache {
         virtual void clear() throw() {
             _entries.clear();
         }
-        virtual void swap(policy<Key>& _p) throw(stlcache_invalid_policy) {
+        virtual void swap(policy<Key,Allocator>& _p) throw(stlcache_invalid_policy) {
             try {
-                policy_none<Key>& _pn=dynamic_cast<policy_none<Key>& >(_p);
+                _policy_none_type<Key,Allocator>& _pn=dynamic_cast<_policy_none_type<Key,Allocator>& >(_p);
                 _entries.swap(_pn._entries);
             } catch (const std::bad_cast& ) {
                 throw stlcache_invalid_policy("Attempted to swap incompatible policies");
@@ -64,6 +64,14 @@ namespace stlcache {
             }
             return _victim<Key>(*(_entries.rbegin()));
         }
+    };
+
+    struct policy_none {
+        template <typename Key, template <typename T> class Allocator>
+            struct bind : _policy_none_type<Key,Allocator> { 
+                bind(const bind& x) : _policy_none_type<Key,Allocator>(x)  { }
+                bind(const size_t& size) : _policy_none_type<Key,Allocator>(size) { }
+            };
     };
 }
 

@@ -16,20 +16,20 @@ using namespace std;
 #include <stlcache/policy.hpp>
 
 namespace stlcache {
-    template <class Key> class policy_lfu : public policy<Key> {
-        typedef set<Key> keySet;
-        map<unsigned long long,keySet > _entries;
-        map<Key, unsigned long long> _backEntries;
+    template <class Key,template <typename T> class Allocator> class _policy_lfu_type : public policy<Key,Allocator> {
+        typedef set<Key,less<Key>,Allocator<Key> > keySet;
+        map<unsigned long long,keySet, less<unsigned long long>, Allocator<pair<const unsigned long long, keySet> > > _entries;
+        map<Key, unsigned long long, less<Key>, Allocator<pair<const Key, unsigned long long> > > _backEntries;
     public:
-        policy_lfu<Key>& operator= ( const policy_lfu<Key>& x) throw() {
+        _policy_lfu_type<Key,Allocator>& operator= ( const _policy_lfu_type<Key,Allocator>& x) throw() {
             this->_entries=x._entries;
             this->_backEntries=x._backEntries;
             return *this;
         }
-        policy_lfu(const policy_lfu<Key>& x) throw() {
+        _policy_lfu_type(const _policy_lfu_type<Key,Allocator>& x) throw() {
             *this=x;
         }
-        policy_lfu(const size_t& size ) throw() { }
+        _policy_lfu_type(const size_t& size ) throw() { }
 
         virtual void insert(const Key& _k) throw(stlcache_invalid_key) {
             //1 - is initial reference value
@@ -80,9 +80,9 @@ namespace stlcache {
             _entries.clear();
             _backEntries.clear();
         }
-        virtual void swap(policy<Key>& _p) throw(stlcache_invalid_policy) {
+        virtual void swap(policy<Key,Allocator>& _p) throw(stlcache_invalid_policy) {
             try {
-                policy_lfu<Key>& _pn=dynamic_cast<policy_lfu<Key>& >(_p);
+                _policy_lfu_type<Key,Allocator>& _pn=dynamic_cast<_policy_lfu_type<Key,Allocator>& >(_p);
                 _entries.swap(_pn._entries);
                 _backEntries.swap(_pn._backEntries);
             } catch (const std::bad_cast& ) {
@@ -130,6 +130,13 @@ namespace stlcache {
 
             return ref;
         }
+    };
+    struct policy_lfu {
+        template <typename Key, template <typename T> class Allocator>
+            struct bind : _policy_lfu_type<Key,Allocator> { 
+                bind(const bind& x) : _policy_lfu_type<Key,Allocator>(x)  { }
+                bind(const size_t& size) : _policy_lfu_type<Key,Allocator>(size) { }
+            };
     };
 }
 

@@ -27,21 +27,28 @@ using namespace std;
 #include <stlcache/policy_adaptive.hpp>
 
 namespace stlcache {
-    template<class Key, class Data, class Policy = policy_none<Key>, class Compare = less<Key>, class Allocator = allocator<pair<const Key, Data> > >
+    template<
+        class Key, 
+        class Data, 
+        class Policy, 
+        class Compare = less<Key>, 
+        template <typename T> class Allocator = allocator 
+    >
     class cache {
-        typedef map<Key,Data,Compare,Allocator> storageType; 
+        typedef map<Key,Data,Compare,Allocator<pair<const Key, Data> > > storageType; 
          storageType _storage;
          std::size_t _maxEntries;
          std::size_t _currEntries;
-         Policy* _policy;
-
+         typedef typename Policy::template bind<Key,Allocator> policy_type;
+         policy_type* _policy;
+         Allocator<policy_type> policyAlloc;
 
     public:
         typedef Key                                                                key_type;
         typedef Data                                                               mapped_type;
         typedef pair<const Key, Data>                                         value_type;
         typedef Compare                                                          key_compare;
-        typedef Allocator                                                          allocator_type;
+        typedef Allocator<pair<const Key, Data> >                          allocator_type;
         typedef typename storageType::value_compare                                value_compare;
         typedef typename storageType::reference                                        reference;
         typedef typename storageType::const_reference                               const_reference;
@@ -150,21 +157,28 @@ namespace stlcache {
             this->_storage=x._storage;
             this->_maxEntries=x._maxEntries;
             this->_currEntries=this->_storage.size();
-            this->_policy=new Policy(*x._policy);
+
+            policy_type localPolicy(*x._policy);
+            this->_policy = policyAlloc.allocate(1);
+            policyAlloc.construct(this->_policy,localPolicy);
             return *this;
         }
-        explicit cache(const size_type size, const Compare& comp = Compare(), const Allocator& alloc = Allocator()) throw() {
-            this->_storage=storageType(comp,alloc);
+        explicit cache(const size_type size, const Compare& comp = Compare()) throw() {
+            this->_storage=storageType(comp, Allocator<pair<const Key, Data> >());
             this->_maxEntries=size;
             this->_currEntries=0;
-            this->_policy=new Policy(size);
+
+            policy_type localPolicy(size);
+            this->_policy = policyAlloc.allocate(1);
+            policyAlloc.construct(this->_policy,localPolicy);
         }
         cache(const cache<Key,Data,Policy,Compare,Allocator>& x) throw() {
             *this=x;
         }
         //Clean-up
         ~cache() {
-            delete _policy;
+            policyAlloc.destroy(this->_policy);
+            policyAlloc.deallocate(this->_policy,1);
         }
     };
 }

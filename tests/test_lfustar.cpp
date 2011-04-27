@@ -15,7 +15,7 @@ using namespace stlcache;
 BOOST_AUTO_TEST_SUITE(STLCacheSuite)
 
 BOOST_AUTO_TEST_CASE(lastInserted) {
-    cache<int,string,policy_lfustar<int> > c1(3);
+    cache<int,string,policy_lfustar> c1(3);
 
     c1.insert(1,"data1");
     c1.insert(2,"data2");
@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE(lastInserted) {
 }
 
 BOOST_AUTO_TEST_CASE(touch) {
-    cache<int,string,policy_lfustar<int> > c1(3);
+    cache<int,string,policy_lfustar> c1(3);
 
     c1.insert(1,"data1");
     c1.insert(2,"data2");
@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE(touch) {
 }
 
 BOOST_AUTO_TEST_CASE(veryfrequent) {
-    cache<int,string,policy_lfustar<int> > c1(3);
+    cache<int,string,policy_lfustar> c1(3);
 
     c1.insert(1,"data1");
     c1.insert(2,"data2");
