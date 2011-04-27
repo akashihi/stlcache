@@ -18,7 +18,7 @@ using namespace std;
 
 #include <stlcache/exceptions.hpp>
 #include <stlcache/policy.hpp>
-#include <stlcache/policy_lru.hpp>
+/*#include <stlcache/policy_lru.hpp>
 #include <stlcache/policy_mru.hpp>
 #include <stlcache/policy_lfu.hpp>
 #include <stlcache/policy_lfustar.hpp>
@@ -30,7 +30,7 @@ namespace stlcache {
     template<
         class Key, 
         class Data, 
-        template <typename K,template <typename T> class Allocator> class Policy, 
+        class Policy, 
         class Compare = less<Key>, 
         template <typename T> class Allocator = allocator 
     >
@@ -39,8 +39,8 @@ namespace stlcache {
          storageType _storage;
          std::size_t _maxEntries;
          std::size_t _currEntries;
-         Policy<Key,Allocator>* _policy;
-
+         typedef typename Policy::template bind<Key,Allocator> policy_type;
+         policy_type* _policy;
 
     public:
         typedef Key                                                                key_type;
@@ -156,14 +156,14 @@ namespace stlcache {
             this->_storage=x._storage;
             this->_maxEntries=x._maxEntries;
             this->_currEntries=this->_storage.size();
-            this->_policy=new Policy<Key,Allocator>(*x._policy);
+            this->_policy=new policy_type(*x._policy);
             return *this;
         }
         explicit cache(const size_type size, const Compare& comp = Compare()) throw() {
             this->_storage=storageType(comp, Allocator<pair<const Key, Data> >());
             this->_maxEntries=size;
             this->_currEntries=0;
-            this->_policy=new Policy<Key,Allocator>(size);
+            this->_policy=new policy_type(size);
         }
         cache(const cache<Key,Data,Policy,Compare,Allocator>& x) throw() {
             *this=x;
