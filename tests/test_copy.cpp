@@ -23,7 +23,7 @@ using namespace stlcache;
 BOOST_AUTO_TEST_SUITE(STLCacheSuite)
 
 BOOST_AUTO_TEST_CASE(copyNone) {
-    cache<int,string,policy_none<int> > c1(3);
+    cache<int,string,policy_none> c1(3);
 
     c1.insert(1,"data1");
     c1.insert(2,"data2");
@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(copyNone) {
     BOOST_CHECK(c1.size()==3);
     BOOST_CHECK(c1.max_size()==3);
 
-    cache<int,string,policy_none<int> > c2(c1);
+    cache<int,string,policy_none> c2(c1);
 
     c2.insert(4,"data4");
     BOOST_CHECK(c2.size()==3);
@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(copyNone) {
 }
 
 BOOST_AUTO_TEST_CASE(copyLRU) {
-    cache<int,string,policy_lru<int> > c1(3);
+    cache<int,string,policy_lru> c1(3);
 
     c1.insert(1,"data1");
     c1.insert(2,"data2");
@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE(copyLRU) {
     BOOST_CHECK(c1.size()==3);
     BOOST_CHECK(c1.max_size()==3);
 
-    cache<int,string,policy_lru<int> > c2(c1);
+    cache<int,string,policy_lru> c2(c1);
 
     c2.insert(4,"data4");
     BOOST_CHECK(c2.size()==3);
@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(copyLRU) {
 }
 
 BOOST_AUTO_TEST_CASE(copyMRU) {
-    cache<int,string,policy_mru<int> > c1(3);
+    cache<int,string,policy_mru> c1(3);
 
     c1.insert(1,"data1");
     c1.insert(2,"data2");
@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE(copyMRU) {
     BOOST_CHECK(c1.size()==3);
     BOOST_CHECK(c1.max_size()==3);
 
-    cache<int,string,policy_mru<int> > c2(c1);
+    cache<int,string,policy_mru> c2(c1);
 
     c2.insert(4,"data4");
     BOOST_CHECK(c2.size()==3);
@@ -80,13 +80,13 @@ BOOST_AUTO_TEST_CASE(copyMRU) {
 }
 
 BOOST_AUTO_TEST_CASE(copyLFU) {
-    cache<int,string,policy_lfu<int> > c1(3);
+    cache<int,string,policy_lfu> c1(3);
 
     c1.insert(1,"data1");
     c1.insert(2,"data2");
     c1.insert(3,"data3");
 
-    cache<int,string,policy_lfu<int> > c2(c1);
+    cache<int,string,policy_lfu> c2(c1);
 
     c2.touch(1);
     c2.touch(2);
@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE(copyLFU) {
 }
 
 BOOST_AUTO_TEST_CASE(copyLFUStar) {
-    cache<int,string,policy_lfustar<int> > c1(3);
+    cache<int,string,policy_lfustar> c1(3);
 
     c1.insert(1,"data1");
     c1.insert(2,"data2");
@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE(copyLFUStar) {
     c1.touch(1);
     c1.touch(2);
 
-    cache<int,string,policy_lfustar<int> > c2(c1);
+    cache<int,string,policy_lfustar> c2(c1);
 
     c2.insert(4,"data4");
 
@@ -114,13 +114,13 @@ BOOST_AUTO_TEST_CASE(copyLFUStar) {
 }
 
 BOOST_AUTO_TEST_CASE(copyLFUAging) {
-    cache<int,string,policy_lfuaging<int> > c1(3);
+    cache<int,string,policy_lfuaging<3600> > c1(3);
 
     c1.insert(1,"data1");
     c1.insert(2,"data2");
     c1.insert(3,"data3");
 
-    cache<int,string,policy_lfuaging<int> > c2(c1);
+    cache<int,string,policy_lfuaging<3600> > c2(c1);
 
     c2.touch(1);
     c2.touch(2);
@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE(copyLFUAging) {
 }
 
 BOOST_AUTO_TEST_CASE(copyLFUAgingStar) {
-    cache<int,string,policy_lfuagingstar<int,1> > c1(3);
+    cache<int,string,policy_lfuagingstar<1> > c1(3);
 
     c1.insert(1,"data1");
     c1.insert(2,"data2");
@@ -143,7 +143,7 @@ BOOST_AUTO_TEST_CASE(copyLFUAgingStar) {
     c1.touch(2);
     c1.touch(3); //For key three refcount is 2 now
 
-    cache<int,string,policy_lfuagingstar<int,1> > c2(c1);
+    cache<int,string,policy_lfuagingstar<1> > c2(c1);
 
     WAIT_A_SECOND;
 
@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE(copyLFUAgingStar) {
 }
 
 BOOST_AUTO_TEST_CASE(copyAdaptive) {
-    cache<int,string,policy_adaptive<int> > c1(3);
+    cache<int,string,policy_adaptive> c1(3);
 
     c1.insert(1,"data1");
     c1.insert(2,"data2");
@@ -161,7 +161,7 @@ BOOST_AUTO_TEST_CASE(copyAdaptive) {
 
     c1.touch(3); //At this stage key4 moved from T1 to T2 and T1 still bigger list and lru entry is key1;
 
-    cache<int,string,policy_adaptive<int> > c2(c1);
+    cache<int,string,policy_adaptive> c2(c1);
 
     c2.insert(4,"data4");
 

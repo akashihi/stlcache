@@ -23,7 +23,7 @@ using namespace std;
 #endif /* _MSC_VER */
 
 namespace stlcache {
-    template <time_t Age,class Key,template <typename T> class Allocator> class _policy_lfuagingstar_type : public virtual _policy_lfuaging_type<Age,Key,Allocator>, virtual _policy_lfustar_type<Key,Allocator> {
+    template <time_t Age,class Key,template <typename T> class Allocator> class _policy_lfuagingstar_type : public virtual _policy_lfuaging_type<Age,Key,Allocator>, public virtual _policy_lfustar_type<Key,Allocator> {
     public:
         _policy_lfuagingstar_type(const size_t& size ) throw() : _policy_lfuaging_type<Age,Key,Allocator>(size), _policy_lfustar_type<Key,Allocator>(size),_policy_lfu_type<Key,Allocator>(size) { }
 
@@ -32,7 +32,7 @@ namespace stlcache {
             return _policy_lfustar_type<Key,Allocator>::victim();
         }
     };
-    template <time_t Age> struct policy_lfuagingstar {
+    template <time_t Age=3600> struct policy_lfuagingstar {
         template <typename Key, template <typename T> class Allocator>
             struct bind : _policy_lfuagingstar_type<Age,Key,Allocator> { 
                 bind(const bind& x) : _policy_lfuagingstar_type<Age,Key,Allocator>(x),_policy_lfuaging_type<Age,Key,Allocator>(x),_policy_lfustar_type<Key,Allocator>(x),_policy_lfu_type<Key,Allocator>(x)  { }
