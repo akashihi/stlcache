@@ -23,14 +23,21 @@ using namespace std;
 #endif /* _MSC_VER */
 
 namespace stlcache {
-    template <time_t Age,class Key,template <typename T> class Allocator> class policy_lfuagingstar : public virtual policy_lfuaging<Age,Key,Allocator>, virtual policy_lfustar<Key,Allocator> {
+    template <time_t Age,class Key,template <typename T> class Allocator> class _policy_lfuagingstar_type : public virtual _policy_lfuaging_type<Age,Key,Allocator>, virtual _policy_lfustar_type<Key,Allocator> {
     public:
-        policy_lfuagingstar(const size_t& size ) throw() : policy_lfuaging<Age,Key,Allocator>(size), policy_lfustar<Key,Allocator>(size),policy_lfu<Key,Allocator>(size) { }
+        _policy_lfuagingstar_type(const size_t& size ) throw() : _policy_lfuaging_type<Age,Key,Allocator>(size), _policy_lfustar_type<Key,Allocator>(size),_policy_lfu_type<Key,Allocator>(size) { }
 
         virtual const _victim<Key> victim() throw()  {
-			policy_lfuaging<Age,Key,Allocator>::expire();
-            return policy_lfustar<Key,Allocator>::victim();
+			_policy_lfuaging_type<Age,Key,Allocator>::expire();
+            return _policy_lfustar_type<Key,Allocator>::victim();
         }
+    };
+    template <time_t Age> struct policy_lfuagingstar {
+        template <typename Key, template <typename T> class Allocator>
+            struct bind : _policy_lfuagingstar_type<Age,Key,Allocator> { 
+                bind(const bind& x) : _policy_lfuagingstar_type<Age,Key,Allocator>(x),_policy_lfuaging_type<Age,Key,Allocator>(x),_policy_lfustar_type<Key,Allocator>(x),_policy_lfu_type<Key,Allocator>(x)  { }
+                bind(const size_t& size) : _policy_lfuagingstar_type<Age,Key,Allocator>(size),_policy_lfuaging_type<Age,Key,Allocator>(size),_policy_lfustar_type<Key,Allocator>(size),_policy_lfu_type<Key,Allocator>(size)  { }
+            };
     };
 }
 

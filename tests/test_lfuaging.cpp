@@ -23,11 +23,9 @@ using namespace stlcache;
 
 BOOST_AUTO_TEST_SUITE(STLCacheSuite)
 
-template <typename Key, template <typename T> class Allocator> struct policy_lfuaging3600 : public policy_lfuaging<3600,Key,Allocator> {};
-
 BOOST_AUTO_TEST_CASE(lastInserted) {
 
-    cache<int,string,policy_lfuaging3600> c1(3);
+    cache<int,string,policy_lfuaging<3600> > c1(3);
 
     c1.insert(1,"data1");
     c1.insert(2,"data2");
@@ -38,7 +36,7 @@ BOOST_AUTO_TEST_CASE(lastInserted) {
 }
 
 BOOST_AUTO_TEST_CASE(touch) {
-    cache<int,string,policy_lfuaging3600> c1(3);
+    cache<int,string,policy_lfuaging<3600> > c1(3);
 
     c1.insert(1,"data1");
     c1.insert(2,"data2");
@@ -52,11 +50,9 @@ BOOST_AUTO_TEST_CASE(touch) {
     BOOST_REQUIRE_THROW(c1.fetch(3),stlcache_invalid_key); //Must be removed by LFU policy (cause 1&2 are touched)
 }
 
-template <typename Key, template <typename T> class Allocator> struct policy_lfuaging1 : policy_lfuaging<1,Key,Allocator> {};
-
 BOOST_AUTO_TEST_CASE(expire) {
 
-    cache<int,string,policy_lfuaging1 > c1(3);
+    cache<int,string,policy_lfuaging<1> > c1(3);
 
     c1.insert(1,"data1");
     c1.insert(2,"data2");
