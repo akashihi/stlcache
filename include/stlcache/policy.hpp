@@ -186,6 +186,13 @@ namespace stlcache {
         }
     };
 
+    /*!
+     * \brief A 'random' expiration policy implementation 
+     *  
+     * A implementation of the cache expiration policy, that expires entries randomly. It is fast and simple and always able to select a victim.
+     * 
+     * \author chollya (5/19/2011)
+     */
     struct policy_none {
         template <typename Key, template <typename T> class Allocator>
             struct bind : _policy_none_type<Key,Allocator> { 
