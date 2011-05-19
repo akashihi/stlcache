@@ -169,9 +169,14 @@ namespace stlcache {
         }
 
         /*! \brief Key comparision object accessor 
-          *                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    .
-          *  Provides access to the  comparison object associated with the container, which can be used to compare the keys of two elements in the container. This comparison object is set on object construction, and may either be a pointer to a function or an object of a class with a function call operator. In both cases it takes two arguments of the same type as the element keys, and returns true if the first argument is considered to go before the second in the strict weak ordering for the map object, and false otherwise. Notice that the returned comparison object takes as parameters the element keys themselves, not entire element values (pairs).
-          *                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    .
+          * 
+          *  Provides access to the  comparison object associated with the container, which can be used to compare the keys of two elements in the container.
+          *  This comparison object is set on object construction, and may either be a pointer to a function or an object of a class with a function call operator.
+          *  In both cases it takes two arguments of the same type as the element keys,
+          *  and returns true if the first argument is considered to go before the second in the strict weak ordering for the map object,
+          *  and false otherwise
+          *  Notice that the returned comparison object takes as parameters the element keys themselves, not entire element values (pairs).
+          *
           *  \return The key comparison object of type key_compare, defined to Compare, which is the fourth template parameter in the map class template.
           */
         key_compare key_comp ( ) const throw() {
@@ -243,7 +248,7 @@ namespace stlcache {
          * The entry with the specified key value will be removed from cache and it's usage count information will be erased. Size of the cache will be decreased. 
          *  For non-existing entries nothing will be done.
          *  
-         * \param<x> Key to remove.  
+         * \param <x> Key to remove.  
          *  
          * \return 1 when entry is removed (ie number of removed emtries, which is always 1, as keys are unique) or zero when nothing was done. 
          */
@@ -263,11 +268,12 @@ namespace stlcache {
          * Extension of cache could result in removal of some elements, depending of the cache fullness and used policy. It is also possible, that removal of excessive entries 
          * will fail, therefore insert operation will fail too. 
          * 
-         * \throw <stlcache_cache_full>  Thrown when there are no available space in the cache and policy doesn't allows removal of elements.
+         * \throw <stlcache_cache_full>  Thrown when there are no available space in the cache and policy doesn't allows removal of elements. 
+         * \throw <stlcache_invalid_key> Thrown when the policy doesn't accepts the key 
          *  
          * \return true if the new elemented was inserted or false if an element with the same key existed. 
          */
-        bool insert(Key _k, Data _d) throw(stlcache_cache_full) {
+        bool insert(Key _k, Data _d) throw(stlcache_cache_full,stlcache_invalid_key) {
             while (this->_currEntries >= this->_maxEntries) {
                 _victim<Key> victim=_policy->victim();
                 if (!victim) {
@@ -423,7 +429,7 @@ namespace stlcache {
         }
 
         /*!
-         * \Brief destructor 
+         * \brief destructor 
          *  
          * Destructs the cache object. This calls each of the cache element's destructors, and deallocates all the storage capacity allocated by the cache. 
          * 
