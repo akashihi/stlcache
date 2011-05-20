@@ -51,7 +51,7 @@ namespace stlcache {
             _timeKeeper.clear();
             _policy_lfu_type<Key,Allocator>::clear();
         }
-        virtual void swap(policy<Key,Allocator>& _p) throw(stlcache_invalid_policy) {
+        virtual void swap(policy<Key,Allocator>& _p) throw(exception_invalid_policy) {
             try {
                 _policy_lfuaging_type<Age,Key,Allocator>& _pn=dynamic_cast<_policy_lfuaging_type<Age,Key,Allocator>& >(_p);
                 _timeKeeper.swap(_pn._timeKeeper);
@@ -66,7 +66,7 @@ namespace stlcache {
 
                 _policy_lfu_type<Key,Allocator>::swap(_pn);
             } catch (const std::bad_cast& ) {
-                throw stlcache_invalid_policy("Attempted to swap incompatible policies");
+                throw exception_invalid_policy("Attempted to swap incompatible policies");
             }
         }
         virtual const _victim<Key> victim() throw()  {

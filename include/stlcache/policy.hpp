@@ -74,12 +74,12 @@ namespace stlcache {
          *  
          *  \param <_k> reference to a key value, being inserted
          *  
-         *  \throw <stlcache_invalid_key> Thrown when key could not be accepted by the policy (for example when it's not unique or there is some other issue). The insertion into main cache will be cancelled too.
+         *  \throw <exception_invalid_key> Thrown when key could not be accepted by the policy (for example when it's not unique or there is some other issue). The insertion into main cache will be cancelled too.
          *  
          *  \see cache::insert
          *  
          */
-        virtual void insert(const Key& _k) throw(stlcache_invalid_key) =0;
+        virtual void insert(const Key& _k) throw(exception_invalid_key) =0;
         /*!
          * \brief handles deletion of a entry from the cache 
          *  
@@ -124,12 +124,12 @@ namespace stlcache {
          *  
          * \param <_p>  Another policy of the same type as this policy cache is swapped with that of this policy. 
          *  
-         * \throw <stlcache_invalid_policy> Thrown when the supplied policy have a wrong type or can't be swapped. 
+         * \throw <exception_invalid_policy> Thrown when the supplied policy have a wrong type or can't be swapped. 
          *  
          * \see cache::swap 
          *  
          */
-        virtual void swap(policy<Key,Allocator>& _p) throw(stlcache_invalid_policy)=0;
+        virtual void swap(policy<Key,Allocator>& _p) throw(exception_invalid_policy)=0;
 
         /*!
          * \brief Returns a key of the entry, that is expired by the policy and could be removed.
@@ -159,7 +159,7 @@ namespace stlcache {
         }
         _policy_none_type(const size_t& size ) throw() { }
 
-        virtual void insert(const Key& _k) throw(stlcache_invalid_key) {
+        virtual void insert(const Key& _k) throw(exception_invalid_key) {
             _entries.insert(_k);
         }
         virtual void remove(const Key& _k) throw() {
@@ -169,12 +169,12 @@ namespace stlcache {
         virtual void clear() throw() {
             _entries.clear();
         }
-        virtual void swap(policy<Key,Allocator>& _p) throw(stlcache_invalid_policy) {
+        virtual void swap(policy<Key,Allocator>& _p) throw(exception_invalid_policy) {
             try {
                 _policy_none_type<Key,Allocator>& _pn=dynamic_cast<_policy_none_type<Key,Allocator>& >(_p);
                 _entries.swap(_pn._entries);
             } catch (const std::bad_cast& ) {
-                throw stlcache_invalid_policy("Attempted to swap incompatible policies");
+                throw exception_invalid_policy("Attempted to swap incompatible policies");
             }
         }
 

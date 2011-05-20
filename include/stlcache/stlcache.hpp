@@ -226,11 +226,11 @@ namespace stlcache {
          *  
          * \param <mp> Another cache of the same type as this whose cache is swapped with that of this cache. 
          *  
-         * \throw <stlcache_invalid_policy> Thrown when the policies of the caches to swap are incompatible. 
+         * \throw <exception_invalid_policy> Thrown when the policies of the caches to swap are incompatible. 
          *  
          * \see cache::operator= 
          */
-        void swap ( cache<Key,Data,Policy,Compare,Allocator>& mp ) throw(stlcache_invalid_policy) {
+        void swap ( cache<Key,Data,Policy,Compare,Allocator>& mp ) throw(exception_invalid_policy) {
             _storage.swap(mp._storage);
             _policy->swap(*mp._policy);
 
@@ -268,16 +268,16 @@ namespace stlcache {
          * Extension of cache could result in removal of some elements, depending of the cache fullness and used policy. It is also possible, that removal of excessive entries 
          * will fail, therefore insert operation will fail too. 
          * 
-         * \throw <stlcache_cache_full>  Thrown when there are no available space in the cache and policy doesn't allows removal of elements. 
-         * \throw <stlcache_invalid_key> Thrown when the policy doesn't accepts the key 
+         * \throw <exception_cache_full>  Thrown when there are no available space in the cache and policy doesn't allows removal of elements. 
+         * \throw <exception_invalid_key> Thrown when the policy doesn't accepts the key 
          *  
          * \return true if the new elemented was inserted or false if an element with the same key existed. 
          */
-        bool insert(Key _k, Data _d) throw(stlcache_cache_full,stlcache_invalid_key) {
+        bool insert(Key _k, Data _d) throw(exception_cache_full,exception_invalid_key) {
             while (this->_currEntries >= this->_maxEntries) {
                 _victim<Key> victim=_policy->victim();
                 if (!victim) {
-                    throw stlcache_cache_full("The cache is full and no element can be expired at the moment. Remove some elements manually");
+                    throw exception_cache_full("The cache is full and no element can be expired at the moment. Remove some elements manually");
                 }
                 this->erase(*victim);
             }
@@ -329,15 +329,15 @@ namespace stlcache {
          *  
          * \param <_k> key to the data 
          * 
-         * \throw  <stlcache_invalid_key> Thrown when non-existent key is supplied. You could use \link cache::check check member \endlink or \link cache::count count member \endlink to check cache existence prior to fetching the data
+         * \throw  <exception_invalid_key> Thrown when non-existent key is supplied. You could use \link cache::check check member \endlink or \link cache::count count member \endlink to check cache existence prior to fetching the data
          *  
          * \return constand reference to the data, mapped by the key. of type Data of course. 
          *  
          * \see check 
          */
-        const Data& fetch(const Key& _k) throw(stlcache_invalid_key) {
+        const Data& fetch(const Key& _k) throw(exception_invalid_key) {
             if (!check(_k)) {
-                throw stlcache_invalid_key("Key is not in cache",_k);
+                throw exception_invalid_key("Key is not in cache",_k);
             }
             _policy->touch(_k);
             return (*(_storage.find(_k))).second;

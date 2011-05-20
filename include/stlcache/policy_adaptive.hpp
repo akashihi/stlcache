@@ -54,7 +54,7 @@ namespace stlcache {
             this->_size=size;
         }
 
-        virtual void insert(const Key& _k) throw(stlcache_invalid_key) {
+        virtual void insert(const Key& _k) throw(exception_invalid_key) {
             if (b1Entries.find(_k)!=b1Entries.end()) {
                 //Check, whether we are outsized
                 b1Entries.erase(_k);
@@ -120,7 +120,7 @@ namespace stlcache {
             B2.clear();
             b2Entries.clear();
         }
-        virtual void swap(policy<Key,Allocator>& _p) throw(stlcache_invalid_policy) {
+        virtual void swap(policy<Key,Allocator>& _p) throw(exception_invalid_policy) {
             try {
                 _policy_adaptive_type<Key,Allocator>& _pn=dynamic_cast<_policy_adaptive_type<Key,Allocator>& >(_p);
                 T1.swap(_pn.T1);
@@ -132,7 +132,7 @@ namespace stlcache {
                 _size=_pn._size;
                 _size=_oldSize;
             } catch (const std::bad_cast& ) {
-                throw stlcache_invalid_policy("Attempted to swap incompatible policies");
+                throw exception_invalid_policy("Attempted to swap incompatible policies");
             }
         }
 

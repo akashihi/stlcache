@@ -27,7 +27,7 @@ namespace stlcache {
         }
         _policy_lru_type(const size_t& size ) throw() { }
 
-        virtual void insert(const Key& _k) throw(stlcache_invalid_key) {
+        virtual void insert(const Key& _k) throw(exception_invalid_key) {
             _entries.push_front(_k);
         }
         virtual void remove(const Key& _k) throw() {
@@ -40,12 +40,12 @@ namespace stlcache {
         virtual void clear() throw() {
             _entries.clear();
         }
-        virtual void swap(policy<Key,Allocator>& _p) throw(stlcache_invalid_policy) {
+        virtual void swap(policy<Key,Allocator>& _p) throw(exception_invalid_policy) {
             try {
                 _policy_lru_type<Key,Allocator>& _pn=dynamic_cast<_policy_lru_type<Key,Allocator>& >(_p);
                 _entries.swap(_pn._entries);
             } catch (const std::bad_cast& ) {
-                throw stlcache_invalid_policy("Attempted to swap incompatible policies");
+                throw exception_invalid_policy("Attempted to swap incompatible policies");
             }
         }
 

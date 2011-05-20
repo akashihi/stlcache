@@ -15,14 +15,14 @@ namespace stlcache{
      * Wrapper over std::runtime_error, base for all other STL::Cache exceptions classes. Since it's derived from the standard library exception class, 
      * it could be catched like other standard exceptions. Also usefull for catching  all cache specific exceptions.
      *  
-     * \see stlcache_empty_victim 
-     * \see stlcache_invalid_key 
-     * \see stlcache_invalid_policy 
-     * \see stlcache_cache_full 
+     * \see exception_empty_victim 
+     * \see exception_invalid_key 
+     * \see exception_invalid_policy 
+     * \see exception_cache_full 
      *  
      * \author chollya (5/20/2011)
      */
-    class stlcache_error : public std::runtime_error {
+    class exception_base : public std::runtime_error {
     public:
         /*!
          * \brief Exception constructor 
@@ -31,7 +31,7 @@ namespace stlcache{
          * 
          * \param what exception message
          */
-        stlcache_error(const std::string &what) : std::runtime_error(what) {  }
+        exception_base(const std::string &what) : std::runtime_error(what) {  }
     };
     
     /*!
@@ -44,7 +44,7 @@ namespace stlcache{
      *  
      * \author chollya (5/20/2011)
      */
-    class stlcache_empty_victim : public std::runtime_error {
+    class exception_empty_victim : public std::runtime_error {
     public:
         /*!
          * \brief Exception constructor 
@@ -53,7 +53,7 @@ namespace stlcache{
          * 
          * \param what exception message
          */
-        stlcache_empty_victim(const std::string &what) : std::runtime_error(what) {  }
+        exception_empty_victim(const std::string &what) : std::runtime_error(what) {  }
     };
 
     /*!
@@ -68,7 +68,7 @@ namespace stlcache{
      *  
      * \author chollya (5/20/2011)
      */
-    class stlcache_invalid_key : public std::runtime_error {
+    class exception_invalid_key : public std::runtime_error {
         const void* k;
     public:
         /*!
@@ -81,7 +81,7 @@ namespace stlcache{
          * \param what exception message 
          * \param _k problematic key 
          */
-        template <class Key>  stlcache_invalid_key(const std::string &what, const Key& _k) : std::runtime_error(what),k(&_k) {  }
+        template <class Key>  exception_invalid_key(const std::string &what, const Key& _k) : std::runtime_error(what),k(&_k) {  }
         /*!
          * \brief Accessor for a problematic key
          *  
@@ -105,7 +105,7 @@ namespace stlcache{
      *  
      * \author chollya (5/20/2011)
      */
-    class stlcache_invalid_policy : public std::runtime_error {
+    class exception_invalid_policy : public std::runtime_error {
     public:
         /*!
          * \brief Exception constructor 
@@ -114,7 +114,7 @@ namespace stlcache{
          * 
          * \param what exception message
          */
-        stlcache_invalid_policy(const std::string &what) : std::runtime_error(what) {  }
+        exception_invalid_policy(const std::string &what) : std::runtime_error(what) {  }
     };
 
     /*!
@@ -127,7 +127,7 @@ namespace stlcache{
      * 
      * \author chollya (5/20/2011)
      */
-    class stlcache_cache_full : public std::runtime_error {
+    class exception_cache_full : public std::runtime_error {
     public:
         /*!
          * \brief Exception constructor 
@@ -136,7 +136,7 @@ namespace stlcache{
          * 
          * \param what exception message
          */
-        stlcache_cache_full(const std::string &what) : std::runtime_error(what) {  }
+        exception_cache_full(const std::string &what) : std::runtime_error(what) {  }
     };
 
 }

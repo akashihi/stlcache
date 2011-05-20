@@ -34,13 +34,13 @@ namespace stlcache {
             return this->_isInitialized;
         }
 
-        const Key& value() const throw(stlcache_empty_victim) {
+        const Key& value() const throw(exception_empty_victim) {
             if(!this->_isInitialized) {
-                throw stlcache_empty_victim("Tried to access empty victim");
+                throw exception_empty_victim("Tried to access empty victim");
             }
             return this->_value;
         }
-        const Key& operator*() const throw(stlcache_empty_victim) {
+        const Key& operator*() const throw(exception_empty_victim) {
             return this->value();
         }
     };

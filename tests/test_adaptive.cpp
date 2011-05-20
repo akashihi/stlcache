@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(checkPointerMove) {
 
     c1.insert(4,"data4");
 
-    BOOST_REQUIRE_THROW(c1.fetch(1),stlcache_invalid_key);
+    BOOST_REQUIRE_THROW(c1.fetch(1),exception_invalid_key);
 }
 
 BOOST_AUTO_TEST_CASE(checkPointerMoveT2) {
@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE(checkPointerMoveT2) {
 
     c1.insert(4,"data4");
 
-    BOOST_REQUIRE_THROW(c1.fetch(1),stlcache_invalid_key);
+    BOOST_REQUIRE_THROW(c1.fetch(1),exception_invalid_key);
 }
 
 BOOST_AUTO_TEST_CASE(checkPointerSaveB1) {
@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(checkPointerSaveB1) {
 	c1.insert(5,"data5");
 	c1.insert(1,"data3");
 
-    BOOST_REQUIRE_THROW(c1.fetch(2),stlcache_invalid_key); //key1 is restored from B1 and key2 moved to B1 (out of cache)
+    BOOST_REQUIRE_THROW(c1.fetch(2),exception_invalid_key); //key1 is restored from B1 and key2 moved to B1 (out of cache)
 }
 
 BOOST_AUTO_TEST_CASE(checkPointerSaveB2) {
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(checkPointerSaveB2) {
 	c1.insert(5,"data5");
 	c1.insert(1,"data3");
 
-    BOOST_REQUIRE_THROW(c1.fetch(2),stlcache_invalid_key); //key1 is restored from B1 and key2 moved to B1 (out of cache)
+    BOOST_REQUIRE_THROW(c1.fetch(2),exception_invalid_key); //key1 is restored from B1 and key2 moved to B1 (out of cache)
 }
 
 BOOST_AUTO_TEST_SUITE_END();

@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(data) {
     BOOST_CHECK(c.empty());
     BOOST_CHECK(c.size()==0);
     BOOST_CHECK(!c.check(1));
-    BOOST_REQUIRE_THROW(c.fetch(1),stlcache_invalid_key);
+    BOOST_REQUIRE_THROW(c.fetch(1),exception_invalid_key);
 
     BOOST_CHECK(c.insert(1,string("test")));
     BOOST_CHECK(!c.insert(1,string("newtest"))); //Insert returns false for existing entries and doesn't updates them
@@ -71,8 +71,8 @@ BOOST_AUTO_TEST_CASE(data) {
     c.clear();
     BOOST_CHECK(c.empty());
     BOOST_CHECK(c.size()==0);
-    BOOST_REQUIRE_THROW(c.fetch(1),stlcache_invalid_key);
-    BOOST_REQUIRE_THROW(c.fetch(2),stlcache_invalid_key);
+    BOOST_REQUIRE_THROW(c.fetch(1),exception_invalid_key);
+    BOOST_REQUIRE_THROW(c.fetch(2),exception_invalid_key);
 }
 
 BOOST_AUTO_TEST_CASE(copy) {

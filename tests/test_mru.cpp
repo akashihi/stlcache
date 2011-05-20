@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_CASE(lastInserted) {
     c1.insert(3,"data3");
     c1.insert(4,"data4");
 
-    BOOST_REQUIRE_THROW(c1.fetch(3),stlcache_invalid_key); //Must be removed by MRU policy
+    BOOST_REQUIRE_THROW(c1.fetch(3),exception_invalid_key); //Must be removed by MRU policy
 }
 
 BOOST_AUTO_TEST_CASE(touch) {
@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(touch) {
 
     c1.insert(4,"data4");
 
-    BOOST_REQUIRE_THROW(c1.fetch(1),stlcache_invalid_key); //Must be removed by MRU policy (cause 1 is touched)
+    BOOST_REQUIRE_THROW(c1.fetch(1),exception_invalid_key); //Must be removed by MRU policy (cause 1 is touched)
 }
 
 BOOST_AUTO_TEST_SUITE_END();
