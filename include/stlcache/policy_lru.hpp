@@ -57,6 +57,16 @@ namespace stlcache {
         const list<Key>& entries() const  { return this->_entries; }
     };
 
+    /*!
+     * \brief A 'Least Recently Used' policy
+     * 
+     * Implements <a href="http://en.wikipedia.org/wiki/Cache_algorithms#Least_Recently_Used">'Least Recently Used'</a> cache expiration algorithm. 
+     *  
+     * The LRU policy tracks the usage of items and moves the recently used items to the front of the items stack and select items for the expiration from the end 
+     * of the stack. \link cache::touch Touching \endlink the entry decreases item's expiration probability. This policy is always able to expire any amount of entries. 
+     *  
+     * No additional configuration is required. 
+     */
     struct policy_lru {
         template <typename Key, template <typename T> class Allocator>
             struct bind : _policy_lru_type<Key,Allocator> { 
