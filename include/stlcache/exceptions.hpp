@@ -91,7 +91,6 @@ namespace stlcache{
          *  
          * \return the problematic key
          *  
-         * \author chollya (5/20/2011)
          */
         template <class Key> const Key& key() { return *((Key*)k); }
     };

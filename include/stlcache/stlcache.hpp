@@ -55,12 +55,12 @@ namespace stlcache {
      * help them survive the removal on cache overflow. You can \link cache::erase \endlink entries manually too. 
      * For the data retrieval you should first \link cache::check check \endlink , whether Key exists in 
      * cache or not, and \link cache::fetch fetch \endlink it, if it exists. 
-     * The preliminary \link cache::fetch fetch \endlink step is not neccessary, but fetching non-existent key will throw an \link 	stlcache_invalid_key exception \endlink . 
+     * The preliminary \link cache::fetch fetch \endlink step is not neccessary, but fetching non-existent key will throw an \link 	exception_invalid_key exception \endlink . 
      *  
      * cache class have three mandatory template parameters and two optional: 
      * \tparam <Key> The key data type. We have no limitations on this type, so it could be any built-in type, custom class etc. But it is recommended to supply a less-than operation for a Key type. 
      * \tparam <Data> The value data type. You a free to use any type here without any restrictions, requirements and recommendations. 
-     * \tparam <Policy> The expiration policy type. Must implement \link policy policy interface \endlink STL::Cache provides several expiration policies out-of-box and you are free to define new policies. 
+     * \tparam <Policy> The expiration policy type. Must implement \link stlcache::policy policy interface \endlink STL::Cache provides several expiration policies out-of-box and you are free to define new policies. 
      * \tparam <Compare> Comparison class: A class that takes two arguments of the key type and returns a bool. The expression comp(a,b), where comp is an object of this comparison class and a and b are key values, shall return true if a is to be placed at an earlier position than b in a strict weak ordering operation. This can either be a class implementing a function call operator or a pointer to a function (see constructor for an example). This defaults to less<Key>, which returns the same as applying the less-than operator (a<b). This is required for the underlying std::map 
      * \tparam <Allocator> Type of the allocator object used to define the storage allocation model. Unlike std::map you should pass a unspecialized Allocator type. 
      *  
