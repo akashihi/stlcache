@@ -109,7 +109,31 @@ namespace stlcache {
             }
 		}
     };
-    template <time_t Age = 3600> struct policy_lfuaging {
+
+    /*!
+     * \brief A 'LFU-Aging' policy
+     * 
+     * Implements <a href="http://en.wikipedia.org/wiki/Least_frequently_used">'LFU-Aging'</a> cache algorithm. 
+     *  
+     * A modified \link stlcache::policy_lfu LFU \endlink policy implementation, that allows the reference count to move in both directions. 
+     * Opposed to the usual \link stlcache::policy_lfu LFU \endlink, that allows only growth of the entries references counts, the LFU-Aging 
+     * also decreases the reference count of an entry, that was put into the cache some time ago. 
+     *  
+     * So, when you put an entry into the cache and start using it, entry's reference count will increase on every usage. 
+     * At the same time, the LFU-Aging algorithm will be applying the 'aging interval' on the entries in cache and 
+     * decrease entry's reference count every time. So the entries, that were popular in the past, but not needed right now, will 
+     * get a better chance to get out of the cache, then with usual LFU algorithm. 
+     *  
+     * \link cache::touch Touching \endlink the entry may not change item's expiration probability. This policy is always able to expire any amount of entries. 
+     *  
+     * The policy must be configured with the length of a aging interval: 
+     *  
+     * \tparam <Age>  aging interval in seconds
+     *  
+     * \see policy_lfu 
+     * \see policu_lfuagingstar 
+     */
+    template <time_t Age> struct policy_lfuaging {
         template <typename Key, template <typename T> class Allocator>
             struct bind : _policy_lfuaging_type<Age,Key,Allocator> { 
                 bind(const bind& x) : _policy_lfuaging_type<Age,Key,Allocator>(x),_policy_lfu_type<Key,Allocator>(x)  { }
