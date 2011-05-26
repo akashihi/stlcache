@@ -22,6 +22,8 @@ include_directories(${CMAKE_BINARY_DIR}
 		    ${Boost_INCLUDE_DIRS}
 )
 
+install(DIRECTORY include/stlcache DESTINATION include)
+
 if(Boost_FOUND)
 enable_testing()
 SET(CTEST_ENVIRONMENT "BOOST_TEST_LOG_LEVEL=message")
