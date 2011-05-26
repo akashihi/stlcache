@@ -144,6 +144,19 @@ namespace stlcache {
             }
         }
     };
+
+    /*!
+     * \brief A 'Adaptive replacement' policy
+     * 
+     * Implements <a href="http://en.wikipedia.org/wiki/Adaptive_replacement_cache">'Adaptive replacement'</a> cache algorithm. 
+     *  
+     * The adaptive cache algorithm is balancing between internal LRU and LFU caches, trying to adapt to the external expectations on it.
+     *    
+     * \link cache::touch Touching \endlink the entry decreases item's expiration probability. This policy is always able to expire any amount of entries.     
+     *  
+     * No additional configuration is required. 
+     *  
+     */
     struct policy_adaptive {
         template <typename Key, template <typename T> class Allocator>
             struct bind : _policy_adaptive_type<Key,Allocator> { 

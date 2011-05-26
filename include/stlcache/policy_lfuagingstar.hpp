@@ -38,7 +38,7 @@ namespace stlcache {
      * Combination of \link stlcache::policy_lfustar LFU* \endlink and \link stlcache::policy_lfuaging LFU-Aging \endlink policies.
      *  
      * It is mostly the \link stlcache::policy_lfustar LFU* \endlink with expiration of entries. Primary difference with    
-     * the \link stlcache::policy_lfustar LFU* \endlink is that the entries, with reference count, more then 1 will have    
+     * the \link stlcache::policy_lfustar LFU* \endlink is that the entries, with reference count more then 1, will have    
      *  a chance to expire, after several applies of the aging interval.
      *  
      * \link cache::touch Touching \endlink the entry may not change item's expiration probability. The LFU*-Aging policy may not be able 
