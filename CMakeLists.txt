@@ -61,8 +61,7 @@ ADD_EXECUTABLE(test_adaptive tests/test_adaptive.cpp)
 target_link_libraries(test_adaptive ${Boost_LIBRARIES})
 ADD_TEST(ARP test_adaptive)
 
-ADD_EXECUTABLE(test_copy tests/test_copy.cpp)
-target_link_libraries(test_copy ${Boost_LIBRARIES})
-ADD_TEST(Copy test_copy)
+ADD_EXECUTABLE(test_insert_perf tests/test_insert_perf.cpp)
+target_link_libraries(test_insert_perf ${Boost_LIBRARIES})
 
 endif(Boost_FOUND)
