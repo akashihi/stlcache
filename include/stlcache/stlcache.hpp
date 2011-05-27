@@ -147,7 +147,103 @@ namespace stlcache {
      \section Policies
      
      The \link stlcache::policy policy \endlink is a pluggable implementation of a cache algorithms, used for finding and removing excessive
-     cache entries.
+     cache entries. STL::Cache is shipped with the following policies:
+     
+     \li \link stlcache::policy_none None \endlink - A random expiration policy. Removes some random entry on request
+     \li \link stlcache::policy_lru LRU \endlink - 'Least recently used' policy.
+     \li \link stlcache::policy_mru MRU \endlink - 'Most recentrly used' policy
+     \li \link stlcache::policy_lfu LFU \endlink - 'Least frequently used' policy
+     \li \link stlcache::policy_lfustar LFU* \endlink - 'Least frequently used' polcy, that expires only items with refcount 1, as proposed by M.Arlitt
+     \li \link stlcache::policy_lfuaging LFU-Aging \endlink - 'Least frequently used' policy with time-based decreasing of usage count
+     \li \link stlcache::policy_lfuagingstar LFU*-Aging \endlink - Combination of \link stlcache::policy_lfustar LFU* \endlink and \link stlcache::policy_lfuagingstar LFU*-Aging \endlink policies
+     \li \link stlcache::policy_adaptive Adaptive Replacement \endlink - 'Adaptive Replacement' policy
+     
+     The cache expiration policy must be specified as a third parameter of \link stlcache::cache cache \endlink type and it is mandatory.
+     
+     \section Writing your own policy
+     
+     The policy implementation should keep track of entries in the cache and it must be able to tell the cache, what item should be expired at the moment.
+     There is not any limitations on policy internal structure and stuff, but it is expected, that policy conforms to some predefined interfaces.
+     
+     First of all - every policy is built in two classes, one class is the policy iteslf, and another one is a 'bind wrapper':
+     
+     \note All code examples in this section are from \link stlcache::policy_none  policy none \endlink
+     
+     \code
+        struct policy_none {
+        template <typename Key, template <typename T> class Allocator>
+            struct bind : _policy_none_type<Key,Allocator> { 
+                bind(const bind& x) : _policy_none_type<Key,Allocator>(x)  { }
+                bind(const size_t& size) : _policy_none_type<Key,Allocator>(size) { }
+            };
+        };
+     \endcode
+     
+     As you may see, the policy itself is automatically configured with caches's Key type and Allocator type. Of course, you could also pass
+     your own template parameters and partially instantiate the policy implementation template:
+     
+     \code
+        template <class R> struct policy_none {
+            template <typename Key, template <typename T> class Allocator>
+                struct bind : _policy_none_type<R,Key,Allocator> { 
+                    bind(const bind& x) : _policy_none_type<R,Key,Allocator>(x) { }
+                    bind(const size_t& size) : _policy_none_type<R,Key,Allocator>(size) { }
+                };
+        };     
+     \endcode
+     
+     You could pass some implementation of R during cache type definition:
+     
+     \code
+         stlcache::cache<int,int,stlcache::policy_none<Randomizer> > c;
+     \endcode
+     
+     Well, the actual implementation must implement the \link stlcache::policy policy interface \endlink :
+     
+     \code
+        template <class Key,template <typename T> class Allocator> class policy {
+            public:
+            virtual void insert(const Key& _k) throw(exception_invalid_key) =0;
+            virtual void remove(const Key& _k) throw() =0;
+            virtual void touch(const Key& _k) throw() =0;
+            virtual void clear() throw() =0;
+            virtual void swap(policy<Key,Allocator>& _p) throw(exception_invalid_policy)=0;
+            virtual const _victim<Key> victim() throw()  =0;
+        };     
+     \endcode
+     
+     So, the policy could be asked for a \link policy::victim victim \endlink, entries could be \link policy::insert inserted \endlink ,
+     \link policy::remove removed \endlink and \link policy::touch touched \endlink. It's contents could also be \link policy::clear cleared \endlink
+     or \link policy::swap swapped \endlink with another policy. Concrete policy implementation should be CopyConstructible, Assignable and
+     must provide a constructor, for specifiying policy size:
+     
+     \code
+        template <class Key, template <typename T> class Allocator> class _policy_none_type : public policy<Key,Allocator> {
+        public:
+            _policy_none_type<Key,Allocator>& operator= ( const _policy_none_type<Key,Allocator>& x) throw() { }
+            _policy_none_type(const _policy_none_type<Key,Allocator>& x) throw() {}
+            _policy_none_type(const size_t& size ) throw() { }
+
+            virtual void insert(const Key& _k) throw(exception_invalid_key) {}
+            virtual void remove(const Key& _k) throw() {}
+            virtual void touch(const Key& _k) throw() {}
+            virtual void clear() throw() {}
+            virtual void swap(policy<Key,Allocator>& _p) throw(exception_invalid_policy) {}
+
+            virtual const _victim<Key> victim() throw() {}
+        };
+     \endcode
+     
+     It's up to you, how you will implement those methods and so on. The only importatn thing, we haven't mentioned yet, is a
+     \link stlcache::_victim victim \endlink class. It is a way to return optional value from a function. So, when your policy implementatiton
+     cannot find any entry to remove, it will return empty victim object.
+     
+     \section Authors and Licensing
+     
+     Copyright (C) 2011 Denis V Chapligin
+     Distributed under the Boost Software License, Version 1.0.
+     (See accompanying file LICENSE_1_0.txt or copy at
+     http://www.boost.org/LICENSE_1_0.txt)
      
       */
 
