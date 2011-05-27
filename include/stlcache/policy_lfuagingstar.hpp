@@ -32,7 +32,28 @@ namespace stlcache {
             return _policy_lfustar_type<Key,Allocator>::victim();
         }
     };
-    template <time_t Age=3600> struct policy_lfuagingstar {
+        /*!
+     * \brief A 'LFU*-Aging' policy
+     * 
+     * Combination of \link stlcache::policy_lfustar LFU* \endlink and \link stlcache::policy_lfuaging LFU-Aging \endlink policies.
+     *  
+     * It is mostly the \link stlcache::policy_lfustar LFU* \endlink with expiration of entries. Primary difference with    
+     * the \link stlcache::policy_lfustar LFU* \endlink is that the entries, with reference count more then 1, will have    
+     *  a chance to expire, after several applies of the aging interval.
+     *  
+     * \link cache::touch Touching \endlink the entry may not change item's expiration probability. The LFU*-Aging policy may not be able 
+     * to find a excessive entry, when cache is full, so the \link cache::insert insert call \endlink may throw a \link stlcache::exception_cache_full 
+     * cache full \endlink exception.
+     *  
+     * The policy must be configured with the length of a aging interval: 
+     *  
+     * \tparam <Age>  aging interval in seconds
+     *  
+     * \see policy_lfu 
+     * \see policu_lfuaging 
+     * \see policu_lfustar
+     */
+    template <time_t Age> struct policy_lfuagingstar {
         template <typename Key, template <typename T> class Allocator>
             struct bind : _policy_lfuagingstar_type<Age,Key,Allocator> { 
                 bind(const bind& x) : _policy_lfuagingstar_type<Age,Key,Allocator>(x),_policy_lfuaging_type<Age,Key,Allocator>(x),_policy_lfustar_type<Key,Allocator>(x),_policy_lfu_type<Key,Allocator>(x)  { }

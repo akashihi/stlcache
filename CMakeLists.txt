@@ -1,6 +1,6 @@
 #Preamble
 cmake_minimum_required (VERSION 2.6)
-project (stlcache)
+project (STL::Cache)
 
 #Environment detection
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
@@ -11,11 +11,18 @@ SET(Boost_USE_STATIC_LIBS ON)
 SET(Boost_USE_MULTITHREADED ON)
 FIND_PACKAGE(Boost 1.42.0 COMPONENTS system unit_test_framework)
 
+#Documentation stuff
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+include(UseDoxygen)
+set(DOXYFILE_LATEX OFF)
+
 #Build configuration
 include_directories(${CMAKE_BINARY_DIR}
 		    ${CMAKE_SOURCE_DIR}/include
 		    ${Boost_INCLUDE_DIRS}
 )
+
+install(DIRECTORY include/stlcache DESTINATION include)
 
 if(Boost_FOUND)
 enable_testing()

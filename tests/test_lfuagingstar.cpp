@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(touch) {
 
     c1.insert(4,"data4");
 
-    BOOST_REQUIRE_THROW(c1.fetch(3),stlcache_invalid_key); //Must be removed by LFU* policy (cause 1&2 are touched)
+    BOOST_REQUIRE_THROW(c1.fetch(3),exception_invalid_key); //Must be removed by LFU* policy (cause 1&2 are touched)
 }
 
 BOOST_AUTO_TEST_CASE(veryfrequent) {
@@ -60,13 +60,13 @@ BOOST_AUTO_TEST_CASE(veryfrequent) {
     c1.touch(2);
     c1.touch(3);
 
-    BOOST_REQUIRE_THROW(c1.insert(4,"data4"),stlcache_cache_full); //Because every entry in cache have reference counter bigger then one and 
+    BOOST_REQUIRE_THROW(c1.insert(4,"data4"),exception_cache_full); //Because every entry in cache have reference counter bigger then one and 
                                                                                                     //lfu* policy works only on entries with refcount equal to 1
 
     c1.erase(1);
     BOOST_REQUIRE_NO_THROW(c1.insert(4,"data4"));
 
-    BOOST_REQUIRE_THROW(c1.fetch(1),stlcache_invalid_key);
+    BOOST_REQUIRE_THROW(c1.fetch(1),exception_invalid_key);
     BOOST_REQUIRE_NO_THROW(c1.fetch(4));
 }
 
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(expire) {
 
     c1.insert(4,"data4");
 
-    BOOST_REQUIRE_THROW(c1.fetch(3),stlcache_invalid_key); //Must be removed by LFU policy (cause every item have been touched and refcount for key 3 is 1)
+    BOOST_REQUIRE_THROW(c1.fetch(3),exception_invalid_key); //Must be removed by LFU policy (cause every item have been touched and refcount for key 3 is 1)
 }
 
 BOOST_AUTO_TEST_CASE(expirefail) {
@@ -108,11 +108,11 @@ BOOST_AUTO_TEST_CASE(expirefail) {
 
     WAIT_A_SECOND;
 
-    BOOST_REQUIRE_THROW(c1.insert(4,"data4"),stlcache_cache_full); //Cause even in expired cache there are no entries with refcount 1 
+    BOOST_REQUIRE_THROW(c1.insert(4,"data4"),exception_cache_full); //Cause even in expired cache there are no entries with refcount 1 
 
     WAIT_A_SECOND;
 
     BOOST_REQUIRE_NO_THROW(c1.insert(4,"data4"));
-    BOOST_REQUIRE_THROW(c1.fetch(3),stlcache_invalid_key); //Must be removed by LFU policy (cause every item have been expired again and refcount for key 3 is 1)
+    BOOST_REQUIRE_THROW(c1.fetch(3),exception_invalid_key); //Must be removed by LFU policy (cause every item have been expired again and refcount for key 3 is 1)
 }
 BOOST_AUTO_TEST_SUITE_END();

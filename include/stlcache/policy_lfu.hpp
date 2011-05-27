@@ -31,12 +31,12 @@ namespace stlcache {
         }
         _policy_lfu_type(const size_t& size ) throw() { }
 
-        virtual void insert(const Key& _k) throw(stlcache_invalid_key) {
+        virtual void insert(const Key& _k) throw(exception_invalid_key) {
             //1 - is initial reference value
             keySet pad=_entries[1];
             pad.insert(_k);
             if (!_backEntries.insert(std::pair<Key,unsigned long long>(_k,1)).second) {
-                throw stlcache_invalid_key("Key already cached!",_k);
+                throw exception_invalid_key("Key already cached!",_k);
             }
 
             _entries.erase(1);
@@ -80,13 +80,13 @@ namespace stlcache {
             _entries.clear();
             _backEntries.clear();
         }
-        virtual void swap(policy<Key,Allocator>& _p) throw(stlcache_invalid_policy) {
+        virtual void swap(policy<Key,Allocator>& _p) throw(exception_invalid_policy) {
             try {
                 _policy_lfu_type<Key,Allocator>& _pn=dynamic_cast<_policy_lfu_type<Key,Allocator>& >(_p);
                 _entries.swap(_pn._entries);
                 _backEntries.swap(_pn._backEntries);
             } catch (const std::bad_cast& ) {
-                throw stlcache_invalid_policy("Attempted to swap incompatible policies");
+                throw exception_invalid_policy("Attempted to swap incompatible policies");
             }
         }
 
@@ -131,6 +131,24 @@ namespace stlcache {
             return ref;
         }
     };
+
+    /*!
+     * \brief A 'Least Frequently Used' policy
+     * 
+     * Implements <a href="http://en.wikipedia.org/wiki/Least_frequently_used">'Least Frequently Used'</a> cache algorithm. 
+     *  
+     * The LFU policy tracks how many times entry was used and selects entries with the smallest usage count for expiration. There is a big difference 
+     * between LFU and \link stlcache::policy_lru LRU \endlink policies - the LRU policy only tracks the fact of entry usage, but the LFU also takes in
+     * the account the number of entry usages. 
+     * \link cache::touch Touching \endlink the entry greatly decreases item's expiration probability. This policy is always able to expire any amount of entries. 
+     *  
+     * No additional configuration is required. 
+     *  
+     * \see policy_lfustar
+     * \see policy_lfuaging 
+     * \see policy_lfuagingstar 
+     *  
+     */
     struct policy_lfu {
         template <typename Key, template <typename T> class Allocator>
             struct bind : _policy_lfu_type<Key,Allocator> { 

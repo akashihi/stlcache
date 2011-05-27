@@ -20,8 +20,8 @@ BOOST_AUTO_TEST_CASE(empty) {
     BOOST_CHECK(v.isInitialized()==false);
     BOOST_CHECK(!v);
 
-    BOOST_REQUIRE_THROW(v.value(),stlcache_empty_victim);
-    BOOST_REQUIRE_THROW(*v,stlcache_empty_victim);
+    BOOST_REQUIRE_THROW(v.value(),exception_empty_victim);
+    BOOST_REQUIRE_THROW(*v,exception_empty_victim);
 }
 
 BOOST_AUTO_TEST_CASE(filled) {
@@ -43,8 +43,8 @@ BOOST_AUTO_TEST_CASE(copy) {
     BOOST_CHECK(v.isInitialized()==false);
     BOOST_CHECK(!v);
 
-    BOOST_REQUIRE_THROW(v.value(),stlcache_empty_victim);
-    BOOST_REQUIRE_THROW(*v,stlcache_empty_victim);
+    BOOST_REQUIRE_THROW(v.value(),exception_empty_victim);
+    BOOST_REQUIRE_THROW(*v,exception_empty_victim);
 
     _victim<int> v1(1);
 

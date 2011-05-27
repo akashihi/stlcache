@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(copyLRU) {
     BOOST_CHECK(c2.size()==3);
     BOOST_CHECK(c2.max_size()==3);
 
-    BOOST_REQUIRE_THROW(c2.fetch(1),stlcache_invalid_key); //Must be removed by LRU policy
+    BOOST_REQUIRE_THROW(c2.fetch(1),exception_invalid_key); //Must be removed by LRU policy
 }
 
 BOOST_AUTO_TEST_CASE(copyMRU) {
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(copyMRU) {
     BOOST_CHECK(c2.size()==3);
     BOOST_CHECK(c2.max_size()==3);
 
-    BOOST_REQUIRE_THROW(c2.fetch(3),stlcache_invalid_key); //Must be removed by MRU policy
+    BOOST_REQUIRE_THROW(c2.fetch(3),exception_invalid_key); //Must be removed by MRU policy
 }
 
 BOOST_AUTO_TEST_CASE(copyLFU) {
@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE(copyLFU) {
 
     c2.insert(4,"data4");
 
-    BOOST_REQUIRE_THROW(c2.fetch(3),stlcache_invalid_key); //Must be removed by LFU policy (cause 1&2 are touched)
+    BOOST_REQUIRE_THROW(c2.fetch(3),exception_invalid_key); //Must be removed by LFU policy (cause 1&2 are touched)
 }
 
 BOOST_AUTO_TEST_CASE(copyLFUStar) {
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE(copyLFUStar) {
 
     c2.insert(4,"data4");
 
-    BOOST_REQUIRE_THROW(c2.fetch(3),stlcache_invalid_key); //Must be removed by LFU policy (cause 1&2 are touched)
+    BOOST_REQUIRE_THROW(c2.fetch(3),exception_invalid_key); //Must be removed by LFU policy (cause 1&2 are touched)
 }
 
 BOOST_AUTO_TEST_CASE(copyLFUAging) {
@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE(copyLFUAging) {
 
     c2.insert(4,"data4");
 
-    BOOST_REQUIRE_THROW(c2.fetch(3),stlcache_invalid_key); //Must be removed by LFU policy (cause 1&2 are touched)
+    BOOST_REQUIRE_THROW(c2.fetch(3),exception_invalid_key); //Must be removed by LFU policy (cause 1&2 are touched)
 }
 
 BOOST_AUTO_TEST_CASE(copyLFUAgingStar) {
@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE(copyLFUAgingStar) {
 
     c2.insert(4,"data4");
 
-    BOOST_REQUIRE_THROW(c2.fetch(3),stlcache_invalid_key); //Must be removed by LFU policy (cause every item have been touched and refcount for key 3 is 1)
+    BOOST_REQUIRE_THROW(c2.fetch(3),exception_invalid_key); //Must be removed by LFU policy (cause every item have been touched and refcount for key 3 is 1)
 }
 
 BOOST_AUTO_TEST_CASE(copyAdaptive) {
@@ -165,7 +165,7 @@ BOOST_AUTO_TEST_CASE(copyAdaptive) {
 
     c2.insert(4,"data4");
 
-    BOOST_REQUIRE_THROW(c2.fetch(1),stlcache_invalid_key);
+    BOOST_REQUIRE_THROW(c2.fetch(1),exception_invalid_key);
 }
 
 BOOST_AUTO_TEST_SUITE_END();

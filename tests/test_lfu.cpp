@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(touch) {
 
     c1.insert(4,"data4");
 
-    BOOST_REQUIRE_THROW(c1.fetch(3),stlcache_invalid_key); //Must be removed by LFU policy (cause 1&2 are touched)
+    BOOST_REQUIRE_THROW(c1.fetch(3),exception_invalid_key); //Must be removed by LFU policy (cause 1&2 are touched)
 }
 
 BOOST_AUTO_TEST_SUITE_END();
