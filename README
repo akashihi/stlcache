@@ -1,46 +1,237 @@
-STL-based caches for C++
+STL::Cache - in-memory cache for C++ applications
 
-Simple and straitforward implementation of map-like container with limited 
-number of entries and several entry expiration policies.
+Introduction
 
-===Expiration policies===
+   STL::Cache is just a simple wrapper over standard map, that implements
+   some cache algorithms, thus allowing you to limit the storage size and
+   automatically remove unused items from it. (Right now the std::map
+   interface is partially implemented, so it can't be used as a drop-in
+   replacement for the std::map).
 
- * None - Removes some random item on cache overflow.
- * LRU - Removes least recently used (fetched or touched) element 
-   on cache overflow.
- * MRU - Removes most recently used element on cache overflow.
- * LFU - Removes least frequently used element. Policy keeps the number
-   of element references and removes the entry with smallest reference count.
- * LFU* - Like LFU, but element for removal is randomly selected from elements
-   with reference count equal to 1
- * LFU-Aging - Operates like LFU and implements entry reference 
-   count decreasing on some timeout. So entry with refcount equal to X will
-   be lowered to X-1 after TIMEOUT time.
- * LFU*-Aging - Combination of LFU* and LFU-Aging.
- * Adaptinve - Naive implementation of Adaptive Replacement Cache.
+   It is intented to be used for keeping any key/value data, especially
+   when data's size are too big, to just put it into the map and keep the
+   whole thing. With STL::Cache you could put unlimited (really unlimited)
+   amount of data into it, but it will store only some small part of your
+   data. So re-usable data will be kept near your code and not so popular
+   data will not spend expensive memory.
 
-LFU* and LFU*-Aging star may not be able to find a entry for removal on cache
-overflow and will throw a stlcache::stlcache_cache_full exception.
+   STL::Cache uses configurable policies, for decisions, whether data are
+   good, to be kept in cache or they should be thrown away. It is shipped
+   with 8 policies and you are free to implement your own.
 
-===Usage===
-#include <stlcache/stlcache.hpp>
+Getting and installing
 
-using namespace stlcache;
+   The STL::Cache source code is hosted on github, so you can download
+   the source code using wget or other download tool:
+     * https://github.com/akashihi/stlcache/tarball/master (tar.gz
+       format)
+     * https://github.com/akashihi/stlcache/zipball/master (or zip
+       format)
 
-cache<int,string,policy_none<int> > cache_none(3); //int is a Key type, string is a Data type, constructor argument - sizeof cache
-cache<int,string,policy_lru<int> > cache_lru(3); //
-cache<int,string,policy_mru<int> > cache_mru(3);
-cache<int,string,policy_lfu<int> > cache_lfu(3);
-cache<int,string,policy_lfustar<int> > cache_lfustar(3);
-cache<int,string,policy_lfuaging<int,10> > cache_lfuaging(3); //10 is a expiration time in seconds. Default value - 3600 seconds (1 hour)
-cache<int,string,policy_lfuagingstar<int,10> > cache_lfuagingstar(3);
-cache<int,string,policy_adaptive<int> > cache_adaptive(3);
+   You could also clone the repository and check some unstable code:
+     git clone git://github.com/akashihi/stlcache.git
 
-void foo() {
-   cache_lfu.insert(1,"Test data 1"); //Puts data to the cache
-   cache_lfu.touch(1); //Increase refcount
-   if (cache_lfu.check(1)) { //Return true, for key present in cache
-	string cachedData = cache_lfu.fetch(1); //Will throw stlcache::stlcache_invalid_key when non-existent key is fetched
-   }
-   cache_lfu.erase(1); //Removes entry from cache
-}
+   The 'master' branch is always pointing to the latest stable release and
+   the 'next' branch is a unstable development branch.
+
+   The STL::Cache is header only and does not require any building. Just
+   copy the include/stlcache directory to your system's include
+   directories or add it to your project's include directories.
+   Alternativaly you could build the sources and then install it, using
+   our build system.
+
+   Yes, as i told you, the STL::Cache themself is a header-only library
+   and doesn't requires building. Indeed, it is shipped with tests,
+   documentation and other stuff, that could be built and used. For
+   STL::Cache building you need:
+     * Recent CMake (required)
+     * Boost library (optional, used only for tests)
+     * Doxygen (optional, only for documentation processing)
+
+   After getting this stuff up and running, select a directory for
+   building and issue the following commands:
+        cmake /path/to/the/stlcache/sources
+        make
+        make test
+        make doc
+        make install
+
+   The CMake is using a out-of-source build approach, so it is
+   recommended to create a temporary build directory somewhere and remove
+   it after installation.
+
+   The generated documentation will be put into the <build>/doc directory
+   and tests will be built and run directly in the <build> directory. They
+   are NOT installed by 'make install' command, so you have to copy them
+   manually, if you really need them.
+
+Usage
+
+   Select a cache expiration policy , configure cache with it,
+   construct the cache, specifying it's size, and start putting data into
+   the cache:
+     typedef CacheLRU stlcache::cache<int,string,stlcache::policy_lru>;
+     CacheLRU myCache(10);
+
+   The policy, key data type and value data type are passed as parameters
+   to the stlcache::cache class template. In the example above we have
+   constructed cache, that keeps data of type std::string and keys are of
+   type int. It uses a LRU policy for removal of excessive items.
+   Cache object 'myCache' is able to keep only 10 items. Cache size is
+   configured at the construction time and cannot be changed in the future
+   (with exceptions for assignment and swap operations). Additionally you
+   could specify a comparision object and allocator type, see the
+   cache class documentation for the details.
+
+   You could put objects into your cache object using insert call:
+     myCache.insert(1,"One)";
+
+   Note, that the insert call could throw a cache full exception
+   or invalid key exception As keys have to be unique, the insert call
+   may do nothing, if it meets the duplicate key. Don't forget to check
+   it's return value.
+
+   Now, when you have some data in the cache, you may want to retrieve it
+   back:
+     string myOne = myCache.fetch(1);
+
+   The fetch call will return a data value, associated with the
+   supplied key or throw the invalid key exception when the key
+   doesn't exists in the cache. For safier operations, you could check
+   in advance, whether key is in the cache or not:
+     string myOne;
+     if (myCache.check(1)) {
+       myOne = myCache.fetch(1);
+     }
+
+   The check is exception-safe.
+
+   Both check and fetch calls are increasing internal reference
+   count for the key, so, depending on the used policy, it will increase
+   or decrease the entry's chance to become an expiration victim. Under
+   some circumstances you may need to manually change those reference
+   counter, without actually accesing the entry. Something like
+   touching it:
+     myCache.touch(1);
+
+   The cache::touch call is exception-safe and could be used even on
+   non-existent keys.
+
+   When you have done your work, you may manually delete the entry:
+     myCache.erase(1);
+
+   Check it's return value, to get sure, whether something was deleted or
+   not.
+
+Policies
+
+   The policy is a pluggable implementation of a cache algorithms,
+   used for finding and removing excessive cache entries. STL::Cache is
+   shipped with the following policies:
+     * None - A random expiration policy. Removes some random entry on
+       request
+     * LRU - 'Least recently used' policy.
+     * MRU - 'Most recentrly used' policy
+     * LFU - 'Least frequently used' policy
+     * LFU* - 'Least frequently used' polcy, that expires only items
+       with refcount 1, as proposed by M.Arlitt
+     * LFU-Aging - 'Least frequently used' policy with time-based
+       decreasing of usage count
+     * LFU*-Aging - Combination of LFU* and LFU*-Aging
+       policies
+     * Adaptive Replacement - 'Adaptive Replacement' policy
+
+   The cache expiration policy must be specified as a third parameter of
+   cache type and it is mandatory.
+
+your own policy
+
+   The policy implementation should keep track of entries in the cache and
+   it must be able to tell the cache, what item should be expired at the
+   moment. There is not any limitations on policy internal structure and
+   stuff, but it is expected, that policy conforms to some predefined
+   interfaces.
+
+   First of all - every policy is built in two classes, one class is the
+   policy iteslf, and another one is a 'bind wrapper':
+
+   Note:
+          All code examples in this section are from policy none
+
+        struct policy_none {
+        template <typename Key, template <typename T> class Allocator>
+            struct bind : _policy_none_type<Key,Allocator> {
+                bind(const bind& x) : _policy_none_type<Key,Allocator>(x)  { }
+                bind(const size_t& size) : _policy_none_type<Key,Allocator>(size
+) { }
+            };
+        };
+
+   As you may see, the policy itself is automatically configured with
+   caches's Key type and Allocator type. Of course, you could also pass
+   your own template parameters and partially instantiate the policy
+   implementation template:
+        template <class R> struct policy_none {
+            template <typename Key, template <typename T> class Allocator>
+                struct bind : _policy_none_type<R,Key,Allocator> {
+                    bind(const bind& x) : _policy_none_type<R,Key,Allocator>(x)
+{ }
+                    bind(const size_t& size) : _policy_none_type<R,Key,Allocator
+>(size) { }
+                };
+        };
+
+   You could pass some implementation of R during cache type definition:
+         stlcache::cache<int,int,stlcache::policy_none<Randomizer> > c;
+
+   Well, the actual implementation must implement the policy interface
+   :
+        template <class Key,template <typename T> class Allocator> class policy
+{
+            public:
+            virtual void insert(const Key& _k) throw(exception_invalid_key)
+=0;
+            virtual void remove(const Key& _k) throw() =0;
+            virtual void touch(const Key& _k) throw() =0;
+            virtual void clear() throw() =0;
+            virtual void swap(policy<Key,Allocator>& _p) throw(exception_inv
+alid_policy)=0;
+            virtual const _victim<Key> victim() throw()  =0;
+        };
+
+   So, the policy could be asked for a victim , entries could be
+   inserted , removed and touched . It's contents could also
+   be cleared or swapped with another policy. Concrete policy
+   implementation should be CopyConstructible, Assignable and must provide
+   a constructor, for specifiying policy size:
+        template <class Key, template <typename T> class Allocator> class _polic
+y_none_type : public policy<Key,Allocator> {
+        public:
+            _policy_none_type<Key,Allocator>& operator= ( const _policy_none_typ
+e<Key,Allocator>& x) throw() { }
+            _policy_none_type(const _policy_none_type<Key,Allocator>& x) throw()
+ {}
+            _policy_none_type(const size_t& size ) throw() { }
+
+            virtual void insert(const Key& _k) throw(exception_invalid_key)
+{}
+            virtual void remove(const Key& _k) throw() {}
+            virtual void touch(const Key& _k) throw() {}
+            virtual void clear() throw() {}
+            virtual void swap(policy<Key,Allocator>& _p) throw(exception_inv
+alid_policy) {}
+
+            virtual const _victim<Key> victim() throw() {}
+        };
+
+   It's up to you, how you will implement those methods and so on. The
+   only importatn thing, we haven't mentioned yet, is a victim class.
+   It is a way to return optional value from a function. So, when your
+   policy implementatiton cannot find any entry to remove, it will return
+   empty victim object.
+
+Authors and Licensing
+
+   Copyright (C) 2011 Denis V Chapligin Distributed under the Boost
+   Software License, Version 1.0. (See accompanying file LICENSE_1_0.txt
+   or copy at http://www.boost.org/LICENSE_1_0.txt)

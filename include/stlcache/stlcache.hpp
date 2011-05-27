@@ -238,7 +238,7 @@ namespace stlcache {
      \link stlcache::_victim victim \endlink class. It is a way to return optional value from a function. So, when your policy implementatiton
      cannot find any entry to remove, it will return empty victim object.
      
-     \section Authors and Licensing
+     \section AaL  Authors and Licensing
      
      Copyright (C) 2011 Denis V Chapligin
      Distributed under the Boost Software License, Version 1.0.
