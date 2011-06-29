@@ -102,7 +102,7 @@ namespace stlcache {
             return ret;
         }
 
-        bool insert(Key _k, Data _d) throw(stlcache_cache_full) {
+        bool insert(Key _k, Data _d) throw(stlcache_cache_full,stlcache_invalid_key) {
             while (this->_currEntries >= this->_maxEntries) {
                 _victim<Key> victim=_policy->victim();
                 if (!victim) {

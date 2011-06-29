@@ -38,6 +38,10 @@ namespace stlcache {
             this->_oldestEntry=time(NULL);
         }
 
+        virtual void insert(const Key& _k) throw(stlcache_invalid_key) {
+            _timeKeeper.insert(std::pair<Key,time_t>(_k,time(NULL))); //Because touch always increases the refcount, so it couldn't be 1 after touch
+            _policy_lfu_type<Key,Allocator>::insert(_k);
+        }
         virtual void remove(const Key& _k) throw() {
             _timeKeeper.erase(_k);
             _policy_lfu_type<Key,Allocator>::remove(_k);

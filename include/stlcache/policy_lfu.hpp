@@ -17,9 +17,17 @@ using namespace std;
 
 namespace stlcache {
     template <class Key,template <typename T> class Allocator> class _policy_lfu_type : public policy<Key,Allocator> {
-        typedef set<Key,less<Key>,Allocator<Key> > keySet;
-        map<unsigned long long,keySet, less<unsigned long long>, Allocator<pair<const unsigned long long, keySet> > > _entries;
-        map<Key, unsigned long long, less<Key>, Allocator<pair<const Key, unsigned long long> > > _backEntries;
+        typedef pair<const unsigned int, Key> entriesPair;
+        typedef multimap<unsigned int, Key,less<Key> ,Allocator<entriesPair> > entriesType;
+        entriesType _entries;
+
+        typedef typename entriesType::iterator entriesIterator;
+        typedef pair<const Key,entriesIterator> backEntriesPair;
+        typedef map<Key,entriesIterator,less<Key>,Allocator<backEntriesPair> > backEntriesType;
+        backEntriesType _backEntries;
+        typedef typename backEntriesType::iterator backEntriesIterator;
+        
+
     public:
         _policy_lfu_type<Key,Allocator>& operator= ( const _policy_lfu_type<Key,Allocator>& x) throw() {
             this->_entries=x._entries;
@@ -31,50 +39,36 @@ namespace stlcache {
         }
         _policy_lfu_type(const size_t& size ) throw() { }
 
+        virtual void insert(const Key& _k,unsigned int refCount) throw(stlcache_invalid_key) {
+            //1 - is initial reference value
+            entriesIterator newEntryIter = _entries.insert(entriesPair(refCount,_k));
+            _backEntries.insert(backEntriesPair(_k,newEntryIter));
+        }
         virtual void insert(const Key& _k) throw(stlcache_invalid_key) {
             //1 - is initial reference value
-            keySet pad=_entries[1];
-            pad.insert(_k);
-            if (!_backEntries.insert(std::pair<Key,unsigned long long>(_k,1)).second) {
-                throw stlcache_invalid_key("Key already cached!",_k);
-            }
-
-            _entries.erase(1);
-            _entries.insert(std::pair<unsigned long long, keySet>(1,pad));
+            this->insert(_k,1);
         }
-        virtual void remove(const Key& _k) throw() {
-            keySet pad = _entries[_backEntries[_k]];
 
-            pad.erase(_k);
-            _entries.erase(_backEntries[_k]);
-            if (pad.size()>0) {
-                _entries.insert(std::pair<unsigned long long, keySet>(_backEntries[_k],pad));
+        virtual void remove(const Key& _k) throw() {
+            backEntriesIterator backIter = _backEntries.find(_k);
+            if (backIter==_backEntries.end()) {
+                return;
             }
 
+            entriesIterator oldEntryIter = backIter->second;
             _backEntries.erase(_k);
+            _entries.erase(oldEntryIter);
         }
         virtual void touch(const Key& _k) throw() { 
-            unsigned long long ref = _backEntries[_k];
+            backEntriesIterator backIter = _backEntries.find(_k);
+            if (backIter==_backEntries.end()) {
+                return;
+            }
 
-            keySet pad = _entries[ref];
-            pad.erase(_k);
-            _entries.erase(ref);
-			if (!pad.empty()) {
-				_entries.insert(std::pair<unsigned long long, keySet>(ref,pad));
-			}
-
-            ref++;
-			if (_entries.find(ref)!=_entries.end()) {
-				pad = _entries[ref];
-			} else {
-				pad = keySet();
-			}
-            pad.insert(_k);
-            _entries.erase(ref);
-            _entries.insert(std::pair<unsigned long long, keySet>(ref,pad));
-
-            _backEntries.erase(_k);
-            _backEntries[_k]=ref;
+            unsigned int refCount=backIter->second->first;
+            
+            this->remove(_k);
+            this->insert(_k,refCount+1);
         }
         virtual void clear() throw() {
             _entries.clear();
@@ -94,41 +88,30 @@ namespace stlcache {
             if (_entries.begin()==_entries.end()) {
                 return _victim<Key>();
             }
-            keySet pad=(*(_entries.begin())).second; //Begin returns entry with lowest id, just what we need:)
 
-            if (pad.begin()==pad.end()) {
-                return _victim<Key>();
-            }
-
-            return _victim<Key>(*(pad.begin()));
+            return _victim<Key>(_entries.begin()->second);
         }
 
     protected:
-        const map<unsigned long long,keySet >& entries() const {
+        const entriesType& entries() const {
             return this->_entries;
         }
         virtual unsigned long long untouch(const Key& _k) throw() { 
-            unsigned long long ref = _backEntries[_k];
+            backEntriesIterator backIter = _backEntries.find(_k);
+            if (backIter==_backEntries.end()) {
+                return 0;
+            }
+            unsigned int refCount=backIter->second->first;
 
-            if (!(ref>1)) {
-                return ref; //1 is a minimal reference value
+
+            if (!(refCount>1)) {
+                return refCount; //1 is a minimal reference value
             }
 
-            keySet pad = _entries[ref];
-            pad.erase(_k);
-            _entries.erase(ref);
-            _entries.insert(std::pair<unsigned long long, keySet>(ref,pad));
+            this->remove(_k);
+            this->insert(_k,refCount-1);
 
-            ref--;
-            pad = _entries[ref];
-            pad.insert(_k);
-            _entries.erase(ref);
-            _entries.insert(std::pair<unsigned long long, keySet>(ref,pad));
-
-            _backEntries.erase(_k);
-            _backEntries[_k]=ref;
-
-            return ref;
+            return refCount;
         }
     };
     struct policy_lfu {
