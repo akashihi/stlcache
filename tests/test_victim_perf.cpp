@@ -20,7 +20,7 @@ using namespace stlcache;
 
 BOOST_AUTO_TEST_SUITE(STLCacheSuite)
 
-const unsigned int noItems = 2048;
+const unsigned int noItems = 65536;
 
 BOOST_AUTO_TEST_CASE(victimNone) {
     struct timeval start,stop;
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(victimLFUStar) {
 BOOST_AUTO_TEST_CASE(victimLFUAging) {
     struct timeval start,stop;
 
-    cache<unsigned int,unsigned int,policy_lfuaging<3600>> c(noItems);
+    cache<unsigned int,unsigned int,policy_lfuaging<3600> > c(noItems);
     for(unsigned int indx = 0; indx<noItems; indx++) {
         c.insert(indx,indx);
     }
@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE(victimLFUAging) {
 BOOST_AUTO_TEST_CASE(victimLFUAgingStar) {
     struct timeval start,stop;
 
-    cache<unsigned int,unsigned int,policy_lfuagingstar<3600>> c(noItems);
+    cache<unsigned int,unsigned int,policy_lfuagingstar<3600> > c(noItems);
     for(unsigned int indx = 0; indx<noItems; indx++) {
         c.insert(indx,indx);
     }
