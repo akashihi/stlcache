@@ -24,7 +24,8 @@ namespace stlcache {
 
         virtual const _victim<Key> victim() throw()  {
             //LFU* only operates on entries with references count equal to 1
-            entriesType::const_iterator entriesIter = this->entries().find(1);
+            typedef typename _policy_lfu_type<Key,Allocator>::entriesType::const_iterator entriesIterType;
+            entriesIterType entriesIter = this->entries().find(1);
             if (entriesIter==this->entries().end()) {
                 return _victim<Key>();
             }
