@@ -17,43 +17,47 @@ using namespace std;
 #include <stlcache/policy.hpp>
 
 namespace stlcache {
-    template <class Key,time_t Age=3600> class policy_lfuaging : public virtual policy_lfu<Key> {
-        typedef set<Key> keySet;
-        map<Key,time_t> _timeKeeper;
+    template <time_t Age,class Key,template <typename T> class Allocator> class _policy_lfuaging_type : public virtual _policy_lfu_type<Key,Allocator> {
+        typedef set<Key, less<Key>, Allocator<Key> > keySet;
+        map<Key,time_t, less<Key>, Allocator<pair<const Key, time_t> > > _timeKeeper;
         time_t _oldestEntry;
         time_t age;
     public:
-        policy_lfuaging<Key,Age>& operator= ( const policy_lfuaging<Key,Age>& x) throw() {
-            policy_lfu<Key>::operator=(x);
+        _policy_lfuaging_type<Age,Key,Allocator>& operator= ( const _policy_lfuaging_type<Age,Key,Allocator>& x) throw() {
+            _policy_lfu_type<Key,Allocator>::operator=(x);
             this->_timeKeeper=x._timeKeeper;
             this->_oldestEntry=x._oldestEntry;
             this->age=x.age;
             return *this;
         }
-        policy_lfuaging(const policy_lfuaging<Key,Age>& x)  throw() : policy_lfu<Key>(x) {
+        _policy_lfuaging_type(const _policy_lfuaging_type<Age,Key,Allocator>& x)  throw() : _policy_lfu_type<Key,Allocator>(x) {
             *this=x;
         }
-        policy_lfuaging(const size_t& size ) throw() : policy_lfu<Key>(size) { 
+        _policy_lfuaging_type(const size_t& size ) throw() : _policy_lfu_type<Key,Allocator>(size) { 
             this->age=Age;
             this->_oldestEntry=time(NULL);
         }
 
+        virtual void insert(const Key& _k) throw(exception_invalid_key) {
+            _policy_lfu_type<Key,Allocator>::insert(_k);
+            _timeKeeper.insert(std::pair<Key,time_t>(_k,time(NULL))); //Because touch always increases the refcount, so it couldn't be 1 after touch
+        }
         virtual void remove(const Key& _k) throw() {
+            _policy_lfu_type<Key,Allocator>::remove(_k);
             _timeKeeper.erase(_k);
-            policy_lfu<Key>::remove(_k);
         }
         virtual void touch(const Key& _k) throw() { 
+            _policy_lfu_type<Key,Allocator>::touch(_k);
             _timeKeeper.erase(_k);
             _timeKeeper.insert(std::pair<Key,time_t>(_k,time(NULL))); //Because touch always increases the refcount, so it couldn't be 1 after touch
-            policy_lfu<Key>::touch(_k);
         }   
         virtual void clear() throw() {
+            _policy_lfu_type<Key,Allocator>::clear();
             _timeKeeper.clear();
-            policy_lfu<Key>::clear();
         }
-        virtual void swap(policy<Key>& _p) throw(stlcache_invalid_policy) {
+        virtual void swap(policy<Key,Allocator>& _p) throw(exception_invalid_policy) {
             try {
-                policy_lfuaging<Key,Age>& _pn=dynamic_cast<policy_lfuaging<Key,Age>& >(_p);
+                _policy_lfuaging_type<Age,Key,Allocator>& _pn=dynamic_cast<_policy_lfuaging_type<Age,Key,Allocator>& >(_p);
                 _timeKeeper.swap(_pn._timeKeeper);
 
                 time_t _oldest=this->_oldestEntry;
@@ -64,32 +68,33 @@ namespace stlcache {
                 this->age=_pn.age;
                 _pn.age=a;
 
-                policy_lfu<Key>::swap(_pn);
+                _policy_lfu_type<Key,Allocator>::swap(_pn);
             } catch (const std::bad_cast& ) {
-                throw stlcache_invalid_policy("Attempted to swap incompatible policies");
+                throw exception_invalid_policy("Attempted to swap incompatible policies");
             }
         }
         virtual const _victim<Key> victim() throw()  {
 			this->expire();
-            return policy_lfu<Key>::victim();
+            return _policy_lfu_type<Key,Allocator>::victim();
         }
 	protected:
 		virtual void expire() {
             if ((_oldestEntry+age)<time(NULL)) {
-                list<Key> toErase;
-                list<Key> toInsert;
+                list<Key,Allocator<Key> > toErase;
+                list<Key,Allocator<Key> > toInsert;
 
                 //Time to clean up
                 this->_oldestEntry=time(NULL);
-                typedef typename map<Key,time_t>::iterator timeMapIterator;
+                typedef typename map<Key,time_t,less<Key>,Allocator<pair<const Key,time_t> > >::iterator timeMapIterator;
                 for (timeMapIterator it=_timeKeeper.begin();it!=_timeKeeper.end();++it) {
                     if ((*it).second+age<time(NULL)) {
                         //Too old :(
+                        Key itCopy=(*it).first;
                         unsigned long long currentRef=this->untouch((*it).first);
-                        toErase.push_front((*it).first);
+                        toErase.push_front(itCopy);
                         
                         if (currentRef>1) {
-                            toInsert.push_front((*it).first);
+                            toInsert.push_front(itCopy);
                         }
                     } else {
                         if ((*it).second<this->_oldestEntry) {
@@ -99,7 +104,7 @@ namespace stlcache {
                 }
 
                 //Delete entries
-                typedef typename list<Key>::iterator listIterator;
+                typedef typename list<Key,Allocator<Key> >::iterator listIterator;
                 for(listIterator it=toErase.begin();it!=toErase.end();++it) {
                     _timeKeeper.erase(*it);
                 }
@@ -108,6 +113,37 @@ namespace stlcache {
                 }
             }
 		}
+    };
+
+    /*!
+     * \brief A 'LFU-Aging' policy
+     * 
+     * Implements <a href="http://en.wikipedia.org/wiki/Least_frequently_used">'LFU-Aging'</a> cache algorithm. 
+     *  
+     * A modified \link stlcache::policy_lfu LFU \endlink policy implementation, that allows the reference count to move in both directions. 
+     * Opposed to the usual \link stlcache::policy_lfu LFU \endlink, that allows only growth of the entries references counts, the LFU-Aging 
+     * also decreases the reference count of an entry, that was put into the cache some time ago. 
+     *  
+     * So, when you put an entry into the cache and start using it, entry's reference count will increase on every usage. 
+     * At the same time, the LFU-Aging algorithm will be applying the 'aging interval' on the entries in cache and 
+     * decrease entry's reference count every time. So the entries, that were popular in the past, but not needed right now, will 
+     * get a better chance to get out of the cache, then with usual LFU algorithm. 
+     *  
+     * \link cache::touch Touching \endlink the entry may not change item's expiration probability. This policy is always able to expire any amount of entries. 
+     *  
+     * The policy must be configured with the length of a aging interval: 
+     *  
+     * \tparam <Age>  aging interval in seconds
+     *  
+     * \see policy_lfu 
+     * \see policu_lfuagingstar 
+     */
+    template <time_t Age> struct policy_lfuaging {
+        template <typename Key, template <typename T> class Allocator>
+            struct bind : _policy_lfuaging_type<Age,Key,Allocator> { 
+                bind(const bind& x) : _policy_lfuaging_type<Age,Key,Allocator>(x),_policy_lfu_type<Key,Allocator>(x)  { }
+                bind(const size_t& size) : _policy_lfuaging_type<Age,Key,Allocator>(size),_policy_lfu_type<Key,Allocator>(size) { }
+            };
     };
 }
 

@@ -1,6 +1,6 @@
 #Preamble
 cmake_minimum_required (VERSION 2.6)
-project (stlcache)
+project (STL::Cache)
 
 #Environment detection
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
@@ -11,11 +11,18 @@ SET(Boost_USE_STATIC_LIBS ON)
 SET(Boost_USE_MULTITHREADED ON)
 FIND_PACKAGE(Boost 1.42.0 COMPONENTS system unit_test_framework)
 
+#Documentation stuff
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+include(UseDoxygen)
+set(DOXYFILE_LATEX OFF)
+
 #Build configuration
 include_directories(${CMAKE_BINARY_DIR}
 		    ${CMAKE_SOURCE_DIR}/include
 		    ${Boost_INCLUDE_DIRS}
 )
+
+install(DIRECTORY include/stlcache DESTINATION include)
 
 if(Boost_FOUND)
 enable_testing()
@@ -61,8 +68,13 @@ ADD_EXECUTABLE(test_adaptive tests/test_adaptive.cpp)
 target_link_libraries(test_adaptive ${Boost_LIBRARIES})
 ADD_TEST(ARP test_adaptive)
 
-ADD_EXECUTABLE(test_copy tests/test_copy.cpp)
-target_link_libraries(test_copy ${Boost_LIBRARIES})
-ADD_TEST(Copy test_copy)
+ADD_EXECUTABLE(test_insert_perf tests/test_insert_perf.cpp)
+target_link_libraries(test_insert_perf ${Boost_LIBRARIES})
+
+ADD_EXECUTABLE(test_insdel_perf tests/test_insdel_perf.cpp)
+target_link_libraries(test_insdel_perf ${Boost_LIBRARIES})
+
+ADD_EXECUTABLE(test_victim_perf tests/test_victim_perf.cpp)
+target_link_libraries(test_victim_perf ${Boost_LIBRARIES})
 
 endif(Boost_FOUND)

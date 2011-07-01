@@ -23,14 +23,42 @@ using namespace std;
 #endif /* _MSC_VER */
 
 namespace stlcache {
-    template <class Key,time_t Age=3600> class policy_lfuagingstar : public virtual policy_lfuaging<Key,Age>, virtual policy_lfustar<Key> {
+    template <time_t Age,class Key,template <typename T> class Allocator> class _policy_lfuagingstar_type : public virtual _policy_lfuaging_type<Age,Key,Allocator>, public virtual _policy_lfustar_type<Key,Allocator> {
     public:
-        policy_lfuagingstar(const size_t& size ) throw() : policy_lfuaging<Key,Age>(size), policy_lfustar<Key>(size),policy_lfu<Key>(size) { }
+        _policy_lfuagingstar_type(const size_t& size ) throw() : _policy_lfuaging_type<Age,Key,Allocator>(size), _policy_lfustar_type<Key,Allocator>(size),_policy_lfu_type<Key,Allocator>(size) { }
 
         virtual const _victim<Key> victim() throw()  {
-			policy_lfuaging<Key,Age>::expire();
-            return policy_lfustar<Key>::victim();
+			_policy_lfuaging_type<Age,Key,Allocator>::expire();
+            return _policy_lfustar_type<Key,Allocator>::victim();
         }
+    };
+        /*!
+     * \brief A 'LFU*-Aging' policy
+     * 
+     * Combination of \link stlcache::policy_lfustar LFU* \endlink and \link stlcache::policy_lfuaging LFU-Aging \endlink policies.
+     *  
+     * It is mostly the \link stlcache::policy_lfustar LFU* \endlink with expiration of entries. Primary difference with    
+     * the \link stlcache::policy_lfustar LFU* \endlink is that the entries, with reference count more then 1, will have    
+     *  a chance to expire, after several applies of the aging interval.
+     *  
+     * \link cache::touch Touching \endlink the entry may not change item's expiration probability. The LFU*-Aging policy may not be able 
+     * to find a excessive entry, when cache is full, so the \link cache::insert insert call \endlink may throw a \link stlcache::exception_cache_full 
+     * cache full \endlink exception.
+     *  
+     * The policy must be configured with the length of a aging interval: 
+     *  
+     * \tparam <Age>  aging interval in seconds
+     *  
+     * \see policy_lfu 
+     * \see policu_lfuaging 
+     * \see policu_lfustar
+     */
+    template <time_t Age> struct policy_lfuagingstar {
+        template <typename Key, template <typename T> class Allocator>
+            struct bind : _policy_lfuagingstar_type<Age,Key,Allocator> { 
+                bind(const bind& x) : _policy_lfuagingstar_type<Age,Key,Allocator>(x),_policy_lfuaging_type<Age,Key,Allocator>(x),_policy_lfustar_type<Key,Allocator>(x),_policy_lfu_type<Key,Allocator>(x)  { }
+                bind(const size_t& size) : _policy_lfuagingstar_type<Age,Key,Allocator>(size),_policy_lfuaging_type<Age,Key,Allocator>(size),_policy_lfustar_type<Key,Allocator>(size),_policy_lfu_type<Key,Allocator>(size)  { }
+            };
     };
 }
 

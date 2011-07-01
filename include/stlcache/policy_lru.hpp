@@ -15,37 +15,53 @@ using namespace std;
 #include <stlcache/policy.hpp>
 
 namespace stlcache {
-    template <class Key> class policy_lru : public policy<Key> {
-        list<Key> _entries;
+    template <class Key,template <typename T> class Allocator> class _policy_lru_type : public policy<Key,Allocator> {
+        list<Key,Allocator<Key> > _entries;
+        typedef typename list<Key,Allocator<Key> >::iterator entriesIterator;
+
+        map<Key,entriesIterator,less<Key>,Allocator<pair<Key,entriesIterator> > > _entriesMap;
+        typedef typename map<Key,entriesIterator,less<Key>,Allocator<pair<Key,entriesIterator> > >::iterator entriesMapIterator;
     public:
-        policy_lru<Key>& operator= ( const policy_lru<Key>& x) throw() {
+        _policy_lru_type<Key,Allocator>& operator= ( const _policy_lru_type<Key,Allocator>& x) throw() {
             this->_entries=x._entries;
             return *this;
         }
-        policy_lru(const policy_lru<Key>& x) throw() {
+        _policy_lru_type(const _policy_lru_type<Key,Allocator>& x) throw() {
             *this=x;
         }
-        policy_lru(const size_t& size ) throw() { }
+        _policy_lru_type(const size_t& size ) throw() { }
 
-        virtual void insert(const Key& _k) throw(stlcache_invalid_key) {
-            _entries.push_front(_k);
+        virtual void insert(const Key& _k) throw(exception_invalid_key) {
+            entriesIterator entryIter = _entries.insert(_entries.begin(),_k);
+            _entriesMap.insert(pair<Key,entriesIterator>(_k,entryIter));
         }
         virtual void remove(const Key& _k) throw() {
-            _entries.remove(_k);
+            entriesMapIterator mapIter = _entriesMap.find(_k);
+            if (mapIter==_entriesMap.end()) {
+                return;
+            }
+            _entries.erase(mapIter->second);
+            _entriesMap.erase(mapIter);
         }
         virtual void touch(const Key& _k) throw() { 
-            _entries.remove(_k);
-            _entries.push_front(_k);
+            entriesMapIterator mapIter = _entriesMap.find(_k);
+            if (mapIter==_entriesMap.end()) {
+                return;
+            }
+            _entries.erase(mapIter->second);
+            entriesIterator entryIter = _entries.insert(_entries.begin(),_k);
+            mapIter->second=entryIter;
         }
         virtual void clear() throw() {
             _entries.clear();
         }
-        virtual void swap(policy<Key>& _p) throw(stlcache_invalid_policy) {
+        virtual void swap(policy<Key,Allocator>& _p) throw(exception_invalid_policy) {
             try {
-                policy_lru<Key>& _pn=dynamic_cast<policy_lru<Key>& >(_p);
+                _policy_lru_type<Key,Allocator>& _pn=dynamic_cast<_policy_lru_type<Key,Allocator>& >(_p);
                 _entries.swap(_pn._entries);
+                _entriesMap.swap(_pn._entriesMap);
             } catch (const std::bad_cast& ) {
-                throw stlcache_invalid_policy("Attempted to swap incompatible policies");
+                throw exception_invalid_policy("Attempted to swap incompatible policies");
             }
         }
 
@@ -55,6 +71,24 @@ namespace stlcache {
 
     protected:
         const list<Key>& entries() const  { return this->_entries; }
+    };
+
+    /*!
+     * \brief A 'Least Recently Used' policy
+     * 
+     * Implements <a href="http://en.wikipedia.org/wiki/Cache_algorithms#Least_Recently_Used">'Least Recently Used'</a> cache expiration algorithm. 
+     *  
+     * The LRU policy tracks the usage of items and moves the recently used items to the front of the items stack and select items for the expiration from the end 
+     * of the stack. \link cache::touch Touching \endlink the entry decreases item's expiration probability. This policy is always able to expire any amount of entries. 
+     *  
+     * No additional configuration is required. 
+     */
+    struct policy_lru {
+        template <typename Key, template <typename T> class Allocator>
+            struct bind : _policy_lru_type<Key,Allocator> { 
+                bind(const bind& x) : _policy_lru_type<Key,Allocator>(x)  { }
+                bind(const size_t& size) : _policy_lru_type<Key,Allocator>(size) { }
+            };
     };
 }
 

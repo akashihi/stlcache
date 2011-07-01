@@ -5,7 +5,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define BOOST_TEST_MODULE "STLCachePolicyLFU*"
+#define BOOST_TEST_MODULE "STLCachePolicyLFU-Aging"
 
 #ifndef _MSC_VER
 #include <unistd.h>
@@ -24,7 +24,8 @@ using namespace stlcache;
 BOOST_AUTO_TEST_SUITE(STLCacheSuite)
 
 BOOST_AUTO_TEST_CASE(lastInserted) {
-    cache<int,string,policy_lfuaging<int> > c1(3);
+
+    cache<int,string,policy_lfuaging<3600> > c1(3);
 
     c1.insert(1,"data1");
     c1.insert(2,"data2");
@@ -35,7 +36,7 @@ BOOST_AUTO_TEST_CASE(lastInserted) {
 }
 
 BOOST_AUTO_TEST_CASE(touch) {
-    cache<int,string,policy_lfuaging<int> > c1(3);
+    cache<int,string,policy_lfuaging<3600> > c1(3);
 
     c1.insert(1,"data1");
     c1.insert(2,"data2");
@@ -46,11 +47,12 @@ BOOST_AUTO_TEST_CASE(touch) {
 
     c1.insert(4,"data4");
 
-    BOOST_REQUIRE_THROW(c1.fetch(3),stlcache_invalid_key); //Must be removed by LFU policy (cause 1&2 are touched)
+    BOOST_REQUIRE_THROW(c1.fetch(3),exception_invalid_key); //Must be removed by LFU policy (cause 1&2 are touched)
 }
 
 BOOST_AUTO_TEST_CASE(expire) {
-    cache<int,string,policy_lfuaging<int,1> > c1(3);
+
+    cache<int,string,policy_lfuaging<1> > c1(3);
 
     c1.insert(1,"data1");
     c1.insert(2,"data2");
@@ -69,7 +71,7 @@ BOOST_AUTO_TEST_CASE(expire) {
 
     c1.insert(4,"data4");
 
-    BOOST_REQUIRE_THROW(c1.fetch(3),stlcache_invalid_key); //Must be removed by LFU policy (cause every item have been touched and refcount for key 3 is 2)
+    BOOST_REQUIRE_THROW(c1.fetch(3),exception_invalid_key); //Must be removed by LFU policy (cause every item have been touched and refcount for key 3 is 2)
 }
 
 BOOST_AUTO_TEST_SUITE_END();
