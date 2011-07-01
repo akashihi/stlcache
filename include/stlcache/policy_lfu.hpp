@@ -56,9 +56,8 @@ namespace stlcache {
                 return;
             }
 
-            entriesIterator oldEntryIter = backIter->second;
+            _entries.erase(backIter->second);
             _backEntries.erase(_k);
-            _entries.erase(oldEntryIter);
         }
         virtual void touch(const Key& _k) throw() { 
             backEntriesIterator backIter = _backEntries.find(_k);
@@ -71,8 +70,6 @@ namespace stlcache {
             _entries.erase(backIter->second);
             entriesIterator entryIter=_entries.insert(entriesPair(refCount+1,_k));
             backIter->second=entryIter;
-            /*this->remove(_k);
-            this->insert(_k,refCount+1);*/
         }
         virtual void clear() throw() {
             _entries.clear();
@@ -116,8 +113,6 @@ namespace stlcache {
             _entries.erase(backIter->second);
             entriesIterator entryIter=_entries.insert(entriesPair(refCount-1,_k));
             backIter->second=entryIter;
-            /*this->remove(_k);
-            this->insert(_k,refCount-1);*/
 
             return refCount;
         }

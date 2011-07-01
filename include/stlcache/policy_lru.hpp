@@ -17,6 +17,10 @@ using namespace std;
 namespace stlcache {
     template <class Key,template <typename T> class Allocator> class _policy_lru_type : public policy<Key,Allocator> {
         list<Key,Allocator<Key> > _entries;
+        typedef typename list<Key,Allocator<Key> >::iterator entriesIterator;
+
+        map<Key,entriesIterator,less<Key>,Allocator<pair<Key,entriesIterator> > > _entriesMap;
+        typedef typename map<Key,entriesIterator,less<Key>,Allocator<pair<Key,entriesIterator> > >::iterator entriesMapIterator;
     public:
         _policy_lru_type<Key,Allocator>& operator= ( const _policy_lru_type<Key,Allocator>& x) throw() {
             this->_entries=x._entries;
@@ -28,14 +32,25 @@ namespace stlcache {
         _policy_lru_type(const size_t& size ) throw() { }
 
         virtual void insert(const Key& _k) throw(stlcache_invalid_key) {
-            _entries.push_front(_k);
+            entriesIterator entryIter = _entries.insert(_entries.begin(),_k);
+            _entriesMap.insert(pair<Key,entriesIterator>(_k,entryIter));
         }
         virtual void remove(const Key& _k) throw() {
-            _entries.remove(_k);
+            entriesMapIterator mapIter = _entriesMap.find(_k);
+            if (mapIter==_entriesMap.end()) {
+                return;
+            }
+            _entries.erase(mapIter->second);
+            _entriesMap.erase(mapIter);
         }
         virtual void touch(const Key& _k) throw() { 
-            _entries.remove(_k);
-            _entries.push_front(_k);
+            entriesMapIterator mapIter = _entriesMap.find(_k);
+            if (mapIter==_entriesMap.end()) {
+                return;
+            }
+            _entries.erase(mapIter->second);
+            entriesIterator entryIter = _entries.insert(_entries.begin(),_k);
+            mapIter->second=entryIter;
         }
         virtual void clear() throw() {
             _entries.clear();
@@ -44,6 +59,7 @@ namespace stlcache {
             try {
                 _policy_lru_type<Key,Allocator>& _pn=dynamic_cast<_policy_lru_type<Key,Allocator>& >(_p);
                 _entries.swap(_pn._entries);
+                _entriesMap.swap(_pn._entriesMap);
             } catch (const std::bad_cast& ) {
                 throw stlcache_invalid_policy("Attempted to swap incompatible policies");
             }
