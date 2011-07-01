@@ -39,21 +39,21 @@ namespace stlcache {
         }
 
         virtual void insert(const Key& _k) throw(stlcache_invalid_key) {
-            _timeKeeper.insert(std::pair<Key,time_t>(_k,time(NULL))); //Because touch always increases the refcount, so it couldn't be 1 after touch
             _policy_lfu_type<Key,Allocator>::insert(_k);
+            _timeKeeper.insert(std::pair<Key,time_t>(_k,time(NULL))); //Because touch always increases the refcount, so it couldn't be 1 after touch
         }
         virtual void remove(const Key& _k) throw() {
-            _timeKeeper.erase(_k);
             _policy_lfu_type<Key,Allocator>::remove(_k);
+            _timeKeeper.erase(_k);
         }
         virtual void touch(const Key& _k) throw() { 
+            _policy_lfu_type<Key,Allocator>::touch(_k);
             _timeKeeper.erase(_k);
             _timeKeeper.insert(std::pair<Key,time_t>(_k,time(NULL))); //Because touch always increases the refcount, so it couldn't be 1 after touch
-            _policy_lfu_type<Key,Allocator>::touch(_k);
         }   
         virtual void clear() throw() {
-            _timeKeeper.clear();
             _policy_lfu_type<Key,Allocator>::clear();
+            _timeKeeper.clear();
         }
         virtual void swap(policy<Key,Allocator>& _p) throw(stlcache_invalid_policy) {
             try {
@@ -89,11 +89,12 @@ namespace stlcache {
                 for (timeMapIterator it=_timeKeeper.begin();it!=_timeKeeper.end();++it) {
                     if ((*it).second+age<time(NULL)) {
                         //Too old :(
+                        Key itCopy=(*it).first;
                         unsigned long long currentRef=this->untouch((*it).first);
-                        toErase.push_front((*it).first);
+                        toErase.push_front(itCopy);
                         
                         if (currentRef>1) {
-                            toInsert.push_front((*it).first);
+                            toInsert.push_front(itCopy);
                         }
                     } else {
                         if ((*it).second<this->_oldestEntry) {

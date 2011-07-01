@@ -68,8 +68,11 @@ namespace stlcache {
 
             unsigned int refCount=backIter->second->first;
             
-            this->remove(_k);
-            this->insert(_k,refCount+1);
+            _entries.erase(backIter->second);
+            entriesIterator entryIter=_entries.insert(entriesPair(refCount+1,_k));
+            backIter->second=entryIter;
+            /*this->remove(_k);
+            this->insert(_k,refCount+1);*/
         }
         virtual void clear() throw() {
             _entries.clear();
@@ -109,8 +112,12 @@ namespace stlcache {
                 return refCount; //1 is a minimal reference value
             }
 
-            this->remove(_k);
-            this->insert(_k,refCount-1);
+
+            _entries.erase(backIter->second);
+            entriesIterator entryIter=_entries.insert(entriesPair(refCount-1,_k));
+            backIter->second=entryIter;
+            /*this->remove(_k);
+            this->insert(_k,refCount-1);*/
 
             return refCount;
         }
