@@ -5,7 +5,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define BOOST_TEST_MODULE "STLCachePolicyLFU*"
+#define BOOST_TEST_MODULE "STLCachePolicyLFU-Aging"
 
 #ifndef _MSC_VER
 #include <unistd.h>

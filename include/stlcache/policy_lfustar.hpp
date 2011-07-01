@@ -24,18 +24,13 @@ namespace stlcache {
 
         virtual const _victim<Key> victim() throw()  {
             //LFU* only operates on entries with references count equal to 1
-
-
-            if (this->entries().find(1)==this->entries().end()) {
-                return _victim<Key>();
-            }
-            keySet pad=(*(this->entries().find(1))).second;
-
-            if (pad.begin()==pad.end()) {
+            typedef typename _policy_lfu_type<Key,Allocator>::entriesType::const_iterator entriesIterType;
+            entriesIterType entriesIter = this->entries().find(1);
+            if (entriesIter==this->entries().end()) {
                 return _victim<Key>();
             }
 
-            return _victim<Key>(*(pad.begin()));
+            return _victim<Key>(entriesIter->second);
         }
     };
     /*!
