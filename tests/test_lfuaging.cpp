@@ -35,6 +35,18 @@ BOOST_AUTO_TEST_CASE(lastInserted) {
     BOOST_CHECK(c1.size()==3);
 }
 
+BOOST_AUTO_TEST_CASE(stringAsKey) {
+
+    cache<string, int, policy_lfuaging<3600> > c1(3);
+
+    c1.insert("data1",1);
+    c1.insert("data2",2);
+    c1.insert("data3",3);
+    c1.insert("data4",4);
+
+    BOOST_CHECK(c1.size()==3);
+}
+
 BOOST_AUTO_TEST_CASE(touch) {
     cache<int,string,policy_lfuaging<3600> > c1(3);
 
@@ -72,6 +84,30 @@ BOOST_AUTO_TEST_CASE(expire) {
     c1.insert(4,"data4");
 
     BOOST_REQUIRE_THROW(c1.fetch(3),exception_invalid_key); //Must be removed by LFU policy (cause every item have been touched and refcount for key 3 is 2)
+}
+
+BOOST_AUTO_TEST_CASE(expireFoxString) {
+
+    cache<string, int, policy_lfuaging<1> > c1(3);
+
+    c1.insert("data1",1);
+    c1.insert("data2",2);
+    c1.insert("data3",3);
+
+    c1.touch("data1"); //For key one refcount is 3 now
+    c1.touch("data1"); 
+    c1.touch("data1");
+    c1.touch("data2"); //For key two refcount is 3 now
+    c1.touch("data2");
+    c1.touch("data2");
+    c1.touch("data3"); //For key three refcount is 2 now
+    c1.touch("data3");
+
+    WAIT_A_SECOND;
+
+    c1.insert("data4", 4);
+
+    BOOST_REQUIRE_THROW(c1.fetch("data3"),exception_invalid_key); //Must be removed by LFU policy (cause every item have been touched and refcount for key 3 is 2)
 }
 
 BOOST_AUTO_TEST_SUITE_END();

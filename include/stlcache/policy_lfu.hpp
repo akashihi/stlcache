@@ -19,7 +19,7 @@ namespace stlcache {
     template <class Key,template <typename T> class Allocator> class _policy_lfu_type : public policy<Key,Allocator> {
     protected:
         typedef pair<const unsigned int, Key> entriesPair;
-        typedef multimap<unsigned int, Key,less<Key> ,Allocator<entriesPair> > entriesType;
+        typedef multimap<unsigned int, Key,less<unsigned int> ,Allocator<entriesPair> > entriesType;
         entriesType _entries;
 
         typedef typename entriesType::iterator entriesIterator;

@@ -12,6 +12,8 @@
 #pragma warning( disable : 4290 )
 #endif /* _MSC_VER */
 
+#include <stdexcept>
+#include <typeinfo>
 #include <map>
 
 using namespace std;

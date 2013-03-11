@@ -56,8 +56,8 @@ namespace stlcache {
     template <time_t Age> struct policy_lfuagingstar {
         template <typename Key, template <typename T> class Allocator>
             struct bind : _policy_lfuagingstar_type<Age,Key,Allocator> { 
-                bind(const bind& x) : _policy_lfuagingstar_type<Age,Key,Allocator>(x),_policy_lfuaging_type<Age,Key,Allocator>(x),_policy_lfustar_type<Key,Allocator>(x),_policy_lfu_type<Key,Allocator>(x)  { }
-                bind(const size_t& size) : _policy_lfuagingstar_type<Age,Key,Allocator>(size),_policy_lfuaging_type<Age,Key,Allocator>(size),_policy_lfustar_type<Key,Allocator>(size),_policy_lfu_type<Key,Allocator>(size)  { }
+                bind(const bind& x) : _policy_lfu_type<Key,Allocator>(x), _policy_lfuaging_type<Age,Key,Allocator>(x),_policy_lfustar_type<Key,Allocator>(x),_policy_lfuagingstar_type<Age,Key,Allocator>(x)  { }
+                bind(const size_t& size) : _policy_lfu_type<Key,Allocator>(size), _policy_lfuaging_type<Age,Key,Allocator>(size),_policy_lfustar_type<Key,Allocator>(size),_policy_lfuagingstar_type<Age,Key,Allocator>(size)  { }
             };
     };
 }

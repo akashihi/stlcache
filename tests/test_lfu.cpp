@@ -25,6 +25,17 @@ BOOST_AUTO_TEST_CASE(lastInserted) {
     BOOST_CHECK(c1.size()==3);
 }
 
+BOOST_AUTO_TEST_CASE(stringAsKey) {
+    cache<string, int, policy_lfu> c1(3);
+
+    c1.insert("data1",1);
+    c1.insert("data2",2);
+    c1.insert("data3",3);
+    c1.insert("data4",4);
+
+    BOOST_CHECK(c1.size()==3);
+}
+
 BOOST_AUTO_TEST_CASE(touch) {
     cache<int,string,policy_lfu> c1(3);
 
