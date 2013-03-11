@@ -60,8 +60,8 @@ namespace stlcache {
     struct policy_lfustar {
         template <typename Key, template <typename T> class Allocator>
             struct bind : _policy_lfustar_type<Key,Allocator> { 
-                bind(const bind& x) : _policy_lfustar_type<Key,Allocator>(x),_policy_lfu_type<Key,Allocator>(x)  { }
-                bind(const size_t& size) : _policy_lfustar_type<Key,Allocator>(size),_policy_lfu_type<Key,Allocator>(size) { }
+                bind(const bind& x) : _policy_lfu_type<Key,Allocator>(x), _policy_lfustar_type<Key,Allocator>(x)  { }
+                bind(const size_t& size) : _policy_lfu_type<Key,Allocator>(size), _policy_lfustar_type<Key,Allocator>(size) { }
             };
     };
 }
