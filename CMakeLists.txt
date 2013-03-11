@@ -66,7 +66,7 @@ ADD_TEST(LFU*-Aging test_lfuagingstar)
 
 ADD_EXECUTABLE(test_adaptive tests/test_adaptive.cpp)
 target_link_libraries(test_adaptive ${Boost_LIBRARIES})
-ADD_TEST(ARP test_adaptive)
+ADD_TEST(ARC test_adaptive)
 
 ADD_EXECUTABLE(test_insert_perf tests/test_insert_perf.cpp)
 target_link_libraries(test_insert_perf ${Boost_LIBRARIES})
