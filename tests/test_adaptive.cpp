@@ -25,6 +25,17 @@ BOOST_AUTO_TEST_CASE(checkVictim) {
     BOOST_CHECK(c1.size()==3);
 }
 
+BOOST_AUTO_TEST_CASE(stringAsKey) {
+    cache<string, int, policy_adaptive > c1(3);
+
+    c1.insert("data1",1);
+    c1.insert("data2",2);
+    c1.insert("data3",3);
+    c1.insert("data4",4);
+
+    BOOST_CHECK(c1.size()==3);
+}
+
 BOOST_AUTO_TEST_CASE(checkPointerMove) {
     cache<int,string,policy_adaptive > c1(3);
 
