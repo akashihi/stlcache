@@ -68,6 +68,10 @@ ADD_EXECUTABLE(test_adaptive tests/test_adaptive.cpp)
 target_link_libraries(test_adaptive ${Boost_LIBRARIES})
 ADD_TEST(ARC test_adaptive)
 
+ADD_EXECUTABLE(test_boost_optional tests/test_boost_optional.cpp)
+target_link_libraries(test_boost_optional ${Boost_LIBRARIES})
+ADD_TEST(boost::optional test_boost_optional)
+
 ADD_EXECUTABLE(test_insert_perf tests/test_insert_perf.cpp)
 target_link_libraries(test_insert_perf ${Boost_LIBRARIES})
 
@@ -76,5 +80,6 @@ target_link_libraries(test_insdel_perf ${Boost_LIBRARIES})
 
 ADD_EXECUTABLE(test_victim_perf tests/test_victim_perf.cpp)
 target_link_libraries(test_victim_perf ${Boost_LIBRARIES})
+
 
 endif(Boost_FOUND)
