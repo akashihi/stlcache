@@ -18,6 +18,10 @@
 
 using namespace std;
 
+#ifdef USE_BOOST_OPTIONAL
+#include <boost/optional.hpp>
+#endif /* USE_BOOST_OPTIONAL */
+
 #include <stlcache/exceptions.hpp>
 #include <stlcache/policy.hpp>
 #include <stlcache/policy_lru.hpp>
@@ -59,16 +63,16 @@ namespace stlcache {
      git clone git://github.com/akashihi/stlcache.git
      \endcode
      
-     The 'master' branch is always pointing to the latest stable release and the 'next' branch is a unstable development branch.
+     The 'master' branch is always pointing to the latest stable release and the 'next' branch is an unstable development branch.
      
      The STL::Cache is header only and does not require any building. Just copy the include/stlcache directory to your system's include directories or
      add it to your project's  include directories. Alternativaly you could build the sources and then install it, using our build system.
-     
+         
      Yes, as i told you, the STL::Cache themself is a header-only library and doesn't requires building. Indeed, it is shipped with tests, documentation and
      other stuff, that could be built and used. For STL::Cache building you need:
      
      \li <a href="http://www.cmake.org/">Recent CMake (required)</a>
-     \li <a href="http://www.boost.org/">Boost library (optional, used only for tests)</a>
+     \li <a href="http://www.boost.org/">Boost library (optional)</a>
      \li <a href="http://www.doxygen.org/">Doxygen (optional, only for documentation processing)</a>
      
      After getting this stuff up and running, select a directory for building and issue the following commands:
@@ -145,6 +149,28 @@ namespace stlcache {
      \endcode
      
      Check it's return value, to get sure, whether something was deleted or not.
+     
+     \section BI Boost integration
+     
+     Since version 0.3 stlcache includes some Boost specific extensions: optional values, multi-map based policies and not really effective
+     thread safety.
+     
+     \subsection BIO boost::optional
+     
+     boost::optional allows user to safely \link cache::get() get\endlink values from the cache for any key, whether key exists or not.
+     You will need boost:optional headers available and have to define USE_BOOST_OPTIONAL macro.
+     
+     Example:
+      \code 
+          cache<string,string,policy_lru> cache_lru(3); 
+          cache_lru.insert("key","value");
+          cache_lru.touch("key");
+          optional<string> value = cache_lru.get("key");
+          if (name) {
+            cout<<"We have some value in the cache: "<<*name;
+          }
+          cache_lru.erase("key");
+      \endcode
      
      \section Policies
      
@@ -242,7 +268,7 @@ namespace stlcache {
      
      \section AaL  Authors and Licensing
      
-     Copyright (C) 2011 Denis V Chapligin
+     Copyright (C) 2011-2013 Denis V Chapligin
      Distributed under the Boost Software License, Version 1.0.
      (See accompanying file LICENSE_1_0.txt or copy at
      http://www.boost.org/LICENSE_1_0.txt)
@@ -563,6 +589,32 @@ namespace stlcache {
             _policy->touch(_k);
             return (*(_storage.find(_k))).second;
         }
+
+#ifdef USE_BOOST_OPTIONAL
+        /*!
+         * \brief Safe cache data access
+         *  
+         * Accessor to the data (values) stored in cache. If the specified key exists in the cache, it's usage count will be touched 
+         * and reference to the element, wrapped to boost::optional  is returned.  For non-exsitent key empty boost::optional container is returned
+         * The data object itself is kept in the cache, so the reference will be valid until it is removed (either manually or due to cache overflow) or cache object destroyed. 
+         *  
+         *  This function is only available if USE_BOOST_OPTIONAL macro is defined 
+         *  
+         * \param <_k> key to the data 
+         * 
+         * \return constant boost::optional wrapper, holding constant reference to the data, in case when key were in the cache, 
+         * or empty constant boost::optional wrapper for non-existent key.
+         *  
+         * \see check, fetch 
+         */
+        const boost::optional<const Data&> get(const Key& _k) throw() {
+            if (!check(_k)) {
+                return boost::optional<const Data&>();
+            }
+            _policy->touch(_k);
+            return boost::optional<const Data&>((*(_storage.find(_k))).second);
+        }
+#endif /* USE_BOOST_OPTIONAL */
 
         /*!
          * \brief Check for the key presence in cache
