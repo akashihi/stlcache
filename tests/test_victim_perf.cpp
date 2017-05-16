@@ -4,6 +4,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
+#include <iostream>
 
 #define BOOST_TEST_MODULE "STLCacheVictimPerformance"
 #include <boost/test/unit_test.hpp>
@@ -16,6 +17,7 @@
 
 #include <stlcache/stlcache.hpp>
 
+using namespace std;
 using namespace stlcache;
 
 BOOST_AUTO_TEST_SUITE(STLCacheSuite)
