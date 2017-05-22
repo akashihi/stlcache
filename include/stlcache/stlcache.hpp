@@ -15,6 +15,7 @@
 #include <stdexcept>
 #include <typeinfo>
 #include <map>
+#include <mutex>
 
 using namespace std;
 
@@ -335,6 +336,7 @@ namespace stlcache {
          typedef typename Policy::template bind<Key,Allocator> policy_type;
          policy_type* _policy;
          Allocator<policy_type> policyAlloc;
+         mutex mtx;
 
     public:
         /*! \brief The Key type 
@@ -460,9 +462,10 @@ namespace stlcache {
          *  
          */
         void clear() throw() {
-            _storage.clear();
-            _policy->clear();
-            this->_currEntries=0;
+            lock_guard<mutex> lock(mtx);
+                _storage.clear();
+                _policy->clear();
+                this->_currEntries=0;
         }
         
         /*!
@@ -478,9 +481,10 @@ namespace stlcache {
          * \see cache::operator= 
          */
         void swap ( cache<Key,Data,Policy,Compare,Allocator>& mp ) throw(exception_invalid_policy) {
+            lock_guard<mutex> lock(mtx);
             _storage.swap(mp._storage);
             _policy->swap(*mp._policy);
-
+        
             std::size_t m=this->_maxEntries;
             this->_maxEntries=mp._maxEntries;
             mp._maxEntries=m;
@@ -500,6 +504,7 @@ namespace stlcache {
          * \return 1 when entry is removed (ie number of removed emtries, which is always 1, as keys are unique) or zero when nothing was done. 
          */
         size_type erase ( const key_type& x ) throw() {
+            lock_guard<mutex> lock(mtx);
             size_type ret=_storage.erase(x);
             _policy->remove(x);
 
@@ -521,6 +526,7 @@ namespace stlcache {
          * \return true if the new elemented was inserted or false if an element with the same key existed. 
          */
         bool insert(Key _k, Data _d) throw(exception_cache_full,exception_invalid_key) {
+            lock_guard<mutex> lock(mtx);
             while (this->_currEntries >= this->_maxEntries) {
                 _victim<Key> victim=_policy->victim();
                 if (!victim) {
@@ -564,6 +570,7 @@ namespace stlcache {
           *  \see clear
           */        
         size_type size() const throw() {
+            lock_guard<mutex> lock(mtx);
             assert(this->_currEntries==_storage.size());
             return this->_currEntries;
         }
