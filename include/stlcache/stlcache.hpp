@@ -404,6 +404,7 @@ namespace stlcache {
           *  
           */        
         size_type count ( const key_type& x ) const throw() {
+            shared_guard<mutex> lock(mtx);
             return _storage.count(x);
         }
 
@@ -444,6 +445,7 @@ namespace stlcache {
           *   \see size
           */
         bool empty() const throw() {
+            shared_guard<mutex> lock(mtx);
             return _storage.empty();
         }
         //@}
@@ -463,9 +465,9 @@ namespace stlcache {
          */
         void clear() throw() {
             lock_guard<mutex> lock(mtx);
-                _storage.clear();
-                _policy->clear();
-                this->_currEntries=0;
+            _storage.clear();
+            _policy->clear();
+            this->_currEntries=0;
         }
         
         /*!
@@ -590,6 +592,7 @@ namespace stlcache {
          * \see check 
          */
         const Data& fetch(const Key& _k) throw(exception_invalid_key) {
+            lock_guard<mutex> lock(mtx);
             if (!check(_k)) {
                 throw exception_invalid_key("Key is not in cache",_k);
             }
@@ -615,6 +618,7 @@ namespace stlcache {
          * \see check, fetch 
          */
         const boost::optional<const Data&> get(const Key& _k) throw() {
+            lock_guard<mutex> lock(mtx);
             if (!check(_k)) {
                 return boost::optional<const Data&>();
             }
@@ -635,6 +639,7 @@ namespace stlcache {
          * \see count 
          */
         const bool check(const Key& _k) throw() {
+            lock_guard<mutex> lock(mtx);
             _policy->touch(_k);
             return _storage.count(_k)==1;
         }
@@ -649,6 +654,7 @@ namespace stlcache {
          *  
          */
         void touch(const Key& _k) throw() {
+            lock_guard<mutex> lock(mtx);
             _policy->touch(_k);
         }
         //@}
