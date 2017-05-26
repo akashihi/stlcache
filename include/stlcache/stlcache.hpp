@@ -17,8 +17,6 @@
 #include <map>
 
 using namespace std;
-#include <boost/thread/shared_mutex.hpp>
-#include <boost/thread/locks.hpp>
 
 #ifdef USE_BOOST_OPTIONAL
 #include <boost/optional.hpp>
@@ -33,6 +31,8 @@ using namespace std;
 #include <stlcache/policy_lfuaging.hpp>
 #include <stlcache/policy_lfuagingstar.hpp>
 #include <stlcache/policy_adaptive.hpp>
+
+#include <stlcache/lock.hpp>
 
 namespace stlcache {
 
@@ -337,7 +337,7 @@ namespace stlcache {
          typedef typename Policy::template bind<Key,Allocator> policy_type;
          policy_type* _policy;
          Allocator<policy_type> policyAlloc;
-         mutable boost::shared_mutex mtx;
+         Lock lock;
 
     public:
         /*! \brief The Key type 
@@ -405,7 +405,7 @@ namespace stlcache {
           *  
           */        
         size_type count ( const key_type& x ) const throw() {
-            boost::shared_lock<boost::shared_mutex> lock(mtx);
+            Lock::read l = lock.lockRead();
             return _storage.count(x);
         }
 
@@ -446,7 +446,7 @@ namespace stlcache {
           *   \see size
           */
         bool empty() const throw() {
-            boost::shared_lock<boost::shared_mutex> lock(mtx);
+            Lock::read l = lock.lockRead();
             return _storage.empty();
         }
         //@}
@@ -465,7 +465,7 @@ namespace stlcache {
          *  
          */
         void clear() throw() {
-            boost::unique_lock<boost::shared_mutex> lock(mtx);
+            Lock::write l = lock.lockWrite();
             _storage.clear();
             _policy->clear();
             this->_currEntries=0;
@@ -484,7 +484,7 @@ namespace stlcache {
          * \see cache::operator= 
          */
         void swap ( cache<Key,Data,Policy,Compare,Allocator>& mp ) throw(exception_invalid_policy) {
-            boost::unique_lock<boost::shared_mutex> lock(mtx);
+            Lock::write l = lock.lockWrite();
             _storage.swap(mp._storage);
             _policy->swap(*mp._policy);
         
@@ -507,7 +507,7 @@ namespace stlcache {
          * \return 1 when entry is removed (ie number of removed emtries, which is always 1, as keys are unique) or zero when nothing was done. 
          */
         size_type erase ( const key_type& x ) throw() {
-            boost::unique_lock<boost::shared_mutex> lock(mtx);
+            Lock::write l = lock.lockWrite();
             return this->_erase(x);
         }
 
@@ -524,7 +524,7 @@ namespace stlcache {
          * \return true if the new elemented was inserted or false if an element with the same key existed. 
          */
         bool insert(Key _k, Data _d) throw(exception_cache_full,exception_invalid_key) {
-            boost::unique_lock<boost::shared_mutex> lock(mtx);
+            Lock::write l = lock.lockWrite();
             while (this->_currEntries >= this->_maxEntries) {
                 _victim<Key> victim=_policy->victim();
                 if (!victim) {
@@ -568,7 +568,7 @@ namespace stlcache {
           *  \see clear
           */        
         size_type size() const throw() {
-            boost::unique_lock<boost::shared_mutex> lock(mtx);
+            Lock::write l = lock.lockWrite();
             return this->_size();
         }
 
@@ -587,7 +587,7 @@ namespace stlcache {
          * \see check 
          */
         const Data& fetch(const Key& _k) throw(exception_invalid_key) {
-            boost::unique_lock<boost::shared_mutex> lock(mtx);
+            Lock::write l = lock.lockWrite();
             if (!this->_check(_k)) {
                 throw exception_invalid_key("Key is not in cache",_k);
             }
@@ -613,7 +613,7 @@ namespace stlcache {
          * \see check, fetch 
          */
         const boost::optional<const Data&> get(const Key& _k) throw() {
-            boost::unique_lock<boost::shared_mutex> lock(mtx);
+            Lock::write l = lock.lockWrite();
             if (!this->_check(_k)) {
                 return boost::optional<const Data&>();
             }
@@ -634,7 +634,7 @@ namespace stlcache {
          * \see count 
          */
         const bool check(const Key& _k) throw() {
-            boost::unique_lock<boost::shared_mutex> lock(mtx);
+            Lock::write l = lock.lockWrite();
             return this->_check(_k);
         }
 
@@ -648,7 +648,7 @@ namespace stlcache {
          *  
          */
         void touch(const Key& _k) throw() {
-            boost::unique_lock<boost::shared_mutex> lock(mtx);
+            Lock::write l = lock.lockWrite();
             _policy->touch(_k);
         }
         //@}
