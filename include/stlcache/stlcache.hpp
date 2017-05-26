@@ -31,8 +31,7 @@ using namespace std;
 #include <stlcache/policy_lfuaging.hpp>
 #include <stlcache/policy_lfuagingstar.hpp>
 #include <stlcache/policy_adaptive.hpp>
-
-#include <stlcache/lock.hpp>
+#include <stlcache/lock_none.hpp>
 
 namespace stlcache {
 
@@ -327,7 +326,8 @@ namespace stlcache {
         class Data, 
         class Policy, 
         class Compare = less<Key>, 
-        template <typename T> class Allocator = allocator 
+        template <typename T> class Allocator = allocator,
+        class Lock = lock_none
     >
     class cache {
         typedef map<Key,Data,Compare,Allocator<pair<const Key, Data> > > storageType; 
@@ -338,6 +338,8 @@ namespace stlcache {
          policy_type* _policy;
          Allocator<policy_type> policyAlloc;
          Lock lock;
+         typedef typename Lock::read read_lock_type;
+         typedef typename Lock::write write_lock_type;
 
     public:
         /*! \brief The Key type 
@@ -405,7 +407,7 @@ namespace stlcache {
           *  
           */        
         size_type count ( const key_type& x ) const throw() {
-            Lock::read l = lock.lockRead();
+            read_lock_type l = lock.lockRead();
             return _storage.count(x);
         }
 
@@ -446,7 +448,7 @@ namespace stlcache {
           *   \see size
           */
         bool empty() const throw() {
-            Lock::read l = lock.lockRead();
+            read_lock_type l = lock.lockRead();
             return _storage.empty();
         }
         //@}
@@ -465,7 +467,7 @@ namespace stlcache {
          *  
          */
         void clear() throw() {
-            Lock::write l = lock.lockWrite();
+            write_lock_type l = lock.lockWrite();
             _storage.clear();
             _policy->clear();
             this->_currEntries=0;
@@ -484,7 +486,7 @@ namespace stlcache {
          * \see cache::operator= 
          */
         void swap ( cache<Key,Data,Policy,Compare,Allocator>& mp ) throw(exception_invalid_policy) {
-            Lock::write l = lock.lockWrite();
+            write_lock_type l = lock.lockWrite();
             _storage.swap(mp._storage);
             _policy->swap(*mp._policy);
         
@@ -507,7 +509,7 @@ namespace stlcache {
          * \return 1 when entry is removed (ie number of removed emtries, which is always 1, as keys are unique) or zero when nothing was done. 
          */
         size_type erase ( const key_type& x ) throw() {
-            Lock::write l = lock.lockWrite();
+            write_lock_type l = lock.lockWrite();
             return this->_erase(x);
         }
 
@@ -524,7 +526,7 @@ namespace stlcache {
          * \return true if the new elemented was inserted or false if an element with the same key existed. 
          */
         bool insert(Key _k, Data _d) throw(exception_cache_full,exception_invalid_key) {
-            Lock::write l = lock.lockWrite();
+            write_lock_type l = lock.lockWrite();
             while (this->_currEntries >= this->_maxEntries) {
                 _victim<Key> victim=_policy->victim();
                 if (!victim) {
@@ -568,7 +570,7 @@ namespace stlcache {
           *  \see clear
           */        
         size_type size() const throw() {
-            Lock::write l = lock.lockWrite();
+            write_lock_type l = lock.lockWrite();
             return this->_size();
         }
 
@@ -587,7 +589,7 @@ namespace stlcache {
          * \see check 
          */
         const Data& fetch(const Key& _k) throw(exception_invalid_key) {
-            Lock::write l = lock.lockWrite();
+            write_lock_type l = lock.lockWrite();
             if (!this->_check(_k)) {
                 throw exception_invalid_key("Key is not in cache",_k);
             }
@@ -613,7 +615,7 @@ namespace stlcache {
          * \see check, fetch 
          */
         const boost::optional<const Data&> get(const Key& _k) throw() {
-            Lock::write l = lock.lockWrite();
+            write_lock_type l = lock.lockWrite();
             if (!this->_check(_k)) {
                 return boost::optional<const Data&>();
             }
@@ -634,7 +636,7 @@ namespace stlcache {
          * \see count 
          */
         const bool check(const Key& _k) throw() {
-            Lock::write l = lock.lockWrite();
+            write_lock_type l = lock.lockWrite();
             return this->_check(_k);
         }
 
@@ -648,7 +650,7 @@ namespace stlcache {
          *  
          */
         void touch(const Key& _k) throw() {
-            Lock::write l = lock.lockWrite();
+            write_lock_type l = lock.lockWrite();
             _policy->touch(_k);
         }
         //@}

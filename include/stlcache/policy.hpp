@@ -23,7 +23,7 @@ namespace stlcache {
      * are just wrappers over real policy implementation (derived from the policy interface), used for binding. So you are able to add your own 
      * template parameters to your policies, like we are doing it in a \link stlcache::policy_lfuaging LFU-Aging policy \endlink 
      * 
-     * The goal of writing such policy classes is to provide a \link stlcache::cache cache \endlink with a several, configurable cache expiration
+     * The goal of writing those policy classes is to provide a \link stlcache::cache cache \endlink with a several, configurable cache expiration
      * implementations. The policy should know about keys of the entries in the cache and it must be able to give a cache one or several entries that are 'expired'
      * and could be removed from it. So the interface is targeted to this goal.
      * 
