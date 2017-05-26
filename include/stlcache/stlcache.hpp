@@ -492,7 +492,7 @@ namespace stlcache {
             this->_maxEntries=mp._maxEntries;
             mp._maxEntries=m;
 
-            this->_currEntries=this->size();
+            this->_currEntries=this->_size();
             mp._currEntries=mp.size();
         }
 
@@ -508,12 +508,7 @@ namespace stlcache {
          */
         size_type erase ( const key_type& x ) throw() {
             lock_guard<shared_timed_mutex> lock(mtx);
-            size_type ret=_storage.erase(x);
-            _policy->remove(x);
-
-            _currEntries--;
-
-            return ret;
+            return this->_erase(x);
         }
 
         /*!
@@ -535,7 +530,7 @@ namespace stlcache {
                 if (!victim) {
                     throw exception_cache_full("The cache is full and no element can be expired at the moment. Remove some elements manually");
                 }
-                this->erase(*victim);
+                this->_erase(*victim);
             }
 
             _policy->insert(_k);
@@ -574,7 +569,7 @@ namespace stlcache {
           */        
         size_type size() const throw() {
             lock_guard<shared_timed_mutex> lock(mtx);
-            assert(this->_currEntries==_storage.size());
+            _size();
             return this->_currEntries;
         }
 
@@ -594,7 +589,7 @@ namespace stlcache {
          */
         const Data& fetch(const Key& _k) throw(exception_invalid_key) {
             lock_guard<shared_timed_mutex> lock(mtx);
-            if (!check(_k)) {
+            if (!this->_check(_k)) {
                 throw exception_invalid_key("Key is not in cache",_k);
             }
             _policy->touch(_k);
@@ -620,7 +615,7 @@ namespace stlcache {
          */
         const boost::optional<const Data&> get(const Key& _k) throw() {
             lock_guard<shared_timed_mutex> lock(mtx);
-            if (!check(_k)) {
+            if (!this->_check(_k)) {
                 return boost::optional<const Data&>();
             }
             _policy->touch(_k);
@@ -641,8 +636,7 @@ namespace stlcache {
          */
         const bool check(const Key& _k) throw() {
             lock_guard<shared_timed_mutex> lock(mtx);
-            _policy->touch(_k);
-            return _storage.count(_k)==1;
+            return this->_check(_k);
         }
 
         /*!
@@ -726,6 +720,23 @@ namespace stlcache {
             policyAlloc.deallocate(this->_policy,1);
         }
         //@}
+    protected:
+        const bool _check(const Key& _k) throw() {
+            _policy->touch(_k);
+            return _storage.count(_k)==1;
+        }
+        size_type _erase ( const key_type& x ) throw() {
+            size_type ret=_storage.erase(x);
+            _policy->remove(x);
+
+            _currEntries--;
+
+            return ret;
+        }
+        size_type _size() const throw() {
+            assert(this->_currEntries==_storage.size());
+            return this->_currEntries;
+        }
     };
 }
 
