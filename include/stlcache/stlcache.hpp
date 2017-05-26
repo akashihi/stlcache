@@ -569,8 +569,7 @@ namespace stlcache {
           */        
         size_type size() const throw() {
             lock_guard<shared_timed_mutex> lock(mtx);
-            _size();
-            return this->_currEntries;
+            return this->_size();
         }
 
         /*!
