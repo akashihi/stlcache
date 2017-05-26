@@ -17,6 +17,8 @@
 #include <map>
 
 using namespace std;
+#include <mutex>
+#include <shared_mutex>
 
 #ifdef USE_BOOST_OPTIONAL
 #include <boost/optional.hpp>
@@ -335,6 +337,7 @@ namespace stlcache {
          typedef typename Policy::template bind<Key,Allocator> policy_type;
          policy_type* _policy;
          Allocator<policy_type> policyAlloc;
+         mutable shared_timed_mutex mtx;
 
     public:
         /*! \brief The Key type 
@@ -402,6 +405,7 @@ namespace stlcache {
           *  
           */        
         size_type count ( const key_type& x ) const throw() {
+            shared_lock<shared_timed_mutex> lock(mtx);
             return _storage.count(x);
         }
 
@@ -442,6 +446,7 @@ namespace stlcache {
           *   \see size
           */
         bool empty() const throw() {
+            shared_lock<shared_timed_mutex> lock(mtx);
             return _storage.empty();
         }
         //@}
@@ -460,6 +465,7 @@ namespace stlcache {
          *  
          */
         void clear() throw() {
+            lock_guard<shared_timed_mutex> lock(mtx);
             _storage.clear();
             _policy->clear();
             this->_currEntries=0;
@@ -478,9 +484,10 @@ namespace stlcache {
          * \see cache::operator= 
          */
         void swap ( cache<Key,Data,Policy,Compare,Allocator>& mp ) throw(exception_invalid_policy) {
+            lock_guard<shared_timed_mutex> lock(mtx);
             _storage.swap(mp._storage);
             _policy->swap(*mp._policy);
-
+        
             std::size_t m=this->_maxEntries;
             this->_maxEntries=mp._maxEntries;
             mp._maxEntries=m;
@@ -500,6 +507,7 @@ namespace stlcache {
          * \return 1 when entry is removed (ie number of removed emtries, which is always 1, as keys are unique) or zero when nothing was done. 
          */
         size_type erase ( const key_type& x ) throw() {
+            lock_guard<shared_timed_mutex> lock(mtx);
             size_type ret=_storage.erase(x);
             _policy->remove(x);
 
@@ -521,6 +529,7 @@ namespace stlcache {
          * \return true if the new elemented was inserted or false if an element with the same key existed. 
          */
         bool insert(Key _k, Data _d) throw(exception_cache_full,exception_invalid_key) {
+            lock_guard<shared_timed_mutex> lock(mtx);
             while (this->_currEntries >= this->_maxEntries) {
                 _victim<Key> victim=_policy->victim();
                 if (!victim) {
@@ -564,6 +573,7 @@ namespace stlcache {
           *  \see clear
           */        
         size_type size() const throw() {
+            lock_guard<shared_timed_mutex> lock(mtx);
             assert(this->_currEntries==_storage.size());
             return this->_currEntries;
         }
@@ -583,6 +593,7 @@ namespace stlcache {
          * \see check 
          */
         const Data& fetch(const Key& _k) throw(exception_invalid_key) {
+            lock_guard<shared_timed_mutex> lock(mtx);
             if (!check(_k)) {
                 throw exception_invalid_key("Key is not in cache",_k);
             }
@@ -608,6 +619,7 @@ namespace stlcache {
          * \see check, fetch 
          */
         const boost::optional<const Data&> get(const Key& _k) throw() {
+            lock_guard<shared_timed_mutex> lock(mtx);
             if (!check(_k)) {
                 return boost::optional<const Data&>();
             }
@@ -628,6 +640,7 @@ namespace stlcache {
          * \see count 
          */
         const bool check(const Key& _k) throw() {
+            lock_guard<shared_timed_mutex> lock(mtx);
             _policy->touch(_k);
             return _storage.count(_k)==1;
         }
@@ -642,6 +655,7 @@ namespace stlcache {
          *  
          */
         void touch(const Key& _k) throw() {
+            lock_guard<shared_timed_mutex> lock(mtx);
             _policy->touch(_k);
         }
         //@}
