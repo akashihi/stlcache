@@ -32,6 +32,7 @@ using namespace std;
 #include <stlcache/policy_lfuagingstar.hpp>
 #include <stlcache/policy_adaptive.hpp>
 #include <stlcache/lock_none.hpp>
+#include <stlcache/lock_exclusive.hpp>
 
 namespace stlcache {
 
