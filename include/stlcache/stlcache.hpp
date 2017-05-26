@@ -179,9 +179,9 @@ namespace stlcache {
      
      \li \link stlcache::policy_none None \endlink - A random expiration policy. Removes some random entry on request
      \li \link stlcache::policy_lru LRU \endlink - 'Least recently used' policy.
-     \li \link stlcache::policy_mru MRU \endlink - 'Most recentrly used' policy
+     \li \link stlcache::policy_mru MRU \endlink - 'Most recently used' policy
      \li \link stlcache::policy_lfu LFU \endlink - 'Least frequently used' policy
-     \li \link stlcache::policy_lfustar LFU* \endlink - 'Least frequently used' polcy, that expires only items with refcount 1, as proposed by M.Arlitt
+     \li \link stlcache::policy_lfustar LFU* \endlink - 'Least frequently used' policy, that expires only items with refcount 1, as proposed by M.Arlitt
      \li \link stlcache::policy_lfuaging LFU-Aging \endlink - 'Least frequently used' policy with time-based decreasing of usage count
      \li \link stlcache::policy_lfuagingstar LFU*-Aging \endlink - Combination of \link stlcache::policy_lfustar LFU* \endlink and \link stlcache::policy_lfuagingstar LFU*-Aging \endlink policies
      \li \link stlcache::policy_adaptive Adaptive Replacement \endlink - 'Adaptive Replacement' policy
@@ -193,7 +193,7 @@ namespace stlcache {
      The policy implementation should keep track of entries in the cache and it must be able to tell the cache, what item should be expired at the moment.
      There is not any limitations on policy internal structure and stuff, but it is expected, that policy conforms to some predefined interfaces.
      
-     First of all - every policy is built in two classes, one class is the policy iteslf, and another one is a 'bind wrapper':
+     First of all - every policy is built in two classes, one class is the policy itself, and another one is a 'bind wrapper':
      
      \note All code examples in this section are from \link stlcache::policy_none  policy none \endlink
      
