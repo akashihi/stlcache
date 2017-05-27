@@ -12,7 +12,7 @@ SET(Boost_USE_MULTITHREADED ON)
 FIND_PACKAGE(Boost 1.42.0 COMPONENTS system thread unit_test_framework)
 
 #Add MT libraries
-SET(LIBS ${Boost_LIBRARIES} -lpthread)
+SET(LIBS ${Boost_LIBRARIES})
 
 #Documentation stuff
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})

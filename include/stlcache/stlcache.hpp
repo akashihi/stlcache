@@ -152,7 +152,20 @@ namespace stlcache {
      \endcode
      
      Check it's return value, to get sure, whether something was deleted or not.
-     
+
+     \section Thread safety.
+
+     \link stlcache::cache cache \endlink can be configured with different \link stlcache::lock locking \endlink implementations, thus implementing thread safety. 
+     By default a \link stlcache::lock_none non-locking \endlink approach is used and \link stlcache::cache cache \endlink is not thread-safe, allowing user to implement external locking.
+
+     STL::Cache is shipped with the following locking implementations:
+
+     \li \link stlcache::lock_none non-locking \endlink - No locking will be done with that implementation, leaving \link stlcache::cache cache \endlink non thread-safe.
+     \li \link stlcache::lock_exclusive exclusive locking \endlink - \link stlcache::cache cache \endlink will be locked exclusively on almost every call, thus limiting parallel usage to a single thread.
+     \li \link stlcache::lock_shared shared locking \endlink - Some calls will be allowed to be run in parallel with this policy. But, due to nature of the \link stlcache::cache cache \endlink, even operations, that seems to be non-modifying, require exclusive lock to update access tracking data. This implementation is only available when \link BI Boost extensions \endlink are enabled.     
+          
+     The locking implementation must be specified as a last parameter of \link stlcache::cache cache \endlink type and it is optional.
+
      \section BI Boost integration
      
      Since version 0.3 stlcache includes some Boost specific extensions: optional values, multi-map based policies and not really effective
@@ -174,7 +187,11 @@ namespace stlcache {
           }
           cache_lru.erase("key");
       \endcode
+
+     \subsection BIT lock_shared
      
+     lock_shared locking implementation allows user to execute some cache to calls in parallel and thread-safe way. You have to define USE_BOOST_OPTIONAL macro.
+
      \section Policies
      
      The \link stlcache::policy policy \endlink is a pluggable implementation of a cache algorithms, used for finding and removing excessive
@@ -313,10 +330,11 @@ namespace stlcache {
      * \tparam <Policy> The expiration policy type. Must implement \link stlcache::policy policy interface \endlink STL::Cache provides several expiration policies out-of-box and you are free to define new policies. 
      * \tparam <Compare> Comparison class: A class that takes two arguments of the key type and returns a bool. The expression comp(a,b), where comp is an object of this comparison class and a and b are key values, shall return true if a is to be placed at an earlier position than b in a strict weak ordering operation. This can either be a class implementing a function call operator or a pointer to a function (see constructor for an example). This defaults to less<Key>, which returns the same as applying the less-than operator (a<b). This is required for the underlying std::map 
      * \tparam <Allocator> Type of the allocator object used to define the storage allocation model. Unlike std::map you should pass a unspecialized Allocator type. 
+     * \tparam Lock Type of the lock implementation used to define the thread safety behaviour of the cache. Default implementation does no locking and is not thread-safe.
      *  
      * So, the full example of cache instantiation will be: 
      * \code 
-     *     cache<int,string,policy_none,less<string>,std::allocator> cache_none(100500);
+     *     cache<int,string,policy_none,less<string>,std::allocator, lock_none> cache_none(100500);
      * \endcode
      *  
      * \see policy 
