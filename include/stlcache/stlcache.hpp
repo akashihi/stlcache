@@ -17,8 +17,6 @@
 #include <map>
 
 using namespace std;
-#include <mutex>
-#include <shared_mutex>
 
 #ifdef USE_BOOST_OPTIONAL
 #include <boost/optional.hpp>
@@ -33,6 +31,9 @@ using namespace std;
 #include <stlcache/policy_lfuaging.hpp>
 #include <stlcache/policy_lfuagingstar.hpp>
 #include <stlcache/policy_adaptive.hpp>
+#include <stlcache/lock_none.hpp>
+#include <stlcache/lock_exclusive.hpp>
+#include <stlcache/lock_shared.hpp>
 
 namespace stlcache {
 
@@ -151,7 +152,20 @@ namespace stlcache {
      \endcode
      
      Check it's return value, to get sure, whether something was deleted or not.
-     
+
+     \section Thread safety.
+
+     \link stlcache::cache cache \endlink can be configured with different \link stlcache::lock locking \endlink implementations, thus implementing thread safety. 
+     By default a \link stlcache::lock_none non-locking \endlink approach is used and \link stlcache::cache cache \endlink is not thread-safe, allowing user to implement external locking.
+
+     STL::Cache is shipped with the following locking implementations:
+
+     \li \link stlcache::lock_none non-locking \endlink - No locking will be done with that implementation, leaving \link stlcache::cache cache \endlink non thread-safe.
+     \li \link stlcache::lock_exclusive exclusive locking \endlink - \link stlcache::cache cache \endlink will be locked exclusively on almost every call, thus limiting parallel usage to a single thread.
+     \li \link stlcache::lock_shared shared locking \endlink - Some calls will be allowed to be run in parallel with this policy. But, due to nature of the \link stlcache::cache cache \endlink, even operations, that seems to be non-modifying, require exclusive lock to update access tracking data. This implementation is only available when \link BI Boost extensions \endlink are enabled.     
+          
+     The locking implementation must be specified as a last parameter of \link stlcache::cache cache \endlink type and it is optional.
+
      \section BI Boost integration
      
      Since version 0.3 stlcache includes some Boost specific extensions: optional values, multi-map based policies and not really effective
@@ -173,7 +187,11 @@ namespace stlcache {
           }
           cache_lru.erase("key");
       \endcode
+
+     \subsection BIT lock_shared
      
+     lock_shared locking implementation allows user to execute some cache to calls in parallel and thread-safe way. You have to define USE_BOOST_OPTIONAL macro.
+
      \section Policies
      
      The \link stlcache::policy policy \endlink is a pluggable implementation of a cache algorithms, used for finding and removing excessive
@@ -312,10 +330,11 @@ namespace stlcache {
      * \tparam <Policy> The expiration policy type. Must implement \link stlcache::policy policy interface \endlink STL::Cache provides several expiration policies out-of-box and you are free to define new policies. 
      * \tparam <Compare> Comparison class: A class that takes two arguments of the key type and returns a bool. The expression comp(a,b), where comp is an object of this comparison class and a and b are key values, shall return true if a is to be placed at an earlier position than b in a strict weak ordering operation. This can either be a class implementing a function call operator or a pointer to a function (see constructor for an example). This defaults to less<Key>, which returns the same as applying the less-than operator (a<b). This is required for the underlying std::map 
      * \tparam <Allocator> Type of the allocator object used to define the storage allocation model. Unlike std::map you should pass a unspecialized Allocator type. 
+     * \tparam Lock Type of the lock implementation used to define the thread safety behaviour of the cache. Default implementation does no locking and is not thread-safe.
      *  
      * So, the full example of cache instantiation will be: 
      * \code 
-     *     cache<int,string,policy_none,less<string>,std::allocator> cache_none(100500);
+     *     cache<int,string,policy_none,less<string>,std::allocator, lock_none> cache_none(100500);
      * \endcode
      *  
      * \see policy 
@@ -327,7 +346,8 @@ namespace stlcache {
         class Data, 
         class Policy, 
         class Compare = less<Key>, 
-        template <typename T> class Allocator = allocator 
+        template <typename T> class Allocator = allocator,
+        class Lock = lock_none
     >
     class cache {
         typedef map<Key,Data,Compare,Allocator<pair<const Key, Data> > > storageType; 
@@ -337,7 +357,9 @@ namespace stlcache {
          typedef typename Policy::template bind<Key,Allocator> policy_type;
          policy_type* _policy;
          Allocator<policy_type> policyAlloc;
-         mutable shared_timed_mutex mtx;
+         Lock lock;
+         typedef typename Lock::read read_lock_type;
+         typedef typename Lock::write write_lock_type;
 
     public:
         /*! \brief The Key type 
@@ -405,7 +427,7 @@ namespace stlcache {
           *  
           */        
         size_type count ( const key_type& x ) const throw() {
-            shared_lock<shared_timed_mutex> lock(mtx);
+            read_lock_type l = lock.lockRead();
             return _storage.count(x);
         }
 
@@ -446,7 +468,7 @@ namespace stlcache {
           *   \see size
           */
         bool empty() const throw() {
-            shared_lock<shared_timed_mutex> lock(mtx);
+            read_lock_type l = lock.lockRead();
             return _storage.empty();
         }
         //@}
@@ -465,7 +487,7 @@ namespace stlcache {
          *  
          */
         void clear() throw() {
-            lock_guard<shared_timed_mutex> lock(mtx);
+            write_lock_type l = lock.lockWrite();
             _storage.clear();
             _policy->clear();
             this->_currEntries=0;
@@ -484,7 +506,7 @@ namespace stlcache {
          * \see cache::operator= 
          */
         void swap ( cache<Key,Data,Policy,Compare,Allocator>& mp ) throw(exception_invalid_policy) {
-            lock_guard<shared_timed_mutex> lock(mtx);
+            write_lock_type l = lock.lockWrite();
             _storage.swap(mp._storage);
             _policy->swap(*mp._policy);
         
@@ -507,7 +529,7 @@ namespace stlcache {
          * \return 1 when entry is removed (ie number of removed emtries, which is always 1, as keys are unique) or zero when nothing was done. 
          */
         size_type erase ( const key_type& x ) throw() {
-            lock_guard<shared_timed_mutex> lock(mtx);
+            write_lock_type l = lock.lockWrite();
             return this->_erase(x);
         }
 
@@ -524,7 +546,7 @@ namespace stlcache {
          * \return true if the new elemented was inserted or false if an element with the same key existed. 
          */
         bool insert(Key _k, Data _d) throw(exception_cache_full,exception_invalid_key) {
-            lock_guard<shared_timed_mutex> lock(mtx);
+            write_lock_type l = lock.lockWrite();
             while (this->_currEntries >= this->_maxEntries) {
                 _victim<Key> victim=_policy->victim();
                 if (!victim) {
@@ -568,7 +590,7 @@ namespace stlcache {
           *  \see clear
           */        
         size_type size() const throw() {
-            lock_guard<shared_timed_mutex> lock(mtx);
+            write_lock_type l = lock.lockWrite();
             return this->_size();
         }
 
@@ -587,7 +609,7 @@ namespace stlcache {
          * \see check 
          */
         const Data& fetch(const Key& _k) throw(exception_invalid_key) {
-            lock_guard<shared_timed_mutex> lock(mtx);
+            write_lock_type l = lock.lockWrite();
             if (!this->_check(_k)) {
                 throw exception_invalid_key("Key is not in cache",_k);
             }
@@ -613,7 +635,7 @@ namespace stlcache {
          * \see check, fetch 
          */
         const boost::optional<const Data&> get(const Key& _k) throw() {
-            lock_guard<shared_timed_mutex> lock(mtx);
+            write_lock_type l = lock.lockWrite();
             if (!this->_check(_k)) {
                 return boost::optional<const Data&>();
             }
@@ -634,7 +656,7 @@ namespace stlcache {
          * \see count 
          */
         const bool check(const Key& _k) throw() {
-            lock_guard<shared_timed_mutex> lock(mtx);
+            write_lock_type l = lock.lockWrite();
             return this->_check(_k);
         }
 
@@ -648,7 +670,7 @@ namespace stlcache {
          *  
          */
         void touch(const Key& _k) throw() {
-            lock_guard<shared_timed_mutex> lock(mtx);
+            write_lock_type l = lock.lockWrite();
             _policy->touch(_k);
         }
         //@}

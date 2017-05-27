@@ -9,10 +9,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 SET(BOOST_ROOT "D:\\Boost")
 SET(Boost_USE_STATIC_LIBS ON)
 SET(Boost_USE_MULTITHREADED ON)
-FIND_PACKAGE(Boost 1.42.0 COMPONENTS system unit_test_framework)
+FIND_PACKAGE(Boost 1.42.0 COMPONENTS system thread unit_test_framework)
 
 #Add MT libraries
-SET(LIBS ${Boost_LIBRARIES} -lpthread)
+SET(LIBS ${Boost_LIBRARIES})
 
 #Documentation stuff
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
@@ -30,6 +30,8 @@ install(DIRECTORY include/stlcache DESTINATION include)
 if(Boost_FOUND)
 enable_testing()
 SET(CTEST_ENVIRONMENT "BOOST_TEST_LOG_LEVEL=message")
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ADD_EXECUTABLE(test_map tests/test_map.cpp)
 target_link_libraries(test_map ${LIBS})
