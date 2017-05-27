@@ -12,8 +12,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef STLCACHE_LOCK_NONE_HPP_INCLUDED
-#define STLCACHE_LOCK_NONE_HPP_INCLUDED
+#ifndef STLCACHE_LOCK_EXCLUSIVE_HPP_INCLUDED
+#define STLCACHE_LOCK_EXCLUSIVE_HPP_INCLUDED
 
 #include <mutex>
 
@@ -26,17 +26,17 @@ namespace stlcache {
      * This implementation supports only mutually exclusive locking, so only a single thread at a time can access the \link stlcache::cache cache \endlink
      */
 
-    class lock_none : public lock<lock_guard<mutex>, lock_guard<mutex>> {
-        mutex mtx
+    class lock_exclusive : public lock<unique_lock<mutex>, unique_lock<mutex> > {
+        mutable mutex mtx;
     public:
 		write lockWrite() const { 
-            return lock_guard(mtx); 
+            return unique_lock<mutex>(mtx); 
         }
 
 		read lockRead() const { 
-            lock_guard(mtx);
+            return unique_lock<mutex>(mtx);
         }
     };
 }
 
-#endif /* STLCACHE_LOCK_NONE_HPP_INCLUDED */
+#endif /* STLCACHE_LOCK_EXCLUSIVE_HPP_INCLUDED */

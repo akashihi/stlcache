@@ -33,6 +33,7 @@ using namespace std;
 #include <stlcache/policy_adaptive.hpp>
 #include <stlcache/lock_none.hpp>
 #include <stlcache/lock_exclusive.hpp>
+#include <stlcache/lock_shared.hpp>
 
 namespace stlcache {
 
