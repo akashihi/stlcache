@@ -34,6 +34,7 @@ using namespace std;
 #include <stlcache/lock_none.hpp>
 #include <stlcache/lock_exclusive.hpp>
 #include <stlcache/lock_shared.hpp>
+#include <stlcache/policy_lfu_multi.hpp>
 
 namespace stlcache {
 
