@@ -12,6 +12,7 @@
 #include <map>
 
 #include <boost/multi_index_container.hpp>
+#include <boost/multi_index/sequenced_index.hpp>
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/identity.hpp>
@@ -31,13 +32,13 @@ namespace stlcache {
             bool operator<(const Reference& r) const { return refCount < r.refCount; }
         };
 
-        struct IndexKey { };
-        struct IndexRefCount { };
+        struct IndexKey{};
+        struct IndexRefCount{};
 
         typedef boost::multi_index_container<
             Reference,
             boost::multi_index::indexed_by<
-                boost::multi_index::hashed_unique<
+                boost::multi_index::ordered_unique<
                     boost::multi_index::tag<IndexKey>,
                     boost::multi_index::member<Reference, Key, &Reference::key>
                 >,
@@ -62,38 +63,33 @@ namespace stlcache {
 
         virtual void insert(const Key& _k,unsigned int refCount) throw(exception_invalid_key) {
             //1 - is initial reference value
-            /*entriesIterator newEntryIter = _entries.insert(entriesPair(refCount,_k));
-            _backEntries.insert(backEntriesPair(_k,newEntryIter));*/
+            _entries.insert({_k,refCount});
         }
         virtual void insert(const Key& _k) throw(exception_invalid_key) {
             //1 - is initial reference value
-            //this->insert(_k,1);
+            this->insert(_k,1);
         }
 
         virtual void remove(const Key& _k) throw() {
-            /*backEntriesIterator backIter = _backEntries.find(_k);
-            if (backIter==_backEntries.end()) {
+            auto itFound = _entries.find(_k);
+            if(itFound == _entries.end())
+            {
                 return;
             }
-
-            _entries.erase(backIter->second);
-            _backEntries.erase(_k);*/
+            _entries.erase(_k);
         }
-        virtual void touch(const Key& _k) throw() { 
-            /*backEntriesIterator backIter = _backEntries.find(_k);
-            if (backIter==_backEntries.end()) {
+        virtual void touch(const Key& _k) throw() {
+            auto itFound = _entries.find(_k);
+            if(itFound == _entries.end())
+            {
                 return;
             }
-
-            unsigned int refCount=backIter->second->first;
-            
-            _entries.erase(backIter->second);
-            entriesIterator entryIter=_entries.insert(entriesPair(refCount+1,_k));
-            backIter->second=entryIter;*/
+            Reference r = *itFound;
+            r.refCount+=1;
+            _entries.replace(itFound, r);         
         }
         virtual void clear() throw() {
-            /*_entries.clear();
-            _backEntries.clear();*/
+            _entries.clear();
         }
         virtual void swap(policy<Key,Allocator>& _p) throw(exception_invalid_policy) {
             /*try {
@@ -106,11 +102,14 @@ namespace stlcache {
         }
 
         virtual const _victim<Key> victim() throw()  {
-            /*if (_entries.begin()==_entries.end()) {
+            /*
+            if (_entries.begin()==_entries.end()) {
                 return _victim<Key>();
             }
-
-            return _victim<Key>(_entries.begin()->second);*/
+            auto& indexRefCount = _entries.get<IndexRefCount>();
+            auto itFound = _entries.begin();
+            return _victim<Key>();
+            */
         }
 
     protected:
