@@ -27,19 +27,24 @@ namespace stlcache {
         struct Reference {
             Key key;
             unsigned int refCount;
+            Reference(Key k, unsigned int r): key(k), refCount(r) { };
+            bool operator<(const Reference& r) const { return refCount < r.refCount; }
         };
 
         struct IndexKey { };
         struct IndexRefCount { };
 
         typedef boost::multi_index_container<
-            boost::multi_index::hashed_unique<
-                boost::multi_index::tag<IndexKey>,
-                boost::multi_index::member<Reference, Key, Reference::key>
-            >,
-            boost::multi_index::ordered_non_unique<
-                boost::multi_index::tag<IndexRefCount>,
-                boost::multi_index::member<Reference, unsigned int, Reference::refCount>
+            Reference,
+            boost::multi_index::indexed_by<
+                boost::multi_index::hashed_unique<
+                    boost::multi_index::tag<IndexKey>,
+                    boost::multi_index::member<Reference, Key, &Reference::key>
+                >,
+                boost::multi_index::ordered_non_unique<
+                    boost::multi_index::tag<IndexRefCount>,
+                    boost::multi_index::member<Reference, unsigned int, &Reference::refCount>
+                >
             >
         > entriesType;
 
