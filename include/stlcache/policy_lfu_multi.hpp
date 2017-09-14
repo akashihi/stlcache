@@ -92,48 +92,45 @@ namespace stlcache {
             _entries.clear();
         }
         virtual void swap(policy<Key,Allocator>& _p) throw(exception_invalid_policy) {
-            /*try {
+            try {
                 _policy_lfu_multi_type<Key,Allocator>& _pn=dynamic_cast<_policy_lfu_multi_type<Key,Allocator>& >(_p);
                 _entries.swap(_pn._entries);
-                _backEntries.swap(_pn._backEntries);
             } catch (const std::bad_cast& ) {
                 throw exception_invalid_policy("Attempted to swap incompatible policies");
-            }*/
+            }
         }
 
         virtual const _victim<Key> victim() throw()  {
-            /*
+            //
             if (_entries.begin()==_entries.end()) {
                 return _victim<Key>();
             }
-            auto& indexRefCount = _entries.get<IndexRefCount>();
-            auto itFound = _entries.begin();
-            return _victim<Key>();
-            */
+
+            const auto& smallest = _entries.template get<IndexRefCount>().begin();;
+            auto itFound = _entries.template project<0>(smallest);
+            return _victim<Key>(itFound->key);
+            
         }
 
     protected:
         const entriesType& entries() const {
             return this->_entries;
         }
-        virtual unsigned long long untouch(const Key& _k) throw() { 
-            /*backEntriesIterator backIter = _backEntries.find(_k);
-            if (backIter==_backEntries.end()) {
+        virtual unsigned long long untouch(const Key& _k) throw() {
+            auto itFound = _entries.find(_k);
+            Reference r = *itFound;
+            if(itFound == _entries.end())
+            {
                 return 0;
             }
-            unsigned int refCount=backIter->second->first;
-
-
-            if (!(refCount>1)) {
-                return refCount; //1 is a minimal reference value
+            unsigned int refCount = itFound->refCount;
+            if (!(refCount>1))
+            {
+                return refCount;
             }
-
-
-            _entries.erase(backIter->second);
-            entriesIterator entryIter=_entries.insert(entriesPair(refCount-1,_k));
-            backIter->second=entryIter;
-
-            return refCount;*/
+            r.refCount-=1;
+            _entries.replace(itFound,r);
+            return refCount;
         }
     };
 
