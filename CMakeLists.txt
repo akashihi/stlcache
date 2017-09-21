@@ -86,5 +86,8 @@ target_link_libraries(test_insdel_perf ${LIBS})
 ADD_EXECUTABLE(test_victim_perf tests/test_victim_perf.cpp)
 target_link_libraries(test_victim_perf ${LIBS})
 
+ADD_EXECUTABLE(test_lfu_multi tests/test_lfu_multi.cpp)
+target_link_libraries(test_lfu_multi ${LIBS})
+ADD_TEST(LFU-MultiIndex test_lfu_multi)
 
 endif(Boost_FOUND)

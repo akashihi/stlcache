@@ -5,3 +5,4 @@
 *.vtg
 build
 include/.vscode/
+.vscode/
