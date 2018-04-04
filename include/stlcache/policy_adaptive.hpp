@@ -50,7 +50,7 @@ namespace stlcache {
             this->t2Entries=x.t2Entries;
             this->b2Entries=x.b2Entries;
         }
-        _policy_adaptive_type(const size_t& size ) : T1(size),T2(size),B1(size),B2(size) { 
+        _policy_adaptive_type(const size_t& size ) : T1(size),T2(size),B1(size),B2(size) {
             this->_size=size;
         }
 
@@ -100,7 +100,7 @@ namespace stlcache {
                 T2.remove(_k);
             }
         }
-        virtual void touch(const Key& _k) { 
+        virtual void touch(const Key& _k) {
             if (t1Entries.find(_k)!=t1Entries.end()) {
                 t1Entries.erase(_k);
                 T1.remove(_k);
@@ -147,19 +147,19 @@ namespace stlcache {
 
     /*!
      * \brief A 'Adaptive replacement' policy
-     * 
-     * Implements <a href="http://en.wikipedia.org/wiki/Adaptive_replacement_cache">'Adaptive replacement'</a> cache algorithm. 
-     *  
+     *
+     * Implements <a href="http://en.wikipedia.org/wiki/Adaptive_replacement_cache">'Adaptive replacement'</a> cache algorithm.
+     *
      * The adaptive cache algorithm is balancing between internal LRU and LFU caches, trying to adapt to the external expectations on it.
-     *    
-     * \link cache::touch Touching \endlink the entry decreases item's expiration probability. This policy is always able to expire any amount of entries.     
-     *  
-     * No additional configuration is required. 
-     *  
+     *
+     * \link cache::touch Touching \endlink the entry decreases item's expiration probability. This policy is always able to expire any amount of entries.
+     *
+     * No additional configuration is required.
+     *
      */
     struct policy_adaptive {
         template <typename Key, template <typename T> class Allocator>
-            struct bind : _policy_adaptive_type<Key,Allocator> { 
+            struct bind : _policy_adaptive_type<Key,Allocator> {
                 bind(const bind& x) : _policy_adaptive_type<Key,Allocator>(x)  { }
                 bind(const size_t& size) : _policy_adaptive_type<Key,Allocator>(size) { }
             };

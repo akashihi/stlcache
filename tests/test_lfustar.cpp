@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE(veryfrequent) {
     c1.touch(2);
     c1.touch(3);
 
-    BOOST_REQUIRE_THROW(c1.insert(4,"data4"),exception_cache_full); //Because every entry in cache have reference counter bigger then one and 
+    BOOST_REQUIRE_THROW(c1.insert(4,"data4"),exception_cache_full); //Because every entry in cache have reference counter bigger then one and
                                                                                                     //lfustar policy works only on entries with refcount equal to 1
 
     c1.erase(1);

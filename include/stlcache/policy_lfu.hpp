@@ -27,7 +27,7 @@ namespace stlcache {
         typedef map<Key,entriesIterator,less<Key>,Allocator<backEntriesPair> > backEntriesType;
         backEntriesType _backEntries;
         typedef typename backEntriesType::iterator backEntriesIterator;
-        
+
 
     public:
         _policy_lfu_type<Key,Allocator>& operator= ( const _policy_lfu_type<Key,Allocator>& x) {
@@ -59,14 +59,14 @@ namespace stlcache {
             _entries.erase(backIter->second);
             _backEntries.erase(_k);
         }
-        virtual void touch(const Key& _k) { 
+        virtual void touch(const Key& _k) {
             backEntriesIterator backIter = _backEntries.find(_k);
             if (backIter==_backEntries.end()) {
                 return;
             }
 
             unsigned int refCount=backIter->second->first;
-            
+
             _entries.erase(backIter->second);
             entriesIterator entryIter=_entries.insert(entriesPair(refCount+1,_k));
             backIter->second=entryIter;
@@ -97,7 +97,7 @@ namespace stlcache {
         const entriesType& entries() const {
             return this->_entries;
         }
-        virtual unsigned long long untouch(const Key& _k) { 
+        virtual unsigned long long untouch(const Key& _k) {
             backEntriesIterator backIter = _backEntries.find(_k);
             if (backIter==_backEntries.end()) {
                 return 0;
@@ -120,24 +120,24 @@ namespace stlcache {
 
     /*!
      * \brief A 'Least Frequently Used' policy
-     * 
-     * Implements <a href="http://en.wikipedia.org/wiki/Least_frequently_used">'Least Frequently Used'</a> cache algorithm. 
-     *  
-     * The LFU policy tracks how many times entry was used and selects entries with the smallest usage count for expiration. There is a big difference 
+     *
+     * Implements <a href="http://en.wikipedia.org/wiki/Least_frequently_used">'Least Frequently Used'</a> cache algorithm.
+     *
+     * The LFU policy tracks how many times entry was used and selects entries with the smallest usage count for expiration. There is a big difference
      * between LFU and \link stlcache::policy_lru LRU \endlink policies - the LRU policy only tracks the fact of entry usage, but the LFU also takes in
-     * the account the number of entry usages. 
-     * \link cache::touch Touching \endlink the entry greatly decreases item's expiration probability. This policy is always able to expire any amount of entries. 
-     *  
-     * No additional configuration is required. 
-     *  
+     * the account the number of entry usages.
+     * \link cache::touch Touching \endlink the entry greatly decreases item's expiration probability. This policy is always able to expire any amount of entries.
+     *
+     * No additional configuration is required.
+     *
      * \see policy_lfustar
-     * \see policy_lfuaging 
-     * \see policy_lfuagingstar 
-     *  
+     * \see policy_lfuaging
+     * \see policy_lfuagingstar
+     *
      */
     struct policy_lfu {
         template <typename Key, template <typename T> class Allocator>
-            struct bind : _policy_lfu_type<Key,Allocator> { 
+            struct bind : _policy_lfu_type<Key,Allocator> {
                 bind(const bind& x) : _policy_lfu_type<Key,Allocator>(x)  { }
                 bind(const size_t& size) : _policy_lfu_type<Key,Allocator>(size) { }
             };

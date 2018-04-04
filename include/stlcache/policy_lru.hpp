@@ -43,7 +43,7 @@ namespace stlcache {
             _entries.erase(mapIter->second);
             _entriesMap.erase(mapIter);
         }
-        virtual void touch(const Key& _k) { 
+        virtual void touch(const Key& _k) {
             entriesMapIterator mapIter = _entriesMap.find(_k);
             if (mapIter==_entriesMap.end()) {
                 return;
@@ -75,17 +75,17 @@ namespace stlcache {
 
     /*!
      * \brief A 'Least Recently Used' policy
-     * 
-     * Implements <a href="http://en.wikipedia.org/wiki/Cache_algorithms#Least_Recently_Used">'Least Recently Used'</a> cache expiration algorithm. 
-     *  
-     * The LRU policy tracks the usage of items and moves the recently used items to the front of the items stack and select items for the expiration from the end 
-     * of the stack. \link cache::touch Touching \endlink the entry decreases item's expiration probability. This policy is always able to expire any amount of entries. 
-     *  
-     * No additional configuration is required. 
+     *
+     * Implements <a href="http://en.wikipedia.org/wiki/Cache_algorithms#Least_Recently_Used">'Least Recently Used'</a> cache expiration algorithm.
+     *
+     * The LRU policy tracks the usage of items and moves the recently used items to the front of the items stack and select items for the expiration from the end
+     * of the stack. \link cache::touch Touching \endlink the entry decreases item's expiration probability. This policy is always able to expire any amount of entries.
+     *
+     * No additional configuration is required.
      */
     struct policy_lru {
         template <typename Key, template <typename T> class Allocator>
-            struct bind : _policy_lru_type<Key,Allocator> { 
+            struct bind : _policy_lru_type<Key,Allocator> {
                 bind(const bind& x) : _policy_lru_type<Key,Allocator>(x)  { }
                 bind(const size_t& size) : _policy_lru_type<Key,Allocator>(size) { }
             };
