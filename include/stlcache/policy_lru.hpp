@@ -24,6 +24,10 @@ namespace stlcache {
     public:
         _policy_lru_type<Key,Allocator>& operator= ( const _policy_lru_type<Key,Allocator>& x) {
             this->_entries=x._entries;
+            _entriesMap.clear();
+            for(entriesIterator entryIter=_entries.begin();entryIter!=_entries.end();++entryIter) {
+              _entriesMap.insert(pair<Key,entriesIterator>(*entryIter,entryIter));
+            }
             return *this;
         }
         _policy_lru_type(const _policy_lru_type<Key,Allocator>& x) {
@@ -54,6 +58,7 @@ namespace stlcache {
         }
         virtual void clear() {
             _entries.clear();
+            _entriesMap.clear();
         }
         virtual void swap(policy<Key,Allocator>& _p) {
             try {
