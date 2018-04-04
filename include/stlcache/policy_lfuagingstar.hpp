@@ -25,9 +25,9 @@ using namespace std;
 namespace stlcache {
     template <time_t Age,class Key,template <typename T> class Allocator> class _policy_lfuagingstar_type : public virtual _policy_lfuaging_type<Age,Key,Allocator>, public virtual _policy_lfustar_type<Key,Allocator> {
     public:
-        _policy_lfuagingstar_type(const size_t& size ) throw() : _policy_lfuaging_type<Age,Key,Allocator>(size), _policy_lfustar_type<Key,Allocator>(size),_policy_lfu_type<Key,Allocator>(size) { }
+        _policy_lfuagingstar_type(const size_t& size ) : _policy_lfuaging_type<Age,Key,Allocator>(size), _policy_lfustar_type<Key,Allocator>(size),_policy_lfu_type<Key,Allocator>(size) { }
 
-        virtual const _victim<Key> victim() throw()  {
+        virtual const _victim<Key> victim()  {
 			_policy_lfuaging_type<Age,Key,Allocator>::expire();
             return _policy_lfustar_type<Key,Allocator>::victim();
         }

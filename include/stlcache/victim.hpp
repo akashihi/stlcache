@@ -68,7 +68,7 @@ namespace stlcache {
          *  
          * \return *this
          */
-        _victim<Key>& operator= ( const _victim<Key>& _source) throw() {
+        _victim<Key>& operator= ( const _victim<Key>& _source) {
             this->_value=_source._value;
             this->_isInitialized=_source._isInitialized;
             return *this;
@@ -82,7 +82,7 @@ namespace stlcache {
          * \return true when wrapper object contains some data or false, when it's empty
          *  
          */
-        const bool isInitialized() const throw() {
+        const bool isInitialized() const {
             return this->_isInitialized;
         }
         /*!
@@ -105,7 +105,7 @@ namespace stlcache {
          * \see _victim::isInitialized 
          *  
          */
-        operator const bool() const throw() {
+        operator const bool() const {
             return this->_isInitialized;
         }
 
@@ -119,7 +119,7 @@ namespace stlcache {
          *  
          * \return the wrapped value
          */
-        const Key& value() const throw(exception_empty_victim) {
+        const Key& value() const {
             if(!this->_isInitialized) {
                 throw exception_empty_victim("Tried to access empty victim");
             }
@@ -146,7 +146,7 @@ namespace stlcache {
          *  
          * \see _victim::value 
          */
-        const Key& operator*() const throw(exception_empty_victim) {
+        const Key& operator*() const {
             return this->value();
         }
     };

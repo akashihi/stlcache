@@ -23,39 +23,39 @@ namespace stlcache {
         time_t _oldestEntry;
         time_t age;
     public:
-        _policy_lfuaging_type<Age,Key,Allocator>& operator= ( const _policy_lfuaging_type<Age,Key,Allocator>& x) throw() {
+        _policy_lfuaging_type<Age,Key,Allocator>& operator= ( const _policy_lfuaging_type<Age,Key,Allocator>& x) {
             _policy_lfu_type<Key,Allocator>::operator=(x);
             this->_timeKeeper=x._timeKeeper;
             this->_oldestEntry=x._oldestEntry;
             this->age=x.age;
             return *this;
         }
-        _policy_lfuaging_type(const _policy_lfuaging_type<Age,Key,Allocator>& x)  throw() : _policy_lfu_type<Key,Allocator>(x) {
+        _policy_lfuaging_type(const _policy_lfuaging_type<Age,Key,Allocator>& x)  : _policy_lfu_type<Key,Allocator>(x) {
             *this=x;
         }
-        _policy_lfuaging_type(const size_t& size ) throw() : _policy_lfu_type<Key,Allocator>(size) { 
+        _policy_lfuaging_type(const size_t& size ) : _policy_lfu_type<Key,Allocator>(size) { 
             this->age=Age;
             this->_oldestEntry=time(NULL);
         }
 
-        virtual void insert(const Key& _k) throw(exception_invalid_key) {
+        virtual void insert(const Key& _k) {
             _policy_lfu_type<Key,Allocator>::insert(_k);
             _timeKeeper.insert(std::pair<Key,time_t>(_k,time(NULL))); //Because touch always increases the refcount, so it couldn't be 1 after touch
         }
-        virtual void remove(const Key& _k) throw() {
+        virtual void remove(const Key& _k) {
             _policy_lfu_type<Key,Allocator>::remove(_k);
             _timeKeeper.erase(_k);
         }
-        virtual void touch(const Key& _k) throw() { 
+        virtual void touch(const Key& _k) { 
             _policy_lfu_type<Key,Allocator>::touch(_k);
             _timeKeeper.erase(_k);
             _timeKeeper.insert(std::pair<Key,time_t>(_k,time(NULL))); //Because touch always increases the refcount, so it couldn't be 1 after touch
         }   
-        virtual void clear() throw() {
+        virtual void clear() {
             _policy_lfu_type<Key,Allocator>::clear();
             _timeKeeper.clear();
         }
-        virtual void swap(policy<Key,Allocator>& _p) throw(exception_invalid_policy) {
+        virtual void swap(policy<Key,Allocator>& _p) {
             try {
                 _policy_lfuaging_type<Age,Key,Allocator>& _pn=dynamic_cast<_policy_lfuaging_type<Age,Key,Allocator>& >(_p);
                 _timeKeeper.swap(_pn._timeKeeper);
@@ -73,7 +73,7 @@ namespace stlcache {
                 throw exception_invalid_policy("Attempted to swap incompatible policies");
             }
         }
-        virtual const _victim<Key> victim() throw()  {
+        virtual const _victim<Key> victim()  {
 			this->expire();
             return _policy_lfu_type<Key,Allocator>::victim();
         }

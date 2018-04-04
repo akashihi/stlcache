@@ -203,12 +203,12 @@ namespace stlcache {
      \code
         template <class Key,template <typename T> class Allocator> class policy {
             public:
-            virtual void insert(const Key& _k) throw(exception_invalid_key) =0;
-            virtual void remove(const Key& _k) throw() =0;
-            virtual void touch(const Key& _k) throw() =0;
-            virtual void clear() throw() =0;
-            virtual void swap(policy<Key,Allocator>& _p) throw(exception_invalid_policy)=0;
-            virtual const _victim<Key> victim() throw()  =0;
+            virtual void insert(const Key& _k) =0;
+            virtual void remove(const Key& _k) =0;
+            virtual void touch(const Key& _k) =0;
+            virtual void clear() =0;
+            virtual void swap(policy<Key,Allocator>& _p)=0;
+            virtual const _victim<Key> victim()  =0;
         };     
      \endcode
      
@@ -220,17 +220,17 @@ namespace stlcache {
      \code
         template <class Key, template <typename T> class Allocator> class _policy_none_type : public policy<Key,Allocator> {
         public:
-            _policy_none_type<Key,Allocator>& operator= ( const _policy_none_type<Key,Allocator>& x) throw() { }
-            _policy_none_type(const _policy_none_type<Key,Allocator>& x) throw() {}
-            _policy_none_type(const size_t& size ) throw() { }
+            _policy_none_type<Key,Allocator>& operator= ( const _policy_none_type<Key,Allocator>& x) { }
+            _policy_none_type(const _policy_none_type<Key,Allocator>& x) {}
+            _policy_none_type(const size_t& size ) { }
 
-            virtual void insert(const Key& _k) throw(exception_invalid_key) {}
-            virtual void remove(const Key& _k) throw() {}
-            virtual void touch(const Key& _k) throw() {}
-            virtual void clear() throw() {}
-            virtual void swap(policy<Key,Allocator>& _p) throw(exception_invalid_policy) {}
+            virtual void insert(const Key& _k) {}
+            virtual void remove(const Key& _k) {}
+            virtual void touch(const Key& _k) {}
+            virtual void clear() {}
+            virtual void swap(policy<Key,Allocator>& _p) {}
 
-            virtual const _victim<Key> victim() throw() {}
+            virtual const _victim<Key> victim() {}
         };
      \endcode
      
@@ -356,7 +356,7 @@ namespace stlcache {
           *
           *  \return The allocator object of type Allocator<pair<const Key, Data> >.                
           */
-        allocator_type get_allocator() const throw() {
+        allocator_type get_allocator() const {
             return _storage.get_allocator();
         }
 
@@ -373,7 +373,7 @@ namespace stlcache {
           *  \see check
           *  
           */        
-        size_type count ( const key_type& x ) const throw() {
+        size_type count ( const key_type& x ) const {
             return _storage.count(x);
         }
 
@@ -383,7 +383,7 @@ namespace stlcache {
          *  
          *   \return The value comparison object of type value_compare, defined as described above.
          */
-        value_compare value_comp ( ) const throw() {
+        value_compare value_comp ( ) const {
             return _storage.value_comp();
         }
 
@@ -398,7 +398,7 @@ namespace stlcache {
           *
           *  \return The key comparison object of type key_compare, defined to Compare, which is the fourth template parameter in the map class template.
           */
-        key_compare key_comp ( ) const throw() {
+        key_compare key_comp ( ) const {
             return _storage.key_comp();
         }
 
@@ -413,7 +413,7 @@ namespace stlcache {
           *  
           *   \see size
           */
-        bool empty() const throw() {
+        bool empty() const {
             return _storage.empty();
         }
         //@}
@@ -431,7 +431,7 @@ namespace stlcache {
          * \see empty 
          *  
          */
-        void clear() throw() {
+        void clear() {
             _storage.clear();
             _policy->clear();
             this->_currEntries=0;
@@ -449,7 +449,7 @@ namespace stlcache {
          *  
          * \see cache::operator= 
          */
-        void swap ( cache<Key,Data,Policy,Compare,Allocator>& mp ) throw(exception_invalid_policy) {
+        void swap ( cache<Key,Data,Policy,Compare,Allocator>& mp ) {
             _storage.swap(mp._storage);
             _policy->swap(*mp._policy);
 
@@ -471,7 +471,7 @@ namespace stlcache {
          *  
          * \return 1 when entry is removed (ie number of removed emtries, which is always 1, as keys are unique) or zero when nothing was done. 
          */
-        size_type erase ( const key_type& x ) throw() {
+        size_type erase ( const key_type& x ) {
             size_type ret=_storage.erase(x);
             _policy->remove(x);
 
@@ -492,7 +492,7 @@ namespace stlcache {
          *  
          * \return true if the new elemented was inserted or false if an element with the same key existed. 
          */
-        bool insert(Key _k, Data _d) throw(exception_cache_full,exception_invalid_key) {
+        bool insert(Key _k, Data _d) {
             while (this->_currEntries >= this->_maxEntries) {
                 _victim<Key> victim=_policy->victim();
                 if (!victim) {
@@ -522,7 +522,7 @@ namespace stlcache {
          *  
          * \see size 
          */
-        size_type max_size() const throw() {
+        size_type max_size() const {
             return this->_maxEntries;
         }
 
@@ -535,7 +535,7 @@ namespace stlcache {
           *  \see empty
           *  \see clear
           */        
-        size_type size() const throw() {
+        size_type size() const {
             assert(this->_currEntries==_storage.size());
             return this->_currEntries;
         }
@@ -554,7 +554,7 @@ namespace stlcache {
          *  
          * \see check 
          */
-        const Data& fetch(const Key& _k) throw(exception_invalid_key) {
+        const Data& fetch(const Key& _k) {
             if (!check(_k)) {
                 throw exception_invalid_key("Key is not in cache",_k);
             }
@@ -573,7 +573,7 @@ namespace stlcache {
          *  
          * \see count 
          */
-        const bool check(const Key& _k) throw() {
+        const bool check(const Key& _k) {
             _policy->touch(_k);
             return _storage.count(_k)==1;
         }
@@ -587,7 +587,7 @@ namespace stlcache {
          *  \param _k key to touch
          *  
          */
-        void touch(const Key& _k) throw() {
+        void touch(const Key& _k) {
             _policy->touch(_k);
         }
         //@}
@@ -606,7 +606,7 @@ namespace stlcache {
          *  
          * \see swap 
          */
-        cache<Key,Data,Policy,Compare,Allocator>& operator= ( const cache<Key,Data,Policy,Compare,Allocator>& x) throw() {
+        cache<Key,Data,Policy,Compare,Allocator>& operator= ( const cache<Key,Data,Policy,Compare,Allocator>& x) {
             this->_storage=x._storage;
             this->_maxEntries=x._maxEntries;
             this->_currEntries=this->_storage.size();
@@ -624,7 +624,7 @@ namespace stlcache {
          *  
          *  \param <x> a cache object with the same template parameters 
          */
-        cache(const cache<Key,Data,Policy,Compare,Allocator>& x) throw() {
+        cache(const cache<Key,Data,Policy,Compare,Allocator>& x) {
             *this=x;
         }
         /*!
@@ -637,7 +637,7 @@ namespace stlcache {
          * \param <comp> Comparator object, compatible with Compare type. Defaults to Compare() 
          * 
          */
-        explicit cache(const size_type size, const Compare& comp = Compare()) throw() {
+        explicit cache(const size_type size, const Compare& comp = Compare()) {
             this->_storage=storageType(comp, Allocator<pair<const Key, Data> >());
             this->_maxEntries=size;
             this->_currEntries=0;

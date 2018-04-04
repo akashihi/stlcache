@@ -79,7 +79,7 @@ namespace stlcache {
          *  \see cache::insert
          *  
          */
-        virtual void insert(const Key& _k) throw(exception_invalid_key) =0;
+        virtual void insert(const Key& _k) =0;
         /*!
          * \brief handles deletion of a entry from the cache 
          *  
@@ -91,7 +91,7 @@ namespace stlcache {
          * \see cache::erase 
          * 
          */
-        virtual void remove(const Key& _k) throw() =0;
+        virtual void remove(const Key& _k) =0;
         /*!
          * \brief marks that the specified entry is used by cache
          *  
@@ -105,7 +105,7 @@ namespace stlcache {
          * \see cache::check 
          *  
          */
-        virtual void touch(const Key& _k) throw() =0;
+        virtual void touch(const Key& _k) =0;
         /*!
          * \brief clear call helper 
          *  
@@ -115,7 +115,7 @@ namespace stlcache {
          * \see cache::clear 
          *  
          */
-        virtual void clear() throw() =0;
+        virtual void clear() =0;
         /*!
          * \brief swap call helper 
          *  
@@ -129,7 +129,7 @@ namespace stlcache {
          * \see cache::swap 
          *  
          */
-        virtual void swap(policy<Key,Allocator>& _p) throw(exception_invalid_policy)=0;
+        virtual void swap(policy<Key,Allocator>& _p)=0;
 
         /*!
          * \brief Returns a key of the entry, that is expired by the policy and could be removed.
@@ -144,32 +144,32 @@ namespace stlcache {
          *  
          * \see cache::insert 
          */
-        virtual const _victim<Key> victim() throw()  =0;
+        virtual const _victim<Key> victim()  =0;
     };
 
     template <class Key, template <typename T> class Allocator> class _policy_none_type : public policy<Key,Allocator> {
         set<Key,less<Key>,Allocator<Key> > _entries;
     public:
-        _policy_none_type<Key,Allocator>& operator= ( const _policy_none_type<Key,Allocator>& x) throw() {
+        _policy_none_type<Key,Allocator>& operator= ( const _policy_none_type<Key,Allocator>& x) {
             this->_entries=x._entries;
             return *this;
         }
-        _policy_none_type(const _policy_none_type<Key,Allocator>& x) throw() {
+        _policy_none_type(const _policy_none_type<Key,Allocator>& x) {
             *this=x;
         }
-        _policy_none_type(const size_t& size ) throw() { }
+        _policy_none_type(const size_t& size ) { }
 
-        virtual void insert(const Key& _k) throw(exception_invalid_key) {
+        virtual void insert(const Key& _k) {
             _entries.insert(_k);
         }
-        virtual void remove(const Key& _k) throw() {
+        virtual void remove(const Key& _k) {
             _entries.erase(_k);
         }
-        virtual void touch(const Key& _k) throw() { /* Not used here */  }
-        virtual void clear() throw() {
+        virtual void touch(const Key& _k) { /* Not used here */  }
+        virtual void clear() {
             _entries.clear();
         }
-        virtual void swap(policy<Key,Allocator>& _p) throw(exception_invalid_policy) {
+        virtual void swap(policy<Key,Allocator>& _p) {
             try {
                 _policy_none_type<Key,Allocator>& _pn=dynamic_cast<_policy_none_type<Key,Allocator>& >(_p);
                 _entries.swap(_pn._entries);
@@ -178,7 +178,7 @@ namespace stlcache {
             }
         }
 
-        virtual const _victim<Key> victim() throw() {
+        virtual const _victim<Key> victim() {
             if (_entries.rbegin()==_entries.rend()) {
                 return _victim<Key>();
             }

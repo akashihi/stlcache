@@ -19,10 +19,10 @@ namespace stlcache {
     template <class Key,template <typename T> class Allocator> class _policy_lfustar_type : public virtual _policy_lfu_type<Key,Allocator> {
         typedef set<Key,less<Key>,Allocator<Key> > keySet;
     public:
-        _policy_lfustar_type(const size_t& size ) throw() : _policy_lfu_type<Key,Allocator>(size) { }
-        _policy_lfustar_type(const _policy_lfustar_type& x ) throw() : _policy_lfu_type<Key,Allocator>(x) { }
+        _policy_lfustar_type(const size_t& size ) : _policy_lfu_type<Key,Allocator>(size) { }
+        _policy_lfustar_type(const _policy_lfustar_type& x ) : _policy_lfu_type<Key,Allocator>(x) { }
 
-        virtual const _victim<Key> victim() throw()  {
+        virtual const _victim<Key> victim()  {
             //LFU* only operates on entries with references count equal to 1
             typedef typename _policy_lfu_type<Key,Allocator>::entriesType::const_iterator entriesIterType;
             entriesIterType entriesIter = this->entries().find(1);

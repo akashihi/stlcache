@@ -30,27 +30,27 @@ namespace stlcache {
         
 
     public:
-        _policy_lfu_type<Key,Allocator>& operator= ( const _policy_lfu_type<Key,Allocator>& x) throw() {
+        _policy_lfu_type<Key,Allocator>& operator= ( const _policy_lfu_type<Key,Allocator>& x) {
             this->_entries=x._entries;
             this->_backEntries=x._backEntries;
             return *this;
         }
-        _policy_lfu_type(const _policy_lfu_type<Key,Allocator>& x) throw() {
+        _policy_lfu_type(const _policy_lfu_type<Key,Allocator>& x) {
             *this=x;
         }
-        _policy_lfu_type(const size_t& size ) throw() { }
+        _policy_lfu_type(const size_t& size ) { }
 
-        virtual void insert(const Key& _k,unsigned int refCount) throw(exception_invalid_key) {
+        virtual void insert(const Key& _k,unsigned int refCount) {
             //1 - is initial reference value
             entriesIterator newEntryIter = _entries.insert(entriesPair(refCount,_k));
             _backEntries.insert(backEntriesPair(_k,newEntryIter));
         }
-        virtual void insert(const Key& _k) throw(exception_invalid_key) {
+        virtual void insert(const Key& _k) {
             //1 - is initial reference value
             this->insert(_k,1);
         }
 
-        virtual void remove(const Key& _k) throw() {
+        virtual void remove(const Key& _k) {
             backEntriesIterator backIter = _backEntries.find(_k);
             if (backIter==_backEntries.end()) {
                 return;
@@ -59,7 +59,7 @@ namespace stlcache {
             _entries.erase(backIter->second);
             _backEntries.erase(_k);
         }
-        virtual void touch(const Key& _k) throw() { 
+        virtual void touch(const Key& _k) { 
             backEntriesIterator backIter = _backEntries.find(_k);
             if (backIter==_backEntries.end()) {
                 return;
@@ -71,11 +71,11 @@ namespace stlcache {
             entriesIterator entryIter=_entries.insert(entriesPair(refCount+1,_k));
             backIter->second=entryIter;
         }
-        virtual void clear() throw() {
+        virtual void clear() {
             _entries.clear();
             _backEntries.clear();
         }
-        virtual void swap(policy<Key,Allocator>& _p) throw(exception_invalid_policy) {
+        virtual void swap(policy<Key,Allocator>& _p) {
             try {
                 _policy_lfu_type<Key,Allocator>& _pn=dynamic_cast<_policy_lfu_type<Key,Allocator>& >(_p);
                 _entries.swap(_pn._entries);
@@ -85,7 +85,7 @@ namespace stlcache {
             }
         }
 
-        virtual const _victim<Key> victim() throw()  {
+        virtual const _victim<Key> victim()  {
             if (_entries.begin()==_entries.end()) {
                 return _victim<Key>();
             }
@@ -97,7 +97,7 @@ namespace stlcache {
         const entriesType& entries() const {
             return this->_entries;
         }
-        virtual unsigned long long untouch(const Key& _k) throw() { 
+        virtual unsigned long long untouch(const Key& _k) { 
             backEntriesIterator backIter = _backEntries.find(_k);
             if (backIter==_backEntries.end()) {
                 return 0;
