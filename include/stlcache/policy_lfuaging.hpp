@@ -23,39 +23,39 @@ namespace stlcache {
         time_t _oldestEntry;
         time_t age;
     public:
-        _policy_lfuaging_type<Age,Key,Allocator>& operator= ( const _policy_lfuaging_type<Age,Key,Allocator>& x) throw() {
+        _policy_lfuaging_type<Age,Key,Allocator>& operator= ( const _policy_lfuaging_type<Age,Key,Allocator>& x) {
             _policy_lfu_type<Key,Allocator>::operator=(x);
             this->_timeKeeper=x._timeKeeper;
             this->_oldestEntry=x._oldestEntry;
             this->age=x.age;
             return *this;
         }
-        _policy_lfuaging_type(const _policy_lfuaging_type<Age,Key,Allocator>& x)  throw() : _policy_lfu_type<Key,Allocator>(x) {
+        _policy_lfuaging_type(const _policy_lfuaging_type<Age,Key,Allocator>& x)  : _policy_lfu_type<Key,Allocator>(x) {
             *this=x;
         }
-        _policy_lfuaging_type(const size_t& size ) throw() : _policy_lfu_type<Key,Allocator>(size) { 
+        _policy_lfuaging_type(const size_t& size ) : _policy_lfu_type<Key,Allocator>(size) {
             this->age=Age;
             this->_oldestEntry=time(NULL);
         }
 
-        virtual void insert(const Key& _k) throw(exception_invalid_key) {
+        virtual void insert(const Key& _k) {
             _policy_lfu_type<Key,Allocator>::insert(_k);
             _timeKeeper.insert(std::pair<Key,time_t>(_k,time(NULL))); //Because touch always increases the refcount, so it couldn't be 1 after touch
         }
-        virtual void remove(const Key& _k) throw() {
+        virtual void remove(const Key& _k) {
             _policy_lfu_type<Key,Allocator>::remove(_k);
             _timeKeeper.erase(_k);
         }
-        virtual void touch(const Key& _k) throw() { 
+        virtual void touch(const Key& _k) {
             _policy_lfu_type<Key,Allocator>::touch(_k);
             _timeKeeper.erase(_k);
             _timeKeeper.insert(std::pair<Key,time_t>(_k,time(NULL))); //Because touch always increases the refcount, so it couldn't be 1 after touch
-        }   
-        virtual void clear() throw() {
+        }
+        virtual void clear() {
             _policy_lfu_type<Key,Allocator>::clear();
             _timeKeeper.clear();
         }
-        virtual void swap(policy<Key,Allocator>& _p) throw(exception_invalid_policy) {
+        virtual void swap(policy<Key,Allocator>& _p) {
             try {
                 _policy_lfuaging_type<Age,Key,Allocator>& _pn=dynamic_cast<_policy_lfuaging_type<Age,Key,Allocator>& >(_p);
                 _timeKeeper.swap(_pn._timeKeeper);
@@ -73,7 +73,7 @@ namespace stlcache {
                 throw exception_invalid_policy("Attempted to swap incompatible policies");
             }
         }
-        virtual const _victim<Key> victim() throw()  {
+        virtual const _victim<Key> victim()  {
 			this->expire();
             return _policy_lfu_type<Key,Allocator>::victim();
         }
@@ -92,7 +92,7 @@ namespace stlcache {
                         Key itCopy=(*it).first;
                         unsigned long long currentRef=this->untouch((*it).first);
                         toErase.push_front(itCopy);
-                        
+
                         if (currentRef>1) {
                             toInsert.push_front(itCopy);
                         }
@@ -117,30 +117,30 @@ namespace stlcache {
 
     /*!
      * \brief A 'LFU-Aging' policy
-     * 
-     * Implements <a href="http://en.wikipedia.org/wiki/Least_frequently_used">'LFU-Aging'</a> cache algorithm. 
-     *  
-     * A modified \link stlcache::policy_lfu LFU \endlink policy implementation, that allows the reference count to move in both directions. 
-     * Opposed to the usual \link stlcache::policy_lfu LFU \endlink, that allows only growth of the entries references counts, the LFU-Aging 
-     * also decreases the reference count of an entry, that was put into the cache some time ago. 
-     *  
-     * So, when you put an entry into the cache and start using it, entry's reference count will increase on every usage. 
-     * At the same time, the LFU-Aging algorithm will be applying the 'aging interval' on the entries in cache and 
-     * decrease entry's reference count every time. So the entries, that were popular in the past, but not needed right now, will 
-     * get a better chance to get out of the cache, then with usual LFU algorithm. 
-     *  
-     * \link cache::touch Touching \endlink the entry may not change item's expiration probability. This policy is always able to expire any amount of entries. 
-     *  
-     * The policy must be configured with the length of a aging interval: 
-     *  
+     *
+     * Implements <a href="http://en.wikipedia.org/wiki/Least_frequently_used">'LFU-Aging'</a> cache algorithm.
+     *
+     * A modified \link stlcache::policy_lfu LFU \endlink policy implementation, that allows the reference count to move in both directions.
+     * Opposed to the usual \link stlcache::policy_lfu LFU \endlink, that allows only growth of the entries references counts, the LFU-Aging
+     * also decreases the reference count of an entry, that was put into the cache some time ago.
+     *
+     * So, when you put an entry into the cache and start using it, entry's reference count will increase on every usage.
+     * At the same time, the LFU-Aging algorithm will be applying the 'aging interval' on the entries in cache and
+     * decrease entry's reference count every time. So the entries, that were popular in the past, but not needed right now, will
+     * get a better chance to get out of the cache, then with usual LFU algorithm.
+     *
+     * \link cache::touch Touching \endlink the entry may not change item's expiration probability. This policy is always able to expire any amount of entries.
+     *
+     * The policy must be configured with the length of a aging interval:
+     *
      * \tparam <Age>  aging interval in seconds
-     *  
-     * \see policy_lfu 
-     * \see policu_lfuagingstar 
+     *
+     * \see policy_lfu
+     * \see policu_lfuagingstar
      */
     template <time_t Age> struct policy_lfuaging {
         template <typename Key, template <typename T> class Allocator>
-            struct bind : _policy_lfuaging_type<Age,Key,Allocator> { 
+            struct bind : _policy_lfuaging_type<Age,Key,Allocator> {
                 bind(const bind& x) : _policy_lfuaging_type<Age,Key,Allocator>(x),_policy_lfu_type<Key,Allocator>(x)  { }
                 bind(const size_t& size) : _policy_lfuaging_type<Age,Key,Allocator>(size),_policy_lfu_type<Key,Allocator>(size) { }
             };

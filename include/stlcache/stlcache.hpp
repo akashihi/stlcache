@@ -28,49 +28,49 @@ using namespace std;
 
 namespace stlcache {
 
-    /*! 
+    /*!
       \mainpage STL::Cache - in-memory cache for C++ applications
-     
+
       \section Introduction
-     
+
      STL::Cache is just a simple wrapper over standard map, that implements some cache algorithms, thus allowing you to limit the storage size
      and automatically remove unused items from it. (Right now the std::map interface is partially implemented, so it can't be used as a drop-in replacement for the std::map).
-     
+
      It is intented to be used for keeping any key/value data, especially when data's size are too big, to just put it into the map and keep the whole thing.
      With STL::Cache you could put unlimited (really unlimited) amount of data into it, but it will store only some small part of your data. So re-usable
-     data will be kept near your code and not so popular data will not spend expensive memory. 
-     
+     data will be kept near your code and not so popular data will not spend expensive memory.
+
      STL::Cache uses configurable policies, for decisions, whether data are good, to be kept in cache or they should be thrown away. It is shipped with
-     8 policies and you are free to implement your own.        
-     
+     8 policies and you are free to implement your own.
+
      \section GaI Getting and installing
-     
+
      The STL::Cache source code is hosted on <a href="https://github.com/akashihi/stlcache">github</a>, so you can download the source code
      using wget or other download tool:
-     
+
      \li https://github.com/akashihi/stlcache/tarball/master (tar.gz format)
      \li https://github.com/akashihi/stlcache/zipball/master (or zip format)
-     
+
      You could also clone the repository and check some unstable code:
-     
+
      \code
      git clone git://github.com/akashihi/stlcache.git
      \endcode
-     
+
      The 'master' branch is always pointing to the latest stable release and the 'next' branch is a unstable development branch.
-     
+
      The STL::Cache is header only and does not require any building. Just copy the include/stlcache directory to your system's include directories or
      add it to your project's  include directories. Alternativaly you could build the sources and then install it, using our build system.
-     
+
      Yes, as i told you, the STL::Cache themself is a header-only library and doesn't requires building. Indeed, it is shipped with tests, documentation and
      other stuff, that could be built and used. For STL::Cache building you need:
-     
+
      \li <a href="http://www.cmake.org/">Recent CMake (required)</a>
      \li <a href="http://www.boost.org/">Boost library (optional, used only for tests)</a>
      \li <a href="http://www.doxygen.org/">Doxygen (optional, only for documentation processing)</a>
-     
+
      After getting this stuff up and running, select a directory for building and issue the following commands:
-     
+
      \code
         cmake /path/to/the/stlcache/sources
         make
@@ -78,44 +78,44 @@ namespace stlcache {
         make doc
         make install
     \endcode
-     
+
      The CMake is using a <a href="http://www.cmake.org/Wiki/CMake_FAQ#Out-of-source_build_trees">out-of-source</a> build approach,
      so it is recommended to create a temporary build directory somewhere and remove it after installation.
-     
+
      The generated documentation will be put into the \<build\>/doc directory and tests will be built and run directly in the \<build\> directory. They are NOT
      installed by 'make install' command, so you have to copy them manually, if you really need them.
-     
+
      \section Usage
-     
+
      Select a \link stlcache::policy cache expiration policy \endlink, configure \link stlcache::cache cache \endlink with it, construct the cache, specifying it's size, and start putting data into the cache:
-     
+
      \code
      typedef CacheLRU stlcache::cache<int,string,stlcache::policy_lru>;
      CacheLRU myCache(10);
      \endcode
-     
+
      The policy, key data type and value data type are passed as parameters to the \link stlcache::cache \endlink class template. In the example above
      we have constructed cache, that keeps data of type std::string and keys are of type int. It uses a \link stlcache::policy_lru LRU \endlink policy
      for removal of excessive items. Cache object 'myCache' is able to keep only 10 items. Cache size is configured at the construction time and
      cannot be changed in the future (with exceptions for assignment and swap operations). Additionally you could specify a comparision object and
      allocator type, see the \link stlcache::cache cache class \endlink documentation for the details.
-     
+
      You could put objects into your cache object using \link cache::insert insert \endlink call:
-     
+
      \code
      myCache.insert(1,"One)";
      \endcode
-     
+
      Note, that the \link cache::insert insert \endlink call could throw a \link stlcache::exception_cache_full cache full exception \endlink or
      \link stlcache::exception_invalid_key invalid key exception \endlink As keys have to be unique, the insert call may do nothing, if it meets the
      duplicate key. Don't forget to check it's return value.
-     
+
      Now, when you have some data in the cache, you may want to retrieve it back:
-     
+
      \code
      string myOne = myCache.fetch(1);
      \endcode
-     
+
      The \link cache::fetch fetch \endlink call will return a data value, associated with the supplied key or throw the \link stlcache::exception_invalid_key invalid key exception \endlink
      when the key doesn't exists in the cache. For safier operations, you could \link cache::check check \endlink in advance, whether key is in the cache or not:
      \code
@@ -124,31 +124,31 @@ namespace stlcache {
        myOne = myCache.fetch(1);
      }
      \endcode
-     
+
      The \link cache::check check \endlink is exception-safe.
-     
+
      Both \link cache::check check \endlink and \link cache::fetch fetch \endlink calls are increasing internal reference count for the key, so, depending
      on the used policy, it will increase or decrease the entry's chance to become an expiration victim. Under some circumstances you may
      need to manually change those reference counter, without actually accesing the entry. Something like \link cache::touch touching \endlink it:
      \code
      myCache.touch(1);
      \endcode
-     
+
      The \link cache::touch \endlink call is exception-safe and could be used even on non-existent keys.
-     
+
      When you have done your work, you may manually delete the entry:
-     
+
      \code
      myCache.erase(1);
      \endcode
-     
+
      Check it's return value, to get sure, whether something was deleted or not.
-     
+
      \section Policies
-     
+
      The \link stlcache::policy policy \endlink is a pluggable implementation of a cache algorithms, used for finding and removing excessive
      cache entries. STL::Cache is shipped with the following policies:
-     
+
      \li \link stlcache::policy_none None \endlink - A random expiration policy. Removes some random entry on request
      \li \link stlcache::policy_lru LRU \endlink - 'Least recently used' policy.
      \li \link stlcache::policy_mru MRU \endlink - 'Most recentrly used' policy
@@ -157,107 +157,107 @@ namespace stlcache {
      \li \link stlcache::policy_lfuaging LFU-Aging \endlink - 'Least frequently used' policy with time-based decreasing of usage count
      \li \link stlcache::policy_lfuagingstar LFU*-Aging \endlink - Combination of \link stlcache::policy_lfustar LFU* \endlink and \link stlcache::policy_lfuagingstar LFU*-Aging \endlink policies
      \li \link stlcache::policy_adaptive Adaptive Replacement \endlink - 'Adaptive Replacement' policy
-     
+
      The cache expiration policy must be specified as a third parameter of \link stlcache::cache cache \endlink type and it is mandatory.
-     
+
      \section Writing your own policy
-     
+
      The policy implementation should keep track of entries in the cache and it must be able to tell the cache, what item should be expired at the moment.
      There is not any limitations on policy internal structure and stuff, but it is expected, that policy conforms to some predefined interfaces.
-     
+
      First of all - every policy is built in two classes, one class is the policy iteslf, and another one is a 'bind wrapper':
-     
+
      \note All code examples in this section are from \link stlcache::policy_none  policy none \endlink
-     
+
      \code
         struct policy_none {
         template <typename Key, template <typename T> class Allocator>
-            struct bind : _policy_none_type<Key,Allocator> { 
+            struct bind : _policy_none_type<Key,Allocator> {
                 bind(const bind& x) : _policy_none_type<Key,Allocator>(x)  { }
                 bind(const size_t& size) : _policy_none_type<Key,Allocator>(size) { }
             };
         };
      \endcode
-     
+
      As you may see, the policy itself is automatically configured with caches's Key type and Allocator type. Of course, you could also pass
      your own template parameters and partially instantiate the policy implementation template:
-     
+
      \code
         template <class R> struct policy_none {
             template <typename Key, template <typename T> class Allocator>
-                struct bind : _policy_none_type<R,Key,Allocator> { 
+                struct bind : _policy_none_type<R,Key,Allocator> {
                     bind(const bind& x) : _policy_none_type<R,Key,Allocator>(x) { }
                     bind(const size_t& size) : _policy_none_type<R,Key,Allocator>(size) { }
                 };
-        };     
+        };
      \endcode
-     
+
      You could pass some implementation of R during cache type definition:
-     
+
      \code
          stlcache::cache<int,int,stlcache::policy_none<Randomizer> > c;
      \endcode
-     
+
      Well, the actual implementation must implement the \link stlcache::policy policy interface \endlink :
-     
+
      \code
         template <class Key,template <typename T> class Allocator> class policy {
             public:
-            virtual void insert(const Key& _k) throw(exception_invalid_key) =0;
-            virtual void remove(const Key& _k) throw() =0;
-            virtual void touch(const Key& _k) throw() =0;
-            virtual void clear() throw() =0;
-            virtual void swap(policy<Key,Allocator>& _p) throw(exception_invalid_policy)=0;
-            virtual const _victim<Key> victim() throw()  =0;
-        };     
+            virtual void insert(const Key& _k) =0;
+            virtual void remove(const Key& _k) =0;
+            virtual void touch(const Key& _k) =0;
+            virtual void clear() =0;
+            virtual void swap(policy<Key,Allocator>& _p)=0;
+            virtual const _victim<Key> victim()  =0;
+        };
      \endcode
-     
+
      So, the policy could be asked for a \link policy::victim victim \endlink, entries could be \link policy::insert inserted \endlink ,
      \link policy::remove removed \endlink and \link policy::touch touched \endlink. It's contents could also be \link policy::clear cleared \endlink
      or \link policy::swap swapped \endlink with another policy. Concrete policy implementation should be CopyConstructible, Assignable and
      must provide a constructor, for specifiying policy size:
-     
+
      \code
         template <class Key, template <typename T> class Allocator> class _policy_none_type : public policy<Key,Allocator> {
         public:
-            _policy_none_type<Key,Allocator>& operator= ( const _policy_none_type<Key,Allocator>& x) throw() { }
-            _policy_none_type(const _policy_none_type<Key,Allocator>& x) throw() {}
-            _policy_none_type(const size_t& size ) throw() { }
+            _policy_none_type<Key,Allocator>& operator= ( const _policy_none_type<Key,Allocator>& x) { }
+            _policy_none_type(const _policy_none_type<Key,Allocator>& x) {}
+            _policy_none_type(const size_t& size ) { }
 
-            virtual void insert(const Key& _k) throw(exception_invalid_key) {}
-            virtual void remove(const Key& _k) throw() {}
-            virtual void touch(const Key& _k) throw() {}
-            virtual void clear() throw() {}
-            virtual void swap(policy<Key,Allocator>& _p) throw(exception_invalid_policy) {}
+            virtual void insert(const Key& _k) {}
+            virtual void remove(const Key& _k) {}
+            virtual void touch(const Key& _k) {}
+            virtual void clear() {}
+            virtual void swap(policy<Key,Allocator>& _p) {}
 
-            virtual const _victim<Key> victim() throw() {}
+            virtual const _victim<Key> victim() {}
         };
      \endcode
-     
+
      It's up to you, how you will implement those methods and so on. The only importatn thing, we haven't mentioned yet, is a
      \link stlcache::_victim victim \endlink class. It is a way to return optional value from a function. So, when your policy implementatiton
      cannot find any entry to remove, it will return empty victim object.
-     
+
      \section AaL  Authors and Licensing
-     
+
      Copyright (C) 2011 Denis V Chapligin
      Distributed under the Boost Software License, Version 1.0.
      (See accompanying file LICENSE_1_0.txt or copy at
      http://www.boost.org/LICENSE_1_0.txt)
-     
+
       */
 
     /*! \brief Cache is a kind of a map that have limited number of elements to store and configurable policy for autoremoval of excessive elements.
-     *  
-     * The cache behaviour resembles a std::map behaviour (but not yet fully compatible with usual std::map interface), but it adds a limitation of 
-     * maximum number of entries, stored in cache and  provides a configurable policy, which is used to remove entries when the cache is full. 
-     *  
-     * Internally it is built as a wrapper over a std::map with some additional checking for cache size and entry removal logic. Unfortunately not all interfaces 
-     * of std::map are supperted by now, but it is a work in progress. 
-     *  
-     * You can use the cache in a simple and obvious way: 
-     * \code 
-     *     cache<string,string,policy_lru> cache_lru(3); 
+     *
+     * The cache behaviour resembles a std::map behaviour (but not yet fully compatible with usual std::map interface), but it adds a limitation of
+     * maximum number of entries, stored in cache and  provides a configurable policy, which is used to remove entries when the cache is full.
+     *
+     * Internally it is built as a wrapper over a std::map with some additional checking for cache size and entry removal logic. Unfortunately not all interfaces
+     * of std::map are supperted by now, but it is a work in progress.
+     *
+     * You can use the cache in a simple and obvious way:
+     * \code
+     *     cache<string,string,policy_lru> cache_lru(3);
      *     cache_lru.insert("key","value");
      *     cache_lru.touch("key");
      *     if (cache_lru.check("key")) {
@@ -265,42 +265,42 @@ namespace stlcache {
      *     }
      *     cache_lru.erase("key");
      * \endcode
-     *  
-     * So you define a cache instance, specifying a Key type, a Data type and a Policy, passing maximum number of entries to the constructor. 
-     * You could \link cache::insert insert \endlink as 
-     * many entries as you like, even more entries, that cache instance can hold. When the cache starts to overflow, it will automatically 
-     * remove entries, depending on specified Policy. 
-     * You can \link cache::touch touch \endlink some entries, to advance their usage count, that may (or may not, depending on Policy) 
-     * help them survive the removal on cache overflow. You can \link cache::erase \endlink entries manually too. 
-     * For the data retrieval you should first \link cache::check check \endlink , whether Key exists in 
-     * cache or not, and \link cache::fetch fetch \endlink it, if it exists. 
-     * The preliminary \link cache::fetch fetch \endlink step is not neccessary, but fetching non-existent key will throw an \link 	exception_invalid_key exception \endlink . 
-     *  
-     * cache class have three mandatory template parameters and two optional: 
-     * \tparam <Key> The key data type. We have no limitations on this type, so it could be any built-in type, custom class etc. But it is recommended to supply a less-than operation for a Key type. 
-     * \tparam <Data> The value data type. You a free to use any type here without any restrictions, requirements and recommendations. 
-     * \tparam <Policy> The expiration policy type. Must implement \link stlcache::policy policy interface \endlink STL::Cache provides several expiration policies out-of-box and you are free to define new policies. 
-     * \tparam <Compare> Comparison class: A class that takes two arguments of the key type and returns a bool. The expression comp(a,b), where comp is an object of this comparison class and a and b are key values, shall return true if a is to be placed at an earlier position than b in a strict weak ordering operation. This can either be a class implementing a function call operator or a pointer to a function (see constructor for an example). This defaults to less<Key>, which returns the same as applying the less-than operator (a<b). This is required for the underlying std::map 
-     * \tparam <Allocator> Type of the allocator object used to define the storage allocation model. Unlike std::map you should pass a unspecialized Allocator type. 
-     *  
-     * So, the full example of cache instantiation will be: 
-     * \code 
+     *
+     * So you define a cache instance, specifying a Key type, a Data type and a Policy, passing maximum number of entries to the constructor.
+     * You could \link cache::insert insert \endlink as
+     * many entries as you like, even more entries, that cache instance can hold. When the cache starts to overflow, it will automatically
+     * remove entries, depending on specified Policy.
+     * You can \link cache::touch touch \endlink some entries, to advance their usage count, that may (or may not, depending on Policy)
+     * help them survive the removal on cache overflow. You can \link cache::erase \endlink entries manually too.
+     * For the data retrieval you should first \link cache::check check \endlink , whether Key exists in
+     * cache or not, and \link cache::fetch fetch \endlink it, if it exists.
+     * The preliminary \link cache::fetch fetch \endlink step is not neccessary, but fetching non-existent key will throw an \link 	exception_invalid_key exception \endlink .
+     *
+     * cache class have three mandatory template parameters and two optional:
+     * \tparam <Key> The key data type. We have no limitations on this type, so it could be any built-in type, custom class etc. But it is recommended to supply a less-than operation for a Key type.
+     * \tparam <Data> The value data type. You a free to use any type here without any restrictions, requirements and recommendations.
+     * \tparam <Policy> The expiration policy type. Must implement \link stlcache::policy policy interface \endlink STL::Cache provides several expiration policies out-of-box and you are free to define new policies.
+     * \tparam <Compare> Comparison class: A class that takes two arguments of the key type and returns a bool. The expression comp(a,b), where comp is an object of this comparison class and a and b are key values, shall return true if a is to be placed at an earlier position than b in a strict weak ordering operation. This can either be a class implementing a function call operator or a pointer to a function (see constructor for an example). This defaults to less<Key>, which returns the same as applying the less-than operator (a<b). This is required for the underlying std::map
+     * \tparam <Allocator> Type of the allocator object used to define the storage allocation model. Unlike std::map you should pass a unspecialized Allocator type.
+     *
+     * So, the full example of cache instantiation will be:
+     * \code
      *     cache<int,string,policy_none,less<string>,std::allocator> cache_none(100500);
      * \endcode
-     *  
-     * \see policy 
-     *  
+     *
+     * \see policy
+     *
      * \author chollya (5/19/2011)
      */
     template<
-        class Key, 
-        class Data, 
-        class Policy, 
-        class Compare = less<Key>, 
-        template <typename T> class Allocator = allocator 
+        class Key,
+        class Data,
+        class Policy,
+        class Compare = less<Key>,
+        template <typename T> class Allocator = allocator
     >
     class cache {
-        typedef map<Key,Data,Compare,Allocator<pair<const Key, Data> > > storageType; 
+        typedef map<Key,Data,Compare,Allocator<pair<const Key, Data> > > storageType;
          storageType _storage;
          std::size_t _maxEntries;
          std::size_t _currEntries;
@@ -309,86 +309,86 @@ namespace stlcache {
          Allocator<policy_type> policyAlloc;
 
     public:
-        /*! \brief The Key type 
+        /*! \brief The Key type
          */
         typedef Key                                                                key_type;
-        /*!  \brief The Data type 
+        /*!  \brief The Data type
          */
         typedef Data                                                               mapped_type;
-        /*! \brief Combined key,value type 
+        /*! \brief Combined key,value type
           */
         typedef pair<const Key, Data>                                         value_type;
         /*! \brief Compare type used by this instance
           */
         typedef Compare                                                          key_compare;
-        /*! \brief Allocator type used by this instance 
+        /*! \brief Allocator type used by this instance
           */
         typedef Allocator<pair<const Key, Data> >                          allocator_type;
-        /*! \brief Nested class to compare elements (see member function value_comp) 
+        /*! \brief Nested class to compare elements (see member function value_comp)
           */
         typedef typename storageType::value_compare                                value_compare;
-        /*! \brief Allocator::reference 
+        /*! \brief Allocator::reference
           */
         typedef typename storageType::reference                                        reference;
-        /*! \brief Allocator::const_reference 
+        /*! \brief Allocator::const_reference
           */
         typedef typename storageType::const_reference                               const_reference;
-        /*! \brief Type used for storing object sizes, specific to a current platform (usually a size_t) 
+        /*! \brief Type used for storing object sizes, specific to a current platform (usually a size_t)
           */
         typedef typename storageType::size_type                                       size_type;
-        /*! \brief Type used for address calculations, specific to a current platform (usually a ptrdiff_t) 
+        /*! \brief Type used for address calculations, specific to a current platform (usually a ptrdiff_t)
           */
         typedef typename storageType::difference_type                               difference_type;
-        /*! \brief Allocator::pointer 
+        /*! \brief Allocator::pointer
           */
         typedef typename storageType::pointer                                          pointer;
-        /*! \brief Allocator::const_pointer 
+        /*! \brief Allocator::const_pointer
           */
         typedef typename storageType::const_pointer                                 const_pointer;
 
-        /*! \name std::map interface wrappers 
+        /*! \name std::map interface wrappers
          *  Simple wrappers for std::map calls, that we are using only for mimicking the map interface
          */
         //@{
         /*! \brief Allocator object accessor
-          *                                                                                                                                          
+          *
           *  Provides access to the allocator object, used to constuct the container.
           *
-          *  \return The allocator object of type Allocator<pair<const Key, Data> >.                
+          *  \return The allocator object of type Allocator<pair<const Key, Data> >.
           */
-        allocator_type get_allocator() const throw() {
+        allocator_type get_allocator() const {
             return _storage.get_allocator();
         }
 
         /*! \brief Counts entries with specified key in the cache.
-          *  
+          *
           *  Provides information on number of cache entries with specific key. It is not very usefull, as keys are unique in the cache.
           *  The difference between thic member and \link cache::check check member \endlink is that this one returns number of keys
           *  without touching the entry usage count.
-          *  
+          *
           *  \param <x> key to count
-          *  
+          *
           *  \return Number of objects with specified key in the cache (ie 1 if object is on the cache and 0 for non-existent object)
           *
           *  \see check
-          *  
-          */        
-        size_type count ( const key_type& x ) const throw() {
+          *
+          */
+        size_type count ( const key_type& x ) const {
             return _storage.count(x);
         }
 
         /*! \brief Value comparision object accessor
-         *  
-         *   Provides access to a comparison object that can be used to compare two element values (pairs) to get whether the key of the first goes before the second. The mapped value, although part of the pair, is not taken into consideration in this comparison - only the key value.  
-         *  
+         *
+         *   Provides access to a comparison object that can be used to compare two element values (pairs) to get whether the key of the first goes before the second. The mapped value, although part of the pair, is not taken into consideration in this comparison - only the key value.
+         *
          *   \return The value comparison object of type value_compare, defined as described above.
          */
-        value_compare value_comp ( ) const throw() {
+        value_compare value_comp ( ) const {
             return _storage.value_comp();
         }
 
-        /*! \brief Key comparision object accessor 
-          * 
+        /*! \brief Key comparision object accessor
+          *
           *  Provides access to the  comparison object associated with the container, which can be used to compare the keys of two elements in the container.
           *  This comparison object is set on object construction, and may either be a pointer to a function or an object of a class with a function call operator.
           *  In both cases it takes two arguments of the same type as the element keys,
@@ -398,58 +398,58 @@ namespace stlcache {
           *
           *  \return The key comparison object of type key_compare, defined to Compare, which is the fourth template parameter in the map class template.
           */
-        key_compare key_comp ( ) const throw() {
+        key_compare key_comp ( ) const {
             return _storage.key_comp();
         }
 
-        /*! \brief Test whether cache is empty 
-          *  
+        /*! \brief Test whether cache is empty
+          *
           *  Tells whether the map container is empty, i.e. whether its size is 0. This function does not modify the content of the container in any way. In terms of performance it is not equal to call
           *  \code
           *      cache.size()==0
           *   \endcode
-          *  
+          *
           *   \return true if the container size is 0, false otherwise.
-          *  
+          *
           *   \see size
           */
-        bool empty() const throw() {
+        bool empty() const {
             return _storage.empty();
         }
         //@}
 
-        /*! \name cache api 
+        /*! \name cache api
          *  members that are specific to cache or implemented with some cache specific things
          */
         //@{
         /*!
          * \brief Clear the cache
-         *  
-         * Removes all cache entries, drops all usage count data and so on. 
-         *  
-         * \see size 
-         * \see empty 
-         *  
+         *
+         * Removes all cache entries, drops all usage count data and so on.
+         *
+         * \see size
+         * \see empty
+         *
          */
-        void clear() throw() {
+        void clear() {
             _storage.clear();
             _policy->clear();
             this->_currEntries=0;
         }
-        
+
         /*!
-         * \brief Swaps contents of two caches 
-         *  
-         * Exchanges the content of the cache with the content of mp, which is another cache object containing elements of the same type and using the same expiration policy. 
+         * \brief Swaps contents of two caches
+         *
+         * Exchanges the content of the cache with the content of mp, which is another cache object containing elements of the same type and using the same expiration policy.
          * Sizes may differ. Maximum number of entries may differ too.
-         *  
-         * \param <mp> Another cache of the same type as this whose cache is swapped with that of this cache. 
-         *  
-         * \throw <exception_invalid_policy> Thrown when the policies of the caches to swap are incompatible. 
-         *  
-         * \see cache::operator= 
+         *
+         * \param <mp> Another cache of the same type as this whose cache is swapped with that of this cache.
+         *
+         * \throw <exception_invalid_policy> Thrown when the policies of the caches to swap are incompatible.
+         *
+         * \see cache::operator=
          */
-        void swap ( cache<Key,Data,Policy,Compare,Allocator>& mp ) throw(exception_invalid_policy) {
+        void swap ( cache<Key,Data,Policy,Compare,Allocator>& mp ) {
             _storage.swap(mp._storage);
             _policy->swap(*mp._policy);
 
@@ -462,16 +462,16 @@ namespace stlcache {
         }
 
         /*!
-         * \brief Removes a entry from cache 
-         *  
-         * The entry with the specified key value will be removed from cache and it's usage count information will be erased. Size of the cache will be decreased. 
+         * \brief Removes a entry from cache
+         *
+         * The entry with the specified key value will be removed from cache and it's usage count information will be erased. Size of the cache will be decreased.
          *  For non-existing entries nothing will be done.
-         *  
-         * \param <x> Key to remove.  
-         *  
-         * \return 1 when entry is removed (ie number of removed emtries, which is always 1, as keys are unique) or zero when nothing was done. 
+         *
+         * \param <x> Key to remove.
+         *
+         * \return 1 when entry is removed (ie number of removed emtries, which is always 1, as keys are unique) or zero when nothing was done.
          */
-        size_type erase ( const key_type& x ) throw() {
+        size_type erase ( const key_type& x ) {
             size_type ret=_storage.erase(x);
             _policy->remove(x);
 
@@ -481,18 +481,18 @@ namespace stlcache {
         }
 
         /*!
-         * \brief Insert element to the cache 
-         *  
-         * The cache is extended by inserting a single new element. This effectively increases the cache size. Because cache do not allow for duplicate key values, the insertion operation checks for each element inserted whether another element exists already in the container with the same key value, if so, the element is not inserted and its mapped value is not changed in any way. 
-         * Extension of cache could result in removal of some elements, depending of the cache fullness and used policy. It is also possible, that removal of excessive entries 
-         * will fail, therefore insert operation will fail too. 
-         * 
-         * \throw <exception_cache_full>  Thrown when there are no available space in the cache and policy doesn't allows removal of elements. 
-         * \throw <exception_invalid_key> Thrown when the policy doesn't accepts the key 
-         *  
-         * \return true if the new elemented was inserted or false if an element with the same key existed. 
+         * \brief Insert element to the cache
+         *
+         * The cache is extended by inserting a single new element. This effectively increases the cache size. Because cache do not allow for duplicate key values, the insertion operation checks for each element inserted whether another element exists already in the container with the same key value, if so, the element is not inserted and its mapped value is not changed in any way.
+         * Extension of cache could result in removal of some elements, depending of the cache fullness and used policy. It is also possible, that removal of excessive entries
+         * will fail, therefore insert operation will fail too.
+         *
+         * \throw <exception_cache_full>  Thrown when there are no available space in the cache and policy doesn't allows removal of elements.
+         * \throw <exception_invalid_key> Thrown when the policy doesn't accepts the key
+         *
+         * \return true if the new elemented was inserted or false if an element with the same key existed.
          */
-        bool insert(Key _k, Data _d) throw(exception_cache_full,exception_invalid_key) {
+        bool insert(Key _k, Data _d) {
             while (this->_currEntries >= this->_maxEntries) {
                 _victim<Key> victim=_policy->victim();
                 if (!victim) {
@@ -514,47 +514,47 @@ namespace stlcache {
 
         /*!
          * \brief Maximum cache size accessor
-         *  
-         * Returns the maximum number of elements that the cache object can hold. This is the maximum potential size the cache can reach. It is specified at 
-         * construction time and cannot be modified (with excaption of \link cache::swap swap operation \endlink) 
-         *  
-         * \return The maximum number of elements a cache can have as its content. 
-         *  
-         * \see size 
+         *
+         * Returns the maximum number of elements that the cache object can hold. This is the maximum potential size the cache can reach. It is specified at
+         * construction time and cannot be modified (with excaption of \link cache::swap swap operation \endlink)
+         *
+         * \return The maximum number of elements a cache can have as its content.
+         *
+         * \see size
          */
-        size_type max_size() const throw() {
+        size_type max_size() const {
             return this->_maxEntries;
         }
 
         /*! \brief Counts entries in the cache.
-          *  
-          *  Provides information on number of cache entries. For checking, whether the cache empty or not, please use the \link cache::empty empty function \endlink 
-          *  
+          *
+          *  Provides information on number of cache entries. For checking, whether the cache empty or not, please use the \link cache::empty empty function \endlink
+          *
           *  \return Number of object in the cache (size of cache)
-          *  
+          *
           *  \see empty
           *  \see clear
-          */        
-        size_type size() const throw() {
+          */
+        size_type size() const {
             assert(this->_currEntries==_storage.size());
             return this->_currEntries;
         }
 
         /*!
-         * \brief Access cache data 
-         *  
-         * Accessor to the data (values) stored in cache. If the specified key exists in the cache, it's usage count will be touched and reference to the element is returned. 
-         * The data object itself is kept in the cache, so the reference will be valid until it is removed (either manually or due to cache overflow) or cache object destroyed. 
-         *  
-         * \param <_k> key to the data 
-         * 
+         * \brief Access cache data
+         *
+         * Accessor to the data (values) stored in cache. If the specified key exists in the cache, it's usage count will be touched and reference to the element is returned.
+         * The data object itself is kept in the cache, so the reference will be valid until it is removed (either manually or due to cache overflow) or cache object destroyed.
+         *
+         * \param <_k> key to the data
+         *
          * \throw  <exception_invalid_key> Thrown when non-existent key is supplied. You could use \link cache::check check member \endlink or \link cache::count count member \endlink to check cache existence prior to fetching the data
-         *  
-         * \return constand reference to the data, mapped by the key. of type Data of course. 
-         *  
-         * \see check 
+         *
+         * \return constand reference to the data, mapped by the key. of type Data of course.
+         *
+         * \see check
          */
-        const Data& fetch(const Key& _k) throw(exception_invalid_key) {
+        const Data& fetch(const Key& _k) {
             if (!check(_k)) {
                 throw exception_invalid_key("Key is not in cache",_k);
             }
@@ -564,30 +564,30 @@ namespace stlcache {
 
         /*!
          * \brief Check for the key presence in cache
-         *  
+         *
          *  Tests, whether cache is exist in the cache or not. During check it's usage count is increased, as opposed to \link cache::count count member \endlink
-         *  
+         *
          *  \param <_k> key to test
-         *  
-         * \return true if key exists in the cache and false otherwise 
-         *  
-         * \see count 
+         *
+         * \return true if key exists in the cache and false otherwise
+         *
+         * \see count
          */
-        const bool check(const Key& _k) throw() {
+        const bool check(const Key& _k) {
             _policy->touch(_k);
             return _storage.count(_k)==1;
         }
 
         /*!
-         * \brief Increase usage count for entry 
-         *  
+         * \brief Increase usage count for entry
+         *
          *  Touches an entry in cache, simulating access to it. Usefull to promote (or devote, depending on policy) item in the cache, reducing(or increasing)
          *  risk for expiration for it.
-         *  
+         *
          *  \param _k key to touch
-         *  
+         *
          */
-        void touch(const Key& _k) throw() {
+        void touch(const Key& _k) {
             _policy->touch(_k);
         }
         //@}
@@ -595,18 +595,18 @@ namespace stlcache {
         //@{
         /*!
          * \brief Copy cache content
-         *  
+         *
          * Assigns a copy of the elements in x as the new content for the cache. Usage counts for entries are copied too.
-         * The elements contained in the object before the call are dropped, and replaced by copies of those in cache x, if any. 
+         * The elements contained in the object before the call are dropped, and replaced by copies of those in cache x, if any.
          * After a call to this member function, both the map object and x will have the same size and compare equal to each other.
-         *  
-         * \param <x> a cache object with the same template parameters 
-         *  
-         * \return *this 
-         *  
-         * \see swap 
+         *
+         * \param <x> a cache object with the same template parameters
+         *
+         * \return *this
+         *
+         * \see swap
          */
-        cache<Key,Data,Policy,Compare,Allocator>& operator= ( const cache<Key,Data,Policy,Compare,Allocator>& x) throw() {
+        cache<Key,Data,Policy,Compare,Allocator>& operator= ( const cache<Key,Data,Policy,Compare,Allocator>& x) {
             this->_storage=x._storage;
             this->_maxEntries=x._maxEntries;
             this->_currEntries=this->_storage.size();
@@ -619,25 +619,25 @@ namespace stlcache {
 
         /*!
          * \brief A copy constructor
-         * 
+         *
          *  The object is initialized to have the same contents and properties as the x cache object.
-         *  
-         *  \param <x> a cache object with the same template parameters 
+         *
+         *  \param <x> a cache object with the same template parameters
          */
-        cache(const cache<Key,Data,Policy,Compare,Allocator>& x) throw() {
+        cache(const cache<Key,Data,Policy,Compare,Allocator>& x) {
             *this=x;
         }
         /*!
-         * \brief Primary constructor. 
-         *  
-         * Constructs an empty cache object and sets a maximum size for it. It is the only way to set size for a cache and it can't be changed later. 
-         * You could also  pass optional comparator object, compatible with Compare. 
-         *  
-         * \param <size> Maximum number of entries, allowed in the cache. 
-         * \param <comp> Comparator object, compatible with Compare type. Defaults to Compare() 
-         * 
+         * \brief Primary constructor.
+         *
+         * Constructs an empty cache object and sets a maximum size for it. It is the only way to set size for a cache and it can't be changed later.
+         * You could also  pass optional comparator object, compatible with Compare.
+         *
+         * \param <size> Maximum number of entries, allowed in the cache.
+         * \param <comp> Comparator object, compatible with Compare type. Defaults to Compare()
+         *
          */
-        explicit cache(const size_type size, const Compare& comp = Compare()) throw() {
+        explicit cache(const size_type size, const Compare& comp = Compare()) {
             this->_storage=storageType(comp, Allocator<pair<const Key, Data> >());
             this->_maxEntries=size;
             this->_currEntries=0;
@@ -648,10 +648,10 @@ namespace stlcache {
         }
 
         /*!
-         * \brief destructor 
-         *  
-         * Destructs the cache object. This calls each of the cache element's destructors, and deallocates all the storage capacity allocated by the cache. 
-         * 
+         * \brief destructor
+         *
+         * Destructs the cache object. This calls each of the cache element's destructors, and deallocates all the storage capacity allocated by the cache.
+         *
          */
         ~cache() {
             policyAlloc.destroy(this->_policy);

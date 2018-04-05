@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE(expire) {
     c1.insert(3,"data3");
 
     c1.touch(1); //For key one refcount is 3 now
-    c1.touch(1); 
+    c1.touch(1);
     c1.touch(1);
     c1.touch(2); //For key two refcount is 3 now
     c1.touch(2);
