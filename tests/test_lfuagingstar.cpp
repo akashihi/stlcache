@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(veryfrequent) {
     c1.touch(2);
     c1.touch(3);
 
-    BOOST_REQUIRE_THROW(c1.insert(4,"data4"),exception_cache_full); //Because every entry in cache have reference counter bigger then one and 
+    BOOST_REQUIRE_THROW(c1.insert(4,"data4"),exception_cache_full); //Because every entry in cache have reference counter bigger then one and
                                                                                                     //lfu* policy works only on entries with refcount equal to 1
 
     c1.erase(1);
@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE(expire) {
     c1.insert(3,"data3");
 
     c1.touch(1); //For key one refcount is 3 now
-    c1.touch(1); 
+    c1.touch(1);
     c1.touch(2); //For key two refcount is 3 now
     c1.touch(2);
     c1.touch(3); //For key three refcount is 2 now
@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE(expirefail) {
     c1.insert(3,"data3");
 
     c1.touch(1); //For key one refcount is 4 now
-    c1.touch(1); 
+    c1.touch(1);
     c1.touch(1);
     c1.touch(2); //For key two refcount is 4 now
     c1.touch(2);
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(expirefail) {
 
     WAIT_A_SECOND;
 
-    BOOST_REQUIRE_THROW(c1.insert(4,"data4"),exception_cache_full); //Cause even in expired cache there are no entries with refcount 1 
+    BOOST_REQUIRE_THROW(c1.insert(4,"data4"),exception_cache_full); //Cause even in expired cache there are no entries with refcount 1
 
     WAIT_A_SECOND;
 
