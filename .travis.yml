@@ -16,7 +16,7 @@ before_script:
  - sudo sh cmake.sh --skip-license --exclude-subdir --prefix=/usr/local
  - wget https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.gz
  - tar -xzvf boost_1_66_0.tar.gz
- - sudo sh bootstrap.sh --prefix=/usr/local
+ - sudo sh ./bootstrap.sh --prefix=/usr/local
  - sudo ./b2 install
 
 script:
