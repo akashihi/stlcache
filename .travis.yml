@@ -9,7 +9,6 @@ addons:
     packages:
       - gcc-6
       - g++-6
-      - cmake
       - libboost-all-dev
       - doxygen
 
