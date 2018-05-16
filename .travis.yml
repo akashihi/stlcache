@@ -13,8 +13,8 @@ addons:
       - doxygen
 
 before_install:
-    wget -O cmake.sh https://cmake.org/files/v3.11/cmake-3.11.1-Linux-x86_64.sh
-    sudo sh cmake.sh --skip-license --exclude-subdir --prefix=/usr/local
+    - wget -O cmake.sh https://cmake.org/files/v3.11/cmake-3.11.1-Linux-x86_64.sh
+    - sudo sh cmake.sh --skip-license --exclude-subdir --prefix=/usr/local
 
 script:
   # Link gcc-6 and g++-6 to their standard commands
