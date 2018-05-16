@@ -11,8 +11,7 @@ addons:
       - g++-6
       - libboost-all-dev
       - doxygen
-before_install:
- - sudo apt-get purge cmake
+before_script:
  - wget -O cmake.sh https://cmake.org/files/v3.11/cmake-3.11.1-Linux-x86_64.sh 
  - sudo sh cmake.sh --skip-license --exclude-subdir --prefix=/usr/local
 
