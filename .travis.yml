@@ -14,6 +14,11 @@ addons:
 before_script:
  - wget -O cmake.sh https://cmake.org/files/v3.11/cmake-3.11.1-Linux-x86_64.sh 
  - sudo sh cmake.sh --skip-license --exclude-subdir --prefix=/usr/local
+ - wget https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.gz
+ - tar -xzvf cmake-3.11.1-Linux-x86_64.tar.gz
+ - cd /boost_1_66_0
+ - ./bootstrap.sh --prefix=/usr/local
+ - ./b2 install
 
 script:
   # Link gcc-6 and g++-6 to their standard commands
