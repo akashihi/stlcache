@@ -17,8 +17,8 @@ before_script:
  - wget https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.gz
  - tar -xzvf boost_1_66_0.tar.gz >/dev/null
  - cd boost_1_66_0
- - sudo sh bootstrap.sh --prefix=/usr/local
- - travis_wait 30 sudo ./b2 install >/dev/null
+ - sudo sh bootstrap.sh --prefix=/usr/local --with-libraries=system thread unit_test_framework
+ - travis_wait 30 sudo ./b2 install link=static threading=multi variant=release >/dev/null
 
 script:
   # Link gcc-6 and g++-6 to their standard commands
