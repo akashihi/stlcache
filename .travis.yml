@@ -16,7 +16,7 @@ before_script:
  - wget https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.gz
  - tar -xzvf boost_1_66_0.tar.gz >/dev/null
  - cd boost_1_66_0
- - watch -n 300 echo 'Hello world!'
+ - travis_wait 30 mvn package -Dtestng=test.xml
  - sudo sh bootstrap.sh --prefix=/usr/local
  - sudo ./b2 install >/dev/null
 
