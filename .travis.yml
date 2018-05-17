@@ -11,9 +11,6 @@ addons:
       - g++-6
       - doxygen
 
-install: 
-- travis_wait mvn install
-
 before_script:
  - wget -O cmake.sh https://cmake.org/files/v3.11/cmake-3.11.1-Linux-x86_64.sh 
  - sudo sh cmake.sh --skip-license --exclude-subdir --prefix=/usr/local
@@ -21,7 +18,7 @@ before_script:
  - tar -xzvf boost_1_66_0.tar.gz >/dev/null
  - cd boost_1_66_0
  - sudo sh bootstrap.sh --prefix=/usr/local
- - sudo ./b2 install >/dev/null
+ - travis_wait 30 sudo ./b2 install >/dev/null
 
 script:
   # Link gcc-6 and g++-6 to their standard commands
