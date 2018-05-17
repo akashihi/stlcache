@@ -10,12 +10,14 @@ addons:
       - gcc-6
       - g++-6
       - doxygen
+
+install: travis_wait 30 mvn install
+
 before_script:
  - wget -O cmake.sh https://cmake.org/files/v3.11/cmake-3.11.1-Linux-x86_64.sh 
  - sudo sh cmake.sh --skip-license --exclude-subdir --prefix=/usr/local
  - wget https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.gz
  - tar -xzvf boost_1_66_0.tar.gz >/dev/null
- - sudo travis_wait 30 mvn package -Dtestng=test.xml
  - cd boost_1_66_0
  - sudo sh bootstrap.sh --prefix=/usr/local
  - sudo ./b2 install >/dev/null
