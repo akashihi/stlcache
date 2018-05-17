@@ -28,7 +28,7 @@ namespace stlcache {
         set<Key,less<Key>,Allocator<Key> > b2Entries;
 
     public:
-        _policy_adaptive_type<Key,Allocator>& operator= ( const _policy_adaptive_type<Key,Allocator>& x) throw() {
+        _policy_adaptive_type<Key,Allocator>& operator= ( const _policy_adaptive_type<Key,Allocator>& x) {
             this->_size=x._size;
 
             this->T1=x.T1;
@@ -42,7 +42,7 @@ namespace stlcache {
 
             return *this;
         }
-        _policy_adaptive_type(const _policy_adaptive_type<Key,Allocator>& x) throw() : T1(x.T1),T2(x.T2),B1(x.B1),B2(x.B2) {
+        _policy_adaptive_type(const _policy_adaptive_type<Key,Allocator>& x) : T1(x.T1),T2(x.T2),B1(x.B1),B2(x.B2) {
             this->_size=x._size;
 
             this->t1Entries=x.t1Entries;
@@ -50,11 +50,11 @@ namespace stlcache {
             this->t2Entries=x.t2Entries;
             this->b2Entries=x.b2Entries;
         }
-        _policy_adaptive_type(const size_t& size ) throw() : T1(size),T2(size),B1(size),B2(size) { 
+        _policy_adaptive_type(const size_t& size ) : T1(size),T2(size),B1(size),B2(size) {
             this->_size=size;
         }
 
-        virtual void insert(const Key& _k) throw(exception_invalid_key) {
+        virtual void insert(const Key& _k) {
             if (b1Entries.find(_k)!=b1Entries.end()) {
                 //Check, whether we are outsized
                 b1Entries.erase(_k);
@@ -75,7 +75,7 @@ namespace stlcache {
                 T1.insert(_k);
             }
         }
-        virtual void remove(const Key& _k) throw() {
+        virtual void remove(const Key& _k) {
             if (t1Entries.find(_k)!=t1Entries.end()) {
                 B1.insert(_k);
                 b1Entries.insert(_k);
@@ -100,7 +100,7 @@ namespace stlcache {
                 T2.remove(_k);
             }
         }
-        virtual void touch(const Key& _k) throw() { 
+        virtual void touch(const Key& _k) {
             if (t1Entries.find(_k)!=t1Entries.end()) {
                 t1Entries.erase(_k);
                 T1.remove(_k);
@@ -110,7 +110,7 @@ namespace stlcache {
                 T2.touch(_k);
             }
         }
-        virtual void clear() throw() {
+        virtual void clear() {
             T1.clear();
             t1Entries.clear();
             T2.clear();
@@ -120,7 +120,7 @@ namespace stlcache {
             B2.clear();
             b2Entries.clear();
         }
-        virtual void swap(policy<Key,Allocator>& _p) throw(exception_invalid_policy) {
+        virtual void swap(policy<Key,Allocator>& _p) {
             try {
                 _policy_adaptive_type<Key,Allocator>& _pn=dynamic_cast<_policy_adaptive_type<Key,Allocator>& >(_p);
                 T1.swap(_pn.T1);
@@ -136,7 +136,7 @@ namespace stlcache {
             }
         }
 
-        virtual const _victim<Key> victim() throw()  {
+        virtual const _victim<Key> victim()  {
             if (t1Entries.size()>t2Entries.size()) {
                 return T1.victim();
             } else {
@@ -147,19 +147,19 @@ namespace stlcache {
 
     /*!
      * \brief A 'Adaptive replacement' policy
-     * 
-     * Implements <a href="http://en.wikipedia.org/wiki/Adaptive_replacement_cache">'Adaptive replacement'</a> cache algorithm. 
-     *  
+     *
+     * Implements <a href="http://en.wikipedia.org/wiki/Adaptive_replacement_cache">'Adaptive replacement'</a> cache algorithm.
+     *
      * The adaptive cache algorithm is balancing between internal LRU and LFU caches, trying to adapt to the external expectations on it.
-     *    
-     * \link cache::touch Touching \endlink the entry decreases item's expiration probability. This policy is always able to expire any amount of entries.     
-     *  
-     * No additional configuration is required. 
-     *  
+     *
+     * \link cache::touch Touching \endlink the entry decreases item's expiration probability. This policy is always able to expire any amount of entries.
+     *
+     * No additional configuration is required.
+     *
      */
     struct policy_adaptive {
         template <typename Key, template <typename T> class Allocator>
-            struct bind : _policy_adaptive_type<Key,Allocator> { 
+            struct bind : _policy_adaptive_type<Key,Allocator> {
                 bind(const bind& x) : _policy_adaptive_type<Key,Allocator>(x)  { }
                 bind(const size_t& size) : _policy_adaptive_type<Key,Allocator>(size) { }
             };

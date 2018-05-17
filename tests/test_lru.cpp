@@ -39,4 +39,37 @@ BOOST_AUTO_TEST_CASE(touch) {
     BOOST_REQUIRE_THROW(c1.fetch(2),exception_invalid_key); //Must be removed by LRU policy (cause 1 is touched)
 }
 
+BOOST_AUTO_TEST_CASE(assign) {
+    cache<int,string,policy_lru> c1(3);
+
+    c1.insert(1,"data1");
+    c1.insert(2,"data2");
+    c1.insert(3,"data3");
+
+    cache<int,string,policy_lru> c2 = c1;
+    c2.touch(1);
+
+    c2.insert(4,"data4");
+
+    BOOST_REQUIRE_THROW(c2.fetch(2),exception_invalid_key); //Must be removed by LRU policy (cause 1 is touched)
+}
+
+BOOST_AUTO_TEST_CASE(clear) {
+    cache<int,string,policy_lru> c1(3);
+
+    c1.insert(1,"data1");
+    c1.insert(2,"data2");
+    c1.insert(3,"data3");
+
+    c1.clear();
+
+    BOOST_REQUIRE_THROW(c1.fetch(1),exception_invalid_key);
+
+    c1.insert(4,"data4");
+    c1.insert(5,"data5");
+
+    c1.fetch(4);
+    c1.fetch(5);
+}
+
 BOOST_AUTO_TEST_SUITE_END();

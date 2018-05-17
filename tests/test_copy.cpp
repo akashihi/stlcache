@@ -138,7 +138,7 @@ BOOST_AUTO_TEST_CASE(copyLFUAgingStar) {
     c1.insert(3,"data3");
 
     c1.touch(1); //For key one refcount is 3 now
-    c1.touch(1); 
+    c1.touch(1);
     c1.touch(2); //For key two refcount is 3 now
     c1.touch(2);
     c1.touch(3); //For key three refcount is 2 now

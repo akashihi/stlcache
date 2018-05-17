@@ -8,10 +8,11 @@
 
 #define BOOST_TEST_MODULE "STLCacheVictimPerformance"
 #include <boost/test/unit_test.hpp>
+#include <iostream>
 
 #ifdef _WIN32
 #include "timeval.h"
-#else 
+#else
 #include <sys/time.h>
 #endif /* _WIN32 */
 
@@ -32,15 +33,15 @@ BOOST_AUTO_TEST_CASE(victimNone) {
         c.insert(indx,indx);
     }
 
-    gettimeofday(&start, NULL); 
+    gettimeofday(&start, NULL);
 
     for(unsigned int indx = noItems; indx<noItems*2; indx++) {
         c.insert(indx,indx);
     }
 
-    gettimeofday(&stop, NULL); 
+    gettimeofday(&stop, NULL);
 
-    cout<<"Insertion of "<<noItems<<" excessive items into policy_none cache took "<<((stop.tv_sec-start.tv_sec)*1000)+((stop.tv_usec-start.tv_usec)/1000)<<" milliseconds"<<endl;
+    std::cout<<"Insertion of "<<noItems<<" excessive items into policy_none cache took "<<((stop.tv_sec-start.tv_sec)*1000)+((stop.tv_usec-start.tv_usec)/1000)<<" milliseconds"<<endl;
 }
 
 BOOST_AUTO_TEST_CASE(victimLRU) {
@@ -51,15 +52,15 @@ BOOST_AUTO_TEST_CASE(victimLRU) {
         c.insert(indx,indx);
     }
 
-    gettimeofday(&start, NULL); 
+    gettimeofday(&start, NULL);
 
     for(unsigned int indx = noItems; indx<noItems*2; indx++) {
         c.insert(indx,indx);
     }
 
-    gettimeofday(&stop, NULL); 
+    gettimeofday(&stop, NULL);
 
-    cout<<"Insertion of "<<noItems<<" excessive items into policy_lru cache took "<<((stop.tv_sec-start.tv_sec)*1000)+((stop.tv_usec-start.tv_usec)/1000)<<" milliseconds"<<endl;
+    std::cout<<"Insertion of "<<noItems<<" excessive items into policy_lru cache took "<<((stop.tv_sec-start.tv_sec)*1000)+((stop.tv_usec-start.tv_usec)/1000)<<" milliseconds"<<endl;
 }
 
 BOOST_AUTO_TEST_CASE(victimMRU) {
@@ -70,15 +71,15 @@ BOOST_AUTO_TEST_CASE(victimMRU) {
         c.insert(indx,indx);
     }
 
-    gettimeofday(&start, NULL); 
+    gettimeofday(&start, NULL);
 
     for(unsigned int indx = noItems; indx<noItems*2; indx++) {
         c.insert(indx,indx);
     }
 
-    gettimeofday(&stop, NULL); 
+    gettimeofday(&stop, NULL);
 
-    cout<<"Insertion of "<<noItems<<" excessive items into policy_mru cache took "<<((stop.tv_sec-start.tv_sec)*1000)+((stop.tv_usec-start.tv_usec)/1000)<<" milliseconds"<<endl;
+    std::cout<<"Insertion of "<<noItems<<" excessive items into policy_mru cache took "<<((stop.tv_sec-start.tv_sec)*1000)+((stop.tv_usec-start.tv_usec)/1000)<<" milliseconds"<<endl;
 }
 
 BOOST_AUTO_TEST_CASE(victimLFU) {
@@ -89,15 +90,15 @@ BOOST_AUTO_TEST_CASE(victimLFU) {
         c.insert(indx,indx);
     }
 
-    gettimeofday(&start, NULL); 
+    gettimeofday(&start, NULL);
 
     for(unsigned int indx = noItems; indx<noItems*2; indx++) {
         c.insert(indx,indx);
     }
 
-    gettimeofday(&stop, NULL); 
+    gettimeofday(&stop, NULL);
 
-    cout<<"Insertion of "<<noItems<<" excessive items into policy_lfu cache took "<<((stop.tv_sec-start.tv_sec)*1000)+((stop.tv_usec-start.tv_usec)/1000)<<" milliseconds"<<endl;
+    std::cout<<"Insertion of "<<noItems<<" excessive items into policy_lfu cache took "<<((stop.tv_sec-start.tv_sec)*1000)+((stop.tv_usec-start.tv_usec)/1000)<<" milliseconds"<<endl;
 }
 
 BOOST_AUTO_TEST_CASE(victimLFUStar) {
@@ -108,15 +109,15 @@ BOOST_AUTO_TEST_CASE(victimLFUStar) {
         c.insert(indx,indx);
     }
 
-    gettimeofday(&start, NULL); 
+    gettimeofday(&start, NULL);
 
     for(unsigned int indx = noItems; indx<noItems*2; indx++) {
         c.insert(indx,indx);
     }
 
-    gettimeofday(&stop, NULL); 
+    gettimeofday(&stop, NULL);
 
-    cout<<"Insertion of "<<noItems<<" excessive items into policy_lfustar cache took "<<((stop.tv_sec-start.tv_sec)*1000)+((stop.tv_usec-start.tv_usec)/1000)<<" milliseconds"<<endl;
+    std::cout<<"Insertion of "<<noItems<<" excessive items into policy_lfustar cache took "<<((stop.tv_sec-start.tv_sec)*1000)+((stop.tv_usec-start.tv_usec)/1000)<<" milliseconds"<<endl;
 }
 
 BOOST_AUTO_TEST_CASE(victimLFUAging) {
@@ -127,15 +128,15 @@ BOOST_AUTO_TEST_CASE(victimLFUAging) {
         c.insert(indx,indx);
     }
 
-    gettimeofday(&start, NULL); 
+    gettimeofday(&start, NULL);
 
     for(unsigned int indx = noItems; indx<noItems*2; indx++) {
         c.insert(indx,indx);
     }
 
-    gettimeofday(&stop, NULL); 
+    gettimeofday(&stop, NULL);
 
-    cout<<"Insertion of "<<noItems<<" excessive items into policy_lfuaging cache took "<<((stop.tv_sec-start.tv_sec)*1000)+((stop.tv_usec-start.tv_usec)/1000)<<" milliseconds"<<endl;
+    std::cout<<"Insertion of "<<noItems<<" excessive items into policy_lfuaging cache took "<<((stop.tv_sec-start.tv_sec)*1000)+((stop.tv_usec-start.tv_usec)/1000)<<" milliseconds"<<endl;
 }
 
 BOOST_AUTO_TEST_CASE(victimLFUAgingStar) {
@@ -146,15 +147,15 @@ BOOST_AUTO_TEST_CASE(victimLFUAgingStar) {
         c.insert(indx,indx);
     }
 
-    gettimeofday(&start, NULL); 
+    gettimeofday(&start, NULL);
 
     for(unsigned int indx = noItems; indx<noItems*2; indx++) {
         c.insert(indx,indx);
     }
 
-    gettimeofday(&stop, NULL); 
+    gettimeofday(&stop, NULL);
 
-    cout<<"Insertion of "<<noItems<<" excessive items into policy_lfuagingstar cache took "<<((stop.tv_sec-start.tv_sec)*1000)+((stop.tv_usec-start.tv_usec)/1000)<<" milliseconds"<<endl;
+    std::cout<<"Insertion of "<<noItems<<" excessive items into policy_lfuagingstar cache took "<<((stop.tv_sec-start.tv_sec)*1000)+((stop.tv_usec-start.tv_usec)/1000)<<" milliseconds"<<endl;
 }
 
 BOOST_AUTO_TEST_CASE(insertAdaptive) {
@@ -165,15 +166,15 @@ BOOST_AUTO_TEST_CASE(insertAdaptive) {
         c.insert(indx,indx);
     }
 
-    gettimeofday(&start, NULL); 
+    gettimeofday(&start, NULL);
 
     for(unsigned int indx = noItems; indx<noItems*2; indx++) {
         c.insert(indx,indx);
     }
 
-    gettimeofday(&stop, NULL); 
+    gettimeofday(&stop, NULL);
 
-    cout<<"Insertion of "<<noItems<<" excessive items into policy_adaptive cache took "<<((stop.tv_sec-start.tv_sec)*1000)+((stop.tv_usec-start.tv_usec)/1000)<<" milliseconds"<<endl;
+    std::cout<<"Insertion of "<<noItems<<" excessive items into policy_adaptive cache took "<<((stop.tv_sec-start.tv_sec)*1000)+((stop.tv_usec-start.tv_usec)/1000)<<" milliseconds"<<endl;
 }
 
 BOOST_AUTO_TEST_SUITE_END();

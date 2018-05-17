@@ -1,15 +1,14 @@
 #Preamble
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 3.10)
 project (STL::Cache)
 
 #Environment detection
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
 #Check for libraries presence
-SET(BOOST_ROOT "D:\\Boost")
 SET(Boost_USE_STATIC_LIBS ON)
 SET(Boost_USE_MULTITHREADED ON)
-FIND_PACKAGE(Boost 1.42.0 COMPONENTS system thread unit_test_framework)
+FIND_PACKAGE(Boost 1.66.0 COMPONENTS system unit_test_framework)
 
 #Add MT libraries
 SET(LIBS ${Boost_LIBRARIES})
