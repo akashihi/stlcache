@@ -12,7 +12,7 @@ addons:
       - doxygen
 
 install: 
-- travis_wait 30 mvn install
+- travis_wait mvn install
 
 before_script:
  - wget -O cmake.sh https://cmake.org/files/v3.11/cmake-3.11.1-Linux-x86_64.sh 
