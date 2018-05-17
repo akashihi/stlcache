@@ -19,6 +19,7 @@ before_script:
  - cd boost_1_66_0
  - sudo sh bootstrap.sh --prefix=/usr/local --with-libraries=system thread unit_test_framework
  - travis_wait 30 sudo ./b2 install link=static threading=multi variant=release >/dev/null
+ - cd ..
 
 script:
   # Link gcc-6 and g++-6 to their standard commands
