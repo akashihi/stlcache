@@ -751,7 +751,7 @@ namespace stlcache {
             size_type ret=_storage.erase(x);
             _policy->remove(x);
 
-            _currEntries--;
+            _currEntries-=ret;
 
             return ret;
         }
