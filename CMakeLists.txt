@@ -76,6 +76,10 @@ ADD_EXECUTABLE(test_boost_optional tests/test_boost_optional.cpp)
 target_link_libraries(test_boost_optional ${LIBS})
 ADD_TEST(boost::optional test_boost_optional)
 
+ADD_EXECUTABLE(test_insert_assign tests/test_insert_assign.cpp)
+target_link_libraries(test_insert_assign ${Boost_LIBRARIES})
+ADD_TEST(IA test_insert_assign)
+
 ADD_EXECUTABLE(test_insert_perf tests/test_insert_perf.cpp)
 target_link_libraries(test_insert_perf ${LIBS})
 
