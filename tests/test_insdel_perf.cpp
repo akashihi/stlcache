@@ -125,6 +125,31 @@ BOOST_AUTO_TEST_CASE(insdelLFU) {
     std::cout<<"Removal of "<<noItems<<" items from policy_lfu cache took "<<((stop.tv_sec-start.tv_sec)*1000)+((stop.tv_usec-start.tv_usec)/1000)<<" milliseconds"<<endl;
 }
 
+BOOST_AUTO_TEST_CASE(insdelLFUMulti) {
+    struct timeval start,stop;
+
+    gettimeofday(&start, NULL);
+
+    cache<unsigned int,unsigned int,policy_lfu_multi> c(noItems);
+    for(unsigned int indx = 0; indx<noItems; indx++) {
+        c.insert(indx,indx);
+    }
+
+    gettimeofday(&stop, NULL);
+
+    std::cout<<"Insertion of "<<noItems<<" items into policy_lfu_multi cache took "<<((stop.tv_sec-start.tv_sec)*1000)+((stop.tv_usec-start.tv_usec)/1000)<<" milliseconds"<<endl;
+
+    gettimeofday(&start, NULL);
+
+    for(unsigned int indx = 0; indx<noItems; indx++) {
+        c.erase(indx);
+    }
+
+    gettimeofday(&stop, NULL);
+
+    std::cout<<"Removal of "<<noItems<<" items from policy_lfu_multi cache took "<<((stop.tv_sec-start.tv_sec)*1000)+((stop.tv_usec-start.tv_usec)/1000)<<" milliseconds"<<endl;
+}
+
 BOOST_AUTO_TEST_CASE(insdelLFUStar) {
     struct timeval start,stop;
 

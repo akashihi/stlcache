@@ -101,6 +101,25 @@ BOOST_AUTO_TEST_CASE(victimLFU) {
     std::cout<<"Insertion of "<<noItems<<" excessive items into policy_lfu cache took "<<((stop.tv_sec-start.tv_sec)*1000)+((stop.tv_usec-start.tv_usec)/1000)<<" milliseconds"<<endl;
 }
 
+BOOST_AUTO_TEST_CASE(victimLFUMulti) {
+    struct timeval start,stop;
+
+    cache<unsigned int,unsigned int,policy_lfu_multi> c(noItems);
+    for(unsigned int indx = 0; indx<noItems; indx++) {
+        c.insert(indx,indx);
+    }
+
+    gettimeofday(&start, NULL);
+
+    for(unsigned int indx = noItems; indx<noItems*2; indx++) {
+        c.insert(indx,indx);
+    }
+
+    gettimeofday(&stop, NULL);
+
+    std::cout<<"Insertion of "<<noItems<<" excessive items into policy_lfu_multi cache took "<<((stop.tv_sec-start.tv_sec)*1000)+((stop.tv_usec-start.tv_usec)/1000)<<" milliseconds"<<endl;
+}
+
 BOOST_AUTO_TEST_CASE(victimLFUStar) {
     struct timeval start,stop;
 
