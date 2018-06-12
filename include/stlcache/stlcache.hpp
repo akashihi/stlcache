@@ -599,11 +599,18 @@ namespace stlcache {
         }
 
         /*
-         *Merge implementation - WIP
+         * \bried Merge two caches
+         *
+         * Inserts items, missing in *this, but existing in the second to *this.
+         * For the existing items, reference count will be increased.
          */
         void merge(const cache<Key, Data, Policy, Compare, Allocator>& second){
             for (auto it = second._storage.begin(); it != second._storage.end(); it++) {
-                this->insert_or_assign(it->first, it->second);
+                if (!this->check(it->first)) {
+                    this->insert(it->first, it->second);
+                } else {
+                    this->touch(it->first);
+                }
             }
         }
 
