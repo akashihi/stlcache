@@ -558,6 +558,27 @@ namespace stlcache {
             return result;
         }
 
+        /*
+         * insert_or_assign
+         */
+        bool insert_or_assign(Key _k, Data _d) {
+            if(this->_storage.find(_k)==this->_storage.end()){
+                return this->insert(_k, _d);
+            }
+            
+            _policy->touch(_k);
+            _storage.erase(_k);
+            return _storage.insert(value_type(_k,_d)).second;
+        }
+        /*
+         *Merge implementation - WIP
+         */
+            void merge(const cache<Key, Data, Policy, Compare, Allocator>& second){
+                for (auto it = second._storage.begin(); it != second._storage.end(); it++) {
+                    this->insert_or_assign(it->first, it->second);
+                }
+            }
+
         /*!
          * \brief Maximum cache size accessor
          *
@@ -691,6 +712,8 @@ namespace stlcache {
             policyAlloc.construct(this->_policy,localPolicy);
             return *this;
         }
+
+
 
         /*!
          * \brief A copy constructor
