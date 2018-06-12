@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2011 Denis V Chapligin
+// Copyright (C) 2011-2017 Denis V Chapligin, Martin Hrabovsky
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -19,7 +19,7 @@ namespace stlcache {
     template <class Key,template <typename T> class Allocator> class _policy_lfu_type : public policy<Key,Allocator> {
     protected:
         typedef pair<const unsigned int, Key> entriesPair;
-        typedef multimap<unsigned int, Key,less<Key> ,Allocator<entriesPair> > entriesType;
+        typedef multimap<unsigned int, Key,less<unsigned int> ,Allocator<entriesPair> > entriesType;
         entriesType _entries;
 
         typedef typename entriesType::iterator entriesIterator;
@@ -130,6 +130,7 @@ namespace stlcache {
      *
      * No additional configuration is required.
      *
+     * \see policy_lfu_multi
      * \see policy_lfustar
      * \see policy_lfuaging
      * \see policy_lfuagingstar

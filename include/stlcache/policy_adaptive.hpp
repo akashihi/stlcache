@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2011 Denis V Chapligin
+// Copyright (C) 2011-2017 Denis V Chapligin, Martin Hrabovsky
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -19,11 +19,11 @@ namespace stlcache {
         size_t _size;
         _policy_lru_type<Key,Allocator> T1;
         set<Key,less<Key>,Allocator<Key> > t1Entries;
-        _policy_lru_type<Key,Allocator> B1;
-        set<Key,less<Key>,Allocator<Key> > b1Entries;
-
         _policy_lfu_type<Key,Allocator> T2;
         set<Key,less<Key>,Allocator<Key> > t2Entries;
+
+        _policy_lru_type<Key,Allocator> B1;
+        set<Key,less<Key>,Allocator<Key> > b1Entries;
         _policy_lfu_type<Key,Allocator> B2;
         set<Key,less<Key>,Allocator<Key> > b2Entries;
 

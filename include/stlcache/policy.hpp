@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2011 Denis V Chapligin
+// Copyright (C) 2011-2017 Denis V Chapligin, Martin Hrabovsky
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -57,6 +57,7 @@ namespace stlcache {
      *     \see stlcache::policy_lru
      *     \see stlcache::policy_mru
      *     \see stlcache::policy_lfu
+     *     \see stlcache::policy_lfu_multi
      *     \see stlcache::policy_lfustar
      *     \see stlcache::policy_lfuaging
      *     \see stlcache::policy_lfuagingstar

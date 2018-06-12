@@ -1,0 +1,36 @@
+dist: trusty
+sudo: required
+language: cpp
+compiler: gcc
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - gcc-6
+      - g++-6
+      - doxygen
+
+before_script:
+ - wget -O cmake.sh https://cmake.org/files/v3.11/cmake-3.11.1-Linux-x86_64.sh 
+ - sudo sh cmake.sh --skip-license --exclude-subdir --prefix=/usr/local
+ - wget https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.gz
+ - tar -xzvf boost_1_66_0.tar.gz >/dev/null
+ - cd boost_1_66_0
+ - sudo sh bootstrap.sh --prefix=/usr/local --with-libraries=system,thread,test
+ - sudo ./b2 install link=static threading=multi variant=release 
+ - cd ..
+
+script:
+  # Link gcc-6 and g++-6 to their standard commands
+  - sudo ln -s /usr/bin/gcc-6 /usr/local/bin/gcc
+  - sudo ln -s /usr/bin/g++-6 /usr/local/bin/g++
+  # Export CC and CXX to tell cmake which compiler to use
+  - export CC=/usr/bin/gcc-6
+  - export CXX=/usr/bin/g++-6
+  # Check versions of gcc, g++ and cmake
+  - gcc -v && g++ -v && /usr/local/bin/cmake --version
+  # Run your build commands next
+  - /usr/local/bin/cmake ./
+  - make
+  - make test

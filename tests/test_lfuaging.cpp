@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2011 Denis V Chapligin
+// Copyright (C) 2011-2017 Denis V Chapligin, Martin Hrabovsky
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -31,6 +31,18 @@ BOOST_AUTO_TEST_CASE(lastInserted) {
     c1.insert(2,"data2");
     c1.insert(3,"data3");
     c1.insert(4,"data4");
+
+    BOOST_CHECK(c1.size()==3);
+}
+
+BOOST_AUTO_TEST_CASE(stringAsKey) {
+
+    cache<string, int, policy_lfuaging<3600> > c1(3);
+
+    c1.insert("data1",1);
+    c1.insert("data2",2);
+    c1.insert("data3",3);
+    c1.insert("data4",4);
 
     BOOST_CHECK(c1.size()==3);
 }
@@ -72,6 +84,30 @@ BOOST_AUTO_TEST_CASE(expire) {
     c1.insert(4,"data4");
 
     BOOST_REQUIRE_THROW(c1.fetch(3),exception_invalid_key); //Must be removed by LFU policy (cause every item have been touched and refcount for key 3 is 2)
+}
+
+BOOST_AUTO_TEST_CASE(expireFoxString) {
+
+    cache<string, int, policy_lfuaging<1> > c1(3);
+
+    c1.insert("data1",1);
+    c1.insert("data2",2);
+    c1.insert("data3",3);
+
+    c1.touch("data1"); //For key one refcount is 3 now
+    c1.touch("data1"); 
+    c1.touch("data1");
+    c1.touch("data2"); //For key two refcount is 3 now
+    c1.touch("data2");
+    c1.touch("data2");
+    c1.touch("data3"); //For key three refcount is 2 now
+    c1.touch("data3");
+
+    WAIT_A_SECOND;
+
+    c1.insert("data4", 4);
+
+    BOOST_REQUIRE_THROW(c1.fetch("data3"),exception_invalid_key); //Must be removed by LFU policy (cause every item have been touched and refcount for key 3 is 2)
 }
 
 BOOST_AUTO_TEST_SUITE_END();

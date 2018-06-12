@@ -4,3 +4,5 @@
 *.vpwhistu
 *.vtg
 build
+include/.vscode/
+.vscode/

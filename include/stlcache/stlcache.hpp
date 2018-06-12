@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2011 Denis V Chapligin
+// Copyright (C) 2011-2018 Denis V Chapligin, Martin Hrabovsky, Vojtech Ondruj
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -12,9 +12,15 @@
 #pragma warning( disable : 4290 )
 #endif /* _MSC_VER */
 
+#include <stdexcept>
+#include <typeinfo>
 #include <map>
 
 using namespace std;
+
+#ifdef USE_BOOST_OPTIONAL
+#include <boost/optional.hpp>
+#endif /* USE_BOOST_OPTIONAL */
 
 #include <stlcache/exceptions.hpp>
 #include <stlcache/policy.hpp>
@@ -25,6 +31,10 @@ using namespace std;
 #include <stlcache/policy_lfuaging.hpp>
 #include <stlcache/policy_lfuagingstar.hpp>
 #include <stlcache/policy_adaptive.hpp>
+#include <stlcache/lock_none.hpp>
+#include <stlcache/lock_exclusive.hpp>
+#include <stlcache/lock_shared.hpp>
+#include <stlcache/policy_lfu_multi.hpp>
 
 namespace stlcache {
 
@@ -66,7 +76,7 @@ namespace stlcache {
      other stuff, that could be built and used. For STL::Cache building you need:
 
      \li <a href="http://www.cmake.org/">Recent CMake (required)</a>
-     \li <a href="http://www.boost.org/">Boost library (optional, used only for tests)</a>
+     \li <a href="http://www.boost.org/">Boost library Boost library (required for tests otherwise optional)</a>
      \li <a href="http://www.doxygen.org/">Doxygen (optional, only for documentation processing)</a>
 
      After getting this stuff up and running, select a directory for building and issue the following commands:
@@ -110,6 +120,9 @@ namespace stlcache {
      \link stlcache::exception_invalid_key invalid key exception \endlink As keys have to be unique, the insert call may do nothing, if it meets the
      duplicate key. Don't forget to check it's return value.
 
+     If you are not sure, whether you have element in the cache or not, you can use a safe \link cache::insert_or_assign insert_or_assign \endlink call,
+     that will either add new element or update exiting one with the new value.
+
      Now, when you have some data in the cache, you may want to retrieve it back:
 
      \code
@@ -144,16 +157,58 @@ namespace stlcache {
 
      Check it's return value, to get sure, whether something was deleted or not.
 
-     \section Policies
+     \section THREADS Thread safety.
+     
+     \link stlcache::cache cache \endlink can be configured with different \link stlcache::lock locking \endlink implementations, thus implementing thread safety.
+     By default a \link stlcache::lock_none non-locking \endlink approach is used and \link stlcache::cache cache \endlink is not thread-safe, allowing user to implement external locking.
+     STL::Cache is shipped with the following locking implementations:
+     \li \link stlcache::lock_none non-locking \endlink - No locking will be done with that implementation, leaving \link stlcache::cache cache \endlink non thread-safe.
+     \li \link stlcache::lock_exclusive exclusive locking \endlink - \link stlcache::cache cache \endlink will be locked exclusively on almost every call, thus limiting parallel usage to a single thread.
+     \li \link stlcache::lock_shared shared locking \endlink - Some calls will be allowed to be run in parallel with this policy. But, due to nature of the \link stlcache::cache cache \endlink, even operations, that seems to be non-modifying, require exclusive lock to update access tracking data. This implementation is only available when \link BI Boost extensions \endlink are enabled.
+
+     The locking implementation must be specified as a last parameter of \link stlcache::cache cache \endlink type and it is optional.
+     \section BI Boost integration
+
+     Since version 0.3 stlcache includes some Boost specific extensions: optional values, multi-map based policies and not really effective
+     thread safety.
+
+     \subsection BIO boost::optional
+
+     boost::optional allows user to safely \link cache::get() get\endlink values from the cache for any key, whether key exists or not.
+     You will need boost:optional headers available and have to define USE_BOOST_OPTIONAL macro.
+
+     Example:
+      \code
+          cache<string,string,policy_lru> cache_lru(3);
+          cache_lru.insert("key","value");
+          cache_lru.touch("key");
+          optional<string> value = cache_lru.get("key");
+          if (name) {
+            cout<<"We have some value in the cache: "<<*name;
+          }
+          cache_lru.erase("key");
+      \endcode
+     \subsection BIT lock_shared
+
+     \link stlcache::lock_shared lock_shared \endlink locking implementation allows user to execute some cache to calls in parallel and thread-safe way. 
+     You have to define USE_BOOST_OPTIONAL macro to access that locking implementation.
+
+    \subsection BIM lfu_multi_index
+    
+    \link stlcache:lfu_multi_index lfu_multi_index \endlink implementes LFU algorithm using a Boost MultiIndex map, which is more slower, but uses less ram, comparing to the typical LFU implementation. 
+    You have to define USE_BOOST_OPTIONAL macro to access that policy.
+
+    \section Policies
 
      The \link stlcache::policy policy \endlink is a pluggable implementation of a cache algorithms, used for finding and removing excessive
      cache entries. STL::Cache is shipped with the following policies:
 
      \li \link stlcache::policy_none None \endlink - A random expiration policy. Removes some random entry on request
      \li \link stlcache::policy_lru LRU \endlink - 'Least recently used' policy.
-     \li \link stlcache::policy_mru MRU \endlink - 'Most recentrly used' policy
+     \li \link stlcache::policy_mru MRU \endlink - 'Most recently used' policy
      \li \link stlcache::policy_lfu LFU \endlink - 'Least frequently used' policy
-     \li \link stlcache::policy_lfustar LFU* \endlink - 'Least frequently used' polcy, that expires only items with refcount 1, as proposed by M.Arlitt
+     \li \link stlcache::policy_lfu_multi LFU (Multi-index) \endlink - 'Least frequently used' policy implemented on top of the multi index map. Requires Boost.
+     \li \link stlcache::policy_lfustar LFU* \endlink - 'Least frequently used' policy, that expires only items with refcount 1, as proposed by M.Arlitt
      \li \link stlcache::policy_lfuaging LFU-Aging \endlink - 'Least frequently used' policy with time-based decreasing of usage count
      \li \link stlcache::policy_lfuagingstar LFU*-Aging \endlink - Combination of \link stlcache::policy_lfustar LFU* \endlink and \link stlcache::policy_lfuagingstar LFU*-Aging \endlink policies
      \li \link stlcache::policy_adaptive Adaptive Replacement \endlink - 'Adaptive Replacement' policy
@@ -240,7 +295,7 @@ namespace stlcache {
 
      \section AaL  Authors and Licensing
 
-     Copyright (C) 2011 Denis V Chapligin
+     Copyright (C) 2011-2018 Denis V Chapligin, Martin Hrabovsky, Vojtech Ondruj, Tom Anderson
      Distributed under the Boost Software License, Version 1.0.
      (See accompanying file LICENSE_1_0.txt or copy at
      http://www.boost.org/LICENSE_1_0.txt)
@@ -282,10 +337,11 @@ namespace stlcache {
      * \tparam <Policy> The expiration policy type. Must implement \link stlcache::policy policy interface \endlink STL::Cache provides several expiration policies out-of-box and you are free to define new policies.
      * \tparam <Compare> Comparison class: A class that takes two arguments of the key type and returns a bool. The expression comp(a,b), where comp is an object of this comparison class and a and b are key values, shall return true if a is to be placed at an earlier position than b in a strict weak ordering operation. This can either be a class implementing a function call operator or a pointer to a function (see constructor for an example). This defaults to less<Key>, which returns the same as applying the less-than operator (a<b). This is required for the underlying std::map
      * \tparam <Allocator> Type of the allocator object used to define the storage allocation model. Unlike std::map you should pass a unspecialized Allocator type.
+     * \tparam Lock Type of the lock implementation used to define the thread safety behaviour of the cache. Default implementation does no locking and is not thread-safe.
      *
      * So, the full example of cache instantiation will be:
      * \code
-     *     cache<int,string,policy_none,less<string>,std::allocator> cache_none(100500);
+     *     cache<int,string,policy_none,less<string>,std::allocator, lock_none> cache_none(100500);
      * \endcode
      *
      * \see policy
@@ -297,7 +353,8 @@ namespace stlcache {
         class Data,
         class Policy,
         class Compare = less<Key>,
-        template <typename T> class Allocator = allocator
+        template <typename T> class Allocator = allocator,
+        class Lock = lock_none
     >
     class cache {
         typedef map<Key,Data,Compare,Allocator<pair<const Key, Data> > > storageType;
@@ -307,6 +364,9 @@ namespace stlcache {
          typedef typename Policy::template bind<Key,Allocator> policy_type;
          policy_type* _policy;
          Allocator<policy_type> policyAlloc;
+         Lock lock;
+         typedef typename Lock::read read_lock_type;
+         typedef typename Lock::write write_lock_type;
 
     public:
         /*! \brief The Key type
@@ -374,6 +434,7 @@ namespace stlcache {
           *
           */
         size_type count ( const key_type& x ) const {
+            read_lock_type l = lock.lockRead();
             return _storage.count(x);
         }
 
@@ -414,6 +475,7 @@ namespace stlcache {
           *   \see size
           */
         bool empty() const {
+            read_lock_type l = lock.lockRead();
             return _storage.empty();
         }
         //@}
@@ -432,6 +494,7 @@ namespace stlcache {
          *
          */
         void clear() {
+            write_lock_type l = lock.lockWrite();
             _storage.clear();
             _policy->clear();
             this->_currEntries=0;
@@ -450,6 +513,7 @@ namespace stlcache {
          * \see cache::operator=
          */
         void swap ( cache<Key,Data,Policy,Compare,Allocator>& mp ) {
+            write_lock_type l = lock.lockWrite();
             _storage.swap(mp._storage);
             _policy->swap(*mp._policy);
 
@@ -457,7 +521,7 @@ namespace stlcache {
             this->_maxEntries=mp._maxEntries;
             mp._maxEntries=m;
 
-            this->_currEntries=this->size();
+            this->_currEntries=this->_size();
             mp._currEntries=mp.size();
         }
 
@@ -472,12 +536,8 @@ namespace stlcache {
          * \return 1 when entry is removed (ie number of removed emtries, which is always 1, as keys are unique) or zero when nothing was done.
          */
         size_type erase ( const key_type& x ) {
-            size_type ret=_storage.erase(x);
-            _policy->remove(x);
-
-            _currEntries--;
-
-            return ret;
+            write_lock_type l = lock.lockWrite();
+            return this->_erase(x);
         }
 
         /*!
@@ -493,12 +553,13 @@ namespace stlcache {
          * \return true if the new elemented was inserted or false if an element with the same key existed.
          */
         bool insert(Key _k, Data _d) {
+            write_lock_type l = lock.lockWrite();
             while (this->_currEntries >= this->_maxEntries) {
                 _victim<Key> victim=_policy->victim();
                 if (!victim) {
                     throw exception_cache_full("The cache is full and no element can be expired at the moment. Remove some elements manually");
                 }
-                this->erase(*victim);
+                this->_erase(*victim);
             }
 
             _policy->insert(_k);
@@ -510,6 +571,49 @@ namespace stlcache {
             }
 
             return result;
+        }
+
+        /*!
+         * \brief Insert new element to the cache or replace value of the existing one
+         *
+         * Will check, whether element with the specified key exists in the map and, in case it exists, will update it's value and increase reference count of the element.
+         *
+         * Otherwise it will insert single new element. This effectively increases the cache size. Because cache do not allow for duplicate key values, the insertion operation checks 
+         * for each element inserted whether another element exists already in the container with the same key value, if so, the element is not inserted and its mapped value is not changed in any way.
+         * Extension of cache could result in removal of some elements, depending of the cache fullness and used policy. It is also possible, that removal of excessive entries
+         * will fail, therefore insert operation will fail too.
+         *
+         * \throw <exception_cache_full>  Thrown when there are no available space in the cache and policy doesn't allows removal of elements.
+         * \throw <exception_invalid_key> Thrown when the policy doesn't accepts the key
+         *
+         * \return true if the new elemented was inserted or false if an element with the same key existed.
+         */
+        bool insert_or_assign(Key _k, Data _d) {
+            if(this->_storage.find(_k)==this->_storage.end()){
+                this->insert(_k, _d);
+                return true;
+            }
+            
+            _policy->touch(_k);
+            _storage.erase(_k);
+            _storage.insert(value_type(_k,_d)).second;
+            return false;
+        }
+
+        /*
+         * \bried Merge two caches
+         *
+         * Inserts items, missing in *this, but existing in the second to *this.
+         * For the existing items, reference count will be increased.
+         */
+        void merge(const cache<Key, Data, Policy, Compare, Allocator>& second){
+            for (auto it = second._storage.begin(); it != second._storage.end(); it++) {
+                if (!this->check(it->first)) {
+                    this->insert(it->first, it->second);
+                } else {
+                    this->touch(it->first);
+                }
+            }
         }
 
         /*!
@@ -536,8 +640,8 @@ namespace stlcache {
           *  \see clear
           */
         size_type size() const {
-            assert(this->_currEntries==_storage.size());
-            return this->_currEntries;
+            write_lock_type l = lock.lockWrite();
+            return this->_size();
         }
 
         /*!
@@ -555,12 +659,39 @@ namespace stlcache {
          * \see check
          */
         const Data& fetch(const Key& _k) {
-            if (!check(_k)) {
+            if (!this->_check(_k)) {
                 throw exception_invalid_key("Key is not in cache",_k);
             }
             _policy->touch(_k);
             return (*(_storage.find(_k))).second;
         }
+
+#ifdef USE_BOOST_OPTIONAL
+        /*!
+         * \brief Safe cache data access
+         *
+         * Accessor to the data (values) stored in cache. If the specified key exists in the cache, it's usage count will be touched
+         * and reference to the element, wrapped to boost::optional  is returned.  For non-exsitent key empty boost::optional container is returned
+         * The data object itself is kept in the cache, so the reference will be valid until it is removed (either manually or due to cache overflow) or cache object destroyed.
+         *
+         *  This function is only available if USE_BOOST_OPTIONAL macro is defined
+         *
+         * \param <_k> key to the data
+         *
+         * \return constant boost::optional wrapper, holding constant reference to the data, in case when key were in the cache,
+         * or empty constant boost::optional wrapper for non-existent key.
+         *
+         * \see check, fetch
+         */
+        const boost::optional<const Data&> get(const Key& _k) throw() {
+            write_lock_type l = lock.lockWrite();
+            if (!this->_check(_k)) {
+                return boost::optional<const Data&>();
+            }
+            _policy->touch(_k);
+            return boost::optional<const Data&>((*(_storage.find(_k))).second);
+        }
+#endif /* USE_BOOST_OPTIONAL */
 
         /*!
          * \brief Check for the key presence in cache
@@ -574,8 +705,8 @@ namespace stlcache {
          * \see count
          */
         const bool check(const Key& _k) {
-            _policy->touch(_k);
-            return _storage.count(_k)==1;
+            write_lock_type l = lock.lockWrite();
+            return this->_check(_k);
         }
 
         /*!
@@ -588,6 +719,7 @@ namespace stlcache {
          *
          */
         void touch(const Key& _k) {
+            write_lock_type l = lock.lockWrite();
             _policy->touch(_k);
         }
         //@}
@@ -616,6 +748,8 @@ namespace stlcache {
             policyAlloc.construct(this->_policy,localPolicy);
             return *this;
         }
+
+
 
         /*!
          * \brief A copy constructor
@@ -658,6 +792,23 @@ namespace stlcache {
             policyAlloc.deallocate(this->_policy,1);
         }
         //@}
+    protected:
+        const bool _check(const Key& _k) throw() {
+            _policy->touch(_k);
+            return _storage.count(_k)==1;
+        }
+        size_type _erase ( const key_type& x ) throw() {
+            size_type ret=_storage.erase(x);
+            _policy->remove(x);
+
+            _currEntries-=ret;
+
+            return ret;
+        }
+        size_type _size() const throw() {
+            assert(this->_currEntries==_storage.size());
+            return this->_currEntries;
+        }
     };
 }
 
