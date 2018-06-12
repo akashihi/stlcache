@@ -135,7 +135,7 @@ namespace stlcache {
     };
 
     /*!
-     * \brief A 'Least Frequently Used' policy
+     * \brief A 'Least Frequently Used' policy, Multi-index implementation
      * 
      * Implements <a href="http://en.wikipedia.org/wiki/Least_frequently_used">'Least Frequently Used'</a> cache algorithm. 
      *  
@@ -145,7 +145,11 @@ namespace stlcache {
      * \link cache::touch Touching \endlink the entry greatly decreases item's expiration probability. This policy is always able to expire any amount of entries. 
      *  
      * No additional configuration is required. 
+     *
+     * This policy usese multi index map by Boost and, therefore, is only available, when Boost is available. Comparing to the \link stlcache::policy_lfu LFU \endlink
+     * implementation, this one is about 2.5 times slower, but requires about 2 times less
      *  
+     * \see policy_lfu
      * \see policy_lfustar
      * \see policy_lfuaging 
      * \see policy_lfuagingstar 

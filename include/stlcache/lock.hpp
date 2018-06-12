@@ -40,7 +40,7 @@ namespace stlcache {
      * \tparam <ReadLock> Type of a shared read-only lock object.
      * \tparam <WriteLock> Type of a exclusive lock object.
      * 
-     *     \see stlcache::cache
+     * \see stlcache::cache
      * 
      * \author chollya (5/26/2017)
      */

@@ -130,6 +130,7 @@ namespace stlcache {
      *
      * No additional configuration is required.
      *
+     * \see policy_lfu_multi
      * \see policy_lfustar
      * \see policy_lfuaging
      * \see policy_lfuagingstar

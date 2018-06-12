@@ -19,12 +19,11 @@ using namespace std;
 
 namespace stlcache {
     /*!
-     * \brief Locking operations support
-     *  
-     * All lock operations are incapsulated within this class, so cache have no
-     * assumptions how locking is implemented.
-     *  
-     * \author chollya (5/26/2017)
+     * \brief A shared implementation of locking.
+     * 
+     * This implementation supports shared read/write locking, so reading threads will be able to access cache in
+     * parallel, while writing threads will be locked exclusively and only one writing thread will be able 
+     * to modify the cache.
      */
     class lock_shared : public lock<boost::shared_lock<boost::shared_mutex>, boost::unique_lock<boost::shared_mutex> > {
          mutable boost::shared_mutex mtx;

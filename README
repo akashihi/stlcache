@@ -45,7 +45,7 @@ Getting and installing
    documentation and other stuff, that could be built and used. For
    STL::Cache building you need:
      * Recent CMake (required)
-     * Boost library (optional, used only for tests)
+     * Boost library (required for tests otherwise optional)
      * Doxygen (optional, only for documentation processing)
 
    After getting this stuff up and running, select a directory for
@@ -91,6 +91,10 @@ Usage
    may do nothing, if it meets the duplicate key. Don't forget to check
    it's return value.
 
+   If you are not sure, whether you have element in the cache or not, 
+   you can use a safe insert_or_assign call, that will either add new element 
+   to the cache or update exiting one with the new value.
+
    Now, when you have some data in the cache, you may want to retrieve it
    back:
      string myOne = myCache.fetch(1);
@@ -123,6 +127,39 @@ Usage
    Check it's return value, to get sure, whether something was deleted or
    not.
 
+Thread safety
+
+    cache can be configured with different locking implementations, thus implementing thread safety. By default a non-locking approach is used and cache is not thread-safe, allowing user to implement external locking. STL::Cache is shipped with the following locking implementations:
+
+        * non-locking - No locking will be done with that implementation, leaving cache non thread-safe. Class name is lock_none
+        * exclusive locking - cache will be locked exclusively on almost every call, thus limiting parallel usage to a single thread. Class name is lock_exclusive
+        * shared locking - Some calls will be allowed to be run in parallel with this policy. But, due to nature of the cache , even operations, that seems to be non-modifying, require exclusive lock to 
+          update access tracking data. This implementation is only available when Boost extensions are enabled. Class name is lock_shared
+The locking implementation must be specified as a last parameter of cache type and it is optional.
+
+Boost integration
+    Since version 0.3 stlcache includes some Boost specific extensions: optional values, multi-map based policies and not really effective thread safety.
+
+  boost::optional
+    boost::optional allows user to safely get values from the cache for any key, whether key exists or not. You will need boost:optional headers available and have to define USE_BOOST_OPTIONAL macro.
+
+    Example:
+
+        cache<string,string,policy_lru> cache_lru(3);
+        cache_lru.insert("key","value");
+        cache_lru.touch("key");
+        optional<string> value = cache_lru.get("key");
+        if (name) {
+            cout<<"We have some value in the cache: "<<*name;
+        }
+        cache_lru.erase("key");
+  lock_shared
+    lock_shared locking implementation allows user to execute some cache to calls in parallel and thread-safe way. You have to define USE_BOOST_OPTIONAL macro to access that locking implementation.
+
+  lfu_multi_index
+    lfu_multi_index implementes LFU algorithm using a Boost MultiIndex map, which is more slower, but uses less RAM, comparing to the typical LFU implementation. You have to define USE_BOOST_OPTIONAL macro to access that policy.
+
+
 Policies
 
    The policy is a pluggable implementation of a cache algorithms,
@@ -133,7 +170,8 @@ Policies
      * LRU - 'Least recently used' policy.
      * MRU - 'Most recentrly used' policy
      * LFU - 'Least frequently used' policy
-     * LFU* - 'Least frequently used' polcy, that expires only items
+     * LFU (Multi-index) - 'Least frequently used' policy implemented on top of the multi index map. Requires Boost.
+     * LFU* - 'Least frequently used' policy, that expires only items
        with refcount 1, as proposed by M.Arlitt
      * LFU-Aging - 'Least frequently used' policy with time-based
        decreasing of usage count
@@ -232,6 +270,7 @@ alid_policy) {}
 
 Authors and Licensing
 
-   Copyright (C) 2011 Denis V Chapligin Distributed under the Boost
-   Software License, Version 1.0. (See accompanying file LICENSE_1_0.txt
+   Copyright (C) 2011-2018 Denis V Chapligin, Martin Hrabovsky, Vojtech Ondruj, Tom Anderson
+   Distributed under the Boost Software License, Version 1.0. 
+   (See accompanying file LICENSE_1_0.txt
    or copy at http://www.boost.org/LICENSE_1_0.txt)
