@@ -93,4 +93,8 @@ ADD_EXECUTABLE(test_lfu_multi tests/test_lfu_multi.cpp)
 target_link_libraries(test_lfu_multi ${LIBS})
 ADD_TEST(LFU-MultiIndex test_lfu_multi)
 
+ADD_EXECUTABLE(test_map_interface tests/test_map_interface.cpp)
+target_link_libraries(test_map_interface ${LIBS})
+ADD_TEST(MapInterface test_map_interface)
+
 endif(Boost_FOUND)
