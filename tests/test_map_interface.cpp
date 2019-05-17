@@ -28,4 +28,19 @@ BOOST_AUTO_TEST_CASE(at) {
   BOOST_CHECK(!value.compare("test"));
 }
 
-BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_CASE(brackets) {
+  cache<int,string,policy_lfu> c(3);
+
+  c.insert(1,"data1");
+  c.insert(2,"data2");
+  BOOST_CHECK(!c[2].compare("data2"));
+
+  BOOST_CHECK(!c[3].compare("")); //This one sets
+  BOOST_CHECK(!c[3].compare("")); //And this one retrieves back
+
+  BOOST_CHECK(!c[4].compare(""));
+
+  BOOST_CHECK(c.size()==3);
+}
+
+BOOST_AUTO_TEST_SUITE_END()

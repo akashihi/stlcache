@@ -552,16 +552,8 @@ namespace stlcache {
          */
         bool insert(Key _k, Data _d) throw(exception_cache_full,exception_invalid_key) {
             write_lock_type l = lock.lockWrite();
-            while (this->_currEntries >= this->_maxEntries) {
-                _victim<Key> victim=_policy->victim();
-                if (!victim) {
-                    throw exception_cache_full("The cache is full and no element can be expired at the moment. Remove some elements manually");
-                }
-                this->_erase(*victim);
-            }
 
-            _policy->insert(_k);
-
+            this->_policyEvictInsert(_k);
 
             bool result=_storage.insert(value_type(_k,_d)).second;
             if (result) {
@@ -706,6 +698,41 @@ namespace stlcache {
             return (*(_storage.find(_k))).second;
         }
 
+      /*!
+         * \brief Access cache data
+         *
+         * Returns a reference to the value that is mapped to a key equivalent to key, performing an insertion if such key does not already exist.
+         * If the specified key exists in the cache, it's usage count will be touched.
+         * The data object itself is kept in the cache, so the reference will be valid until it is removed (either manually or due to cache overflow) or cache object destroyed.
+         *
+         * \param <_k> key to the data
+         *
+         * \return reference to the data, mapped by the key. of type Data of course.
+         */
+        Data& operator[](const Key& _k) noexcept {
+          write_lock_type l = lock.lockWrite();
+          if (!this->_check(_k)) {
+            this->_policyEvictInsert(_k);
+            _currEntries++;
+          }
+          return _storage[_k];
+        }
+
+      /*!
+         * \brief Access cache data
+         *
+         * Returns a reference to the value that is mapped to a key equivalent to key, performing an insertion if such key does not already exist.
+         * If the specified key exists in the cache, it's usage count will be touched.
+         * The data object itself is kept in the cache, so the reference will be valid until it is removed (either manually or due to cache overflow) or cache object destroyed.
+         *
+         * \param <_k> key to the data
+         *
+         * \return reference to the data, mapped by the key. of type Data of course.
+         */
+        Data& operator[](Key&& _k) {
+            return (*this)[const_cast<const Key&&>(_k)];
+        }
+
 #ifdef USE_BOOST_OPTIONAL
         /*!
          * \brief Safe cache data access
@@ -833,11 +860,12 @@ namespace stlcache {
         }
         //@}
     protected:
-        const bool _check(const Key& _k) throw() {
+        const bool _check(const Key& _k) noexcept {
             _policy->touch(_k);
             return _storage.count(_k)==1;
         }
-        size_type _erase ( const key_type& x ) throw() {
+
+        size_type _erase ( const key_type& x ) noexcept {
             size_type ret=_storage.erase(x);
             _policy->remove(x);
 
@@ -845,7 +873,20 @@ namespace stlcache {
 
             return ret;
         }
-        size_type _size() const throw() {
+
+        void _policyEvictInsert(const key_type& _k) noexcept(false) {
+          while (this->_currEntries >= this->_maxEntries) {
+            _victim<Key> victim=_policy->victim();
+            if (!victim) {
+              throw exception_cache_full("The cache is full and no element can be expired at the moment. Remove some elements manually");
+            }
+            this->_erase(*victim);
+          }
+
+          _policy->insert(_k);
+        }
+
+        size_type _size() const noexcept {
             assert(this->_currEntries==_storage.size());
             return this->_currEntries;
         }
