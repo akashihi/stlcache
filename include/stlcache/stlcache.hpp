@@ -158,7 +158,7 @@ namespace stlcache {
      Check it's return value, to get sure, whether something was deleted or not.
 
      \section THREADS Thread safety.
-     
+
      \link stlcache::cache cache \endlink can be configured with different \link stlcache::lock locking \endlink implementations, thus implementing thread safety.
      By default a \link stlcache::lock_none non-locking \endlink approach is used and \link stlcache::cache cache \endlink is not thread-safe, allowing user to implement external locking.
      STL::Cache is shipped with the following locking implementations:
@@ -190,12 +190,12 @@ namespace stlcache {
       \endcode
      \subsection BIT lock_shared
 
-     \link stlcache::lock_shared lock_shared \endlink locking implementation allows user to execute some cache to calls in parallel and thread-safe way. 
+     \link stlcache::lock_shared lock_shared \endlink locking implementation allows user to execute some cache to calls in parallel and thread-safe way.
      You have to define USE_BOOST_OPTIONAL macro to access that locking implementation.
 
     \subsection BIM lfu_multi_index
-    
-    \link stlcache:lfu_multi_index lfu_multi_index \endlink implementes LFU algorithm using a Boost MultiIndex map, which is more slower, but uses less ram, comparing to the typical LFU implementation. 
+
+    \link stlcache:lfu_multi_index lfu_multi_index \endlink implementes LFU algorithm using a Boost MultiIndex map, which is more slower, but uses less ram, comparing to the typical LFU implementation.
     You have to define USE_BOOST_OPTIONAL macro to access that policy.
 
     \section Policies
@@ -404,10 +404,111 @@ namespace stlcache {
           */
         typedef typename storageType::const_pointer                                 const_pointer;
 
-        /*! \name std::map interface wrappers
-         *  Simple wrappers for std::map calls, that we are using only for mimicking the map interface
+        /*! \name std::map-like iterator interface.
+         *  Custom iterator implementation for STL::Cache, wrapping std::map iterators with added policy operations support.
          */
-        //@{
+        class iterator {
+          /*! \brief Type used for address calculations, specific to a current platform (usually a ptrdiff_t)
+           */
+          typedef typename storageType::difference_type                               difference_type;
+          /*! \brief Combined key,value type
+           */
+          typedef pair<const Key, Data>                                         value_type;
+          /*! \brief Allocator::reference
+           */
+          typedef typename storageType::reference                                        reference;
+          /*! \brief Allocator::pointer
+           */
+          typedef typename storageType::pointer                                          pointer;
+
+          typedef std::random_access_iterator_tag iterator_category;
+
+          iterator();
+          iterator(const iterator&);
+          ~iterator();
+
+          iterator& operator=(const iterator&);
+          bool operator==(const iterator&) const;
+          bool operator!=(const iterator&) const;
+          bool operator<(const iterator&) const;
+          bool operator>(const iterator&) const;
+          bool operator<=(const iterator&) const;
+          bool operator>=(const iterator&) const;
+
+          iterator& operator++();
+          iterator operator++(int);
+          iterator& operator--();
+          iterator operator--(int);
+          iterator& operator+=(size_type);
+          iterator operator+(size_type) const;
+          iterator& operator-=(size_type);
+          iterator operator-(size_type) const;
+          difference_type operator-(iterator) const;
+
+          reference operator*() const;
+          pointer operator->() const;
+          reference operator[](size_type) const;
+        };
+
+      class const_iterator {
+        /*! \brief Type used for address calculations, specific to a current platform (usually a ptrdiff_t)
+         */
+        typedef typename storageType::difference_type                               difference_type;
+        /*! \brief Combined key,value type
+         */
+        typedef pair<const Key, Data>                                         value_type;
+        /*! \brief Allocator::reference
+         */
+        typedef typename storageType::reference                                        reference;
+        /*! \brief Allocator::pointer
+         */
+        typedef typename storageType::pointer                                          pointer;
+
+        typedef std::random_access_iterator_tag iterator_category;
+
+        const_iterator();
+        const_iterator(const const_iterator&);
+        ~const_iterator();
+
+        const_iterator& operator=(const const_iterator&);
+        bool operator==(const const_iterator&) const;
+        bool operator!=(const const_iterator&) const;
+        bool operator<(const const_iterator&) const;
+        bool operator>(const const_iterator&) const;
+        bool operator<=(const const_iterator&) const;
+        bool operator>=(const const_iterator&) const;
+
+        const_iterator& operator++();
+        const_iterator operator++(int);
+        const_iterator& operator--();
+        const_iterator operator--(int);
+        const_iterator& operator+=(size_type);
+        const_iterator operator+(size_type) const;
+        const_iterator& operator-=(size_type);
+        const_iterator operator-(size_type) const;
+        difference_type operator-(const_iterator) const;
+
+        reference operator*() const;
+        pointer operator->() const;
+        reference operator[](size_type) const;
+      };
+
+      typedef std::reverse_iterator<iterator> reverse_iterator;
+      typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+
+      /*! \name std::map interface wrappers
+       *  Simple wrappers for std::map calls, that we are using only for mimicking the map interface
+       */
+      iterator begin();
+      const_iterator cbegin() const;
+      iterator end();
+      const_iterator cend() const;
+      reverse_iterator rbegin(); //optional
+      const_reverse_iterator crbegin() const; //optional
+      reverse_iterator rend(); //optional
+      const_reverse_iterator crend() const; //optional
+
+      //@{
         /*! \brief Allocator object accessor
           *
           *  Provides access to the allocator object, used to constuct the container.
@@ -568,7 +669,7 @@ namespace stlcache {
          *
          * Will check, whether element with the specified key exists in the map and, in case it exists, will update it's value and increase reference count of the element.
          *
-         * Otherwise it will insert single new element. This effectively increases the cache size. Because cache do not allow for duplicate key values, the insertion operation checks 
+         * Otherwise it will insert single new element. This effectively increases the cache size. Because cache do not allow for duplicate key values, the insertion operation checks
          * for each element inserted whether another element exists already in the container with the same key value, if so, the element is not inserted and its mapped value is not changed in any way.
          * Extension of cache could result in removal of some elements, depending of the cache fullness and used policy. It is also possible, that removal of excessive entries
          * will fail, therefore insert operation will fail too.
@@ -583,7 +684,7 @@ namespace stlcache {
                 this->insert(_k, _d);
                 return true;
             }
-            
+
             _policy->touch(_k);
             _storage.erase(_k);
             _storage.insert(value_type(_k,_d)).second;
