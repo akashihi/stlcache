@@ -408,6 +408,8 @@ namespace stlcache {
          *  Custom iterator implementation for STL::Cache, wrapping std::map iterators with added policy operations support.
          */
         class iterator {
+          friend class cache;
+
           /*! \brief Type used for address calculations, specific to a current platform (usually a ptrdiff_t)
            */
           typedef typename storageType::difference_type                               difference_type;
@@ -423,90 +425,75 @@ namespace stlcache {
 
           typedef std::random_access_iterator_tag iterator_category;
 
-          iterator();
-          iterator(const iterator&);
-          ~iterator();
+          typename storageType::iterator _storageIterator;
+
+          cache<Key, Data, Policy, Compare, Allocator, Lock>* _owningCache;
+
+          explicit iterator(typename storageType::iterator _internal, cache<Key, Data, Policy, Compare, Allocator, Lock>* _cache): _storageIterator(_internal), _owningCache(_cache) { };
+
+        public:
+          iterator(const iterator& other): _storageIterator(other._storageIterator) {};
+          ~iterator() =default;
 
           iterator& operator=(const iterator&);
-          bool operator==(const iterator&) const;
-          bool operator!=(const iterator&) const;
+          bool operator==(const iterator& other) const {
+            return this->_storageIterator == other._storageIterator;
+          };
+          bool operator!=(const iterator& other) const {
+            return this->_storageIterator != other._storageIterator;
+          }
           bool operator<(const iterator&) const;
           bool operator>(const iterator&) const;
           bool operator<=(const iterator&) const;
           bool operator>=(const iterator&) const;
 
-          iterator& operator++();
-          iterator operator++(int);
-          iterator& operator--();
-          iterator operator--(int);
-          iterator& operator+=(size_type);
-          iterator operator+(size_type) const;
-          iterator& operator-=(size_type);
-          iterator operator-(size_type) const;
+          iterator& operator++() {
+            ++_storageIterator;
+            return *this;
+          }
+          iterator operator++(int) {
+            iterator tmp = *this;
+            ++_storageIterator;
+            return tmp;
+          }
+          iterator& operator--() {
+            _storageIterator--;
+            return *this;
+          }
+          iterator operator--(int) {
+            iterator tmp = *this;
+            --_storageIterator;
+            return tmp;
+          }
           difference_type operator-(iterator) const;
 
-          reference operator*() const;
-          pointer operator->() const;
-          reference operator[](size_type) const;
+          reference operator*() {
+            _owningCache->touch(_storageIterator->first);
+            return *_storageIterator;
+          };
+          pointer operator->() {
+            _owningCache->touch(_storageIterator->first);
+            return _storageIterator.operator->();
+          }
         };
 
-      class const_iterator {
-        /*! \brief Type used for address calculations, specific to a current platform (usually a ptrdiff_t)
-         */
-        typedef typename storageType::difference_type                               difference_type;
-        /*! \brief Combined key,value type
-         */
-        typedef pair<const Key, Data>                                         value_type;
-        /*! \brief Allocator::reference
-         */
-        typedef typename storageType::reference                                        reference;
-        /*! \brief Allocator::pointer
-         */
-        typedef typename storageType::pointer                                          pointer;
-
-        typedef std::random_access_iterator_tag iterator_category;
-
-        const_iterator();
-        const_iterator(const const_iterator&);
-        ~const_iterator();
-
-        const_iterator& operator=(const const_iterator&);
-        bool operator==(const const_iterator&) const;
-        bool operator!=(const const_iterator&) const;
-        bool operator<(const const_iterator&) const;
-        bool operator>(const const_iterator&) const;
-        bool operator<=(const const_iterator&) const;
-        bool operator>=(const const_iterator&) const;
-
-        const_iterator& operator++();
-        const_iterator operator++(int);
-        const_iterator& operator--();
-        const_iterator operator--(int);
-        const_iterator& operator+=(size_type);
-        const_iterator operator+(size_type) const;
-        const_iterator& operator-=(size_type);
-        const_iterator operator-(size_type) const;
-        difference_type operator-(const_iterator) const;
-
-        reference operator*() const;
-        pointer operator->() const;
-        reference operator[](size_type) const;
-      };
-
       typedef std::reverse_iterator<iterator> reverse_iterator;
-      typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
       /*! \name std::map interface wrappers
        *  Simple wrappers for std::map calls, that we are using only for mimicking the map interface
        */
-      iterator begin();
-      const_iterator cbegin() const;
-      iterator end();
-      const_iterator cend() const;
-      reverse_iterator rbegin(); //optional
-      const_reverse_iterator crbegin() const; //optional
-      reverse_iterator rend(); //optional
-      const_reverse_iterator crend() const; //optional
+      iterator begin() {
+        return iterator(_storage.begin(), this);
+      }
+      iterator end() {
+        return iterator(_storage.end(), this);
+      }
+      reverse_iterator rbegin() {
+        return reverse_iterator(begin(), this);
+      }
+      reverse_iterator rend() {
+        return reverse_iterator(end(), this);
+      }
 
       //@{
         /*! \brief Allocator object accessor
@@ -515,7 +502,7 @@ namespace stlcache {
           *
           *  \return The allocator object of type Allocator<pair<const Key, Data> >.
           */
-        allocator_type get_allocator() const throw() {
+        allocator_type get_allocator() const noexcept {
             return _storage.get_allocator();
         }
 
@@ -532,7 +519,7 @@ namespace stlcache {
           *  \see check
           *
           */
-        size_type count ( const key_type& x ) const throw() {
+        size_type count ( const key_type& x ) const noexcept {
             read_lock_type l = lock.lockRead();
             return _storage.count(x);
         }
@@ -543,7 +530,7 @@ namespace stlcache {
          *
          *   \return The value comparison object of type value_compare, defined as described above.
          */
-        value_compare value_comp ( ) const throw() {
+        value_compare value_comp ( ) const noexcept {
             return _storage.value_comp();
         }
 
@@ -558,7 +545,7 @@ namespace stlcache {
           *
           *  \return The key comparison object of type key_compare, defined to Compare, which is the fourth template parameter in the map class template.
           */
-        key_compare key_comp ( ) const throw() {
+        key_compare key_comp ( ) const noexcept {
             return _storage.key_comp();
         }
 
@@ -573,7 +560,7 @@ namespace stlcache {
           *
           *   \see size
           */
-        bool empty() const throw() {
+        bool empty() const noexcept {
             read_lock_type l = lock.lockRead();
             return _storage.empty();
         }
@@ -592,7 +579,7 @@ namespace stlcache {
          * \see empty
          *
          */
-        void clear() throw() {
+        void clear() noexcept {
             write_lock_type l = lock.lockWrite();
             _storage.clear();
             _policy->clear();
@@ -611,7 +598,7 @@ namespace stlcache {
          *
          * \see cache::operator=
          */
-        void swap ( cache<Key,Data,Policy,Compare,Allocator>& mp ) throw(exception_invalid_policy) {
+        void swap ( cache<Key,Data,Policy,Compare,Allocator>& mp ) noexcept(false) {
             write_lock_type l = lock.lockWrite();
             _storage.swap(mp._storage);
             _policy->swap(*mp._policy);
@@ -634,7 +621,7 @@ namespace stlcache {
          *
          * \return 1 when entry is removed (ie number of removed emtries, which is always 1, as keys are unique) or zero when nothing was done.
          */
-        size_type erase ( const key_type& x ) throw() {
+        size_type erase ( const key_type& x ) noexcept {
             write_lock_type l = lock.lockWrite();
             return this->_erase(x);
         }
@@ -651,7 +638,7 @@ namespace stlcache {
          *
          * \return true if the new elemented was inserted or false if an element with the same key existed.
          */
-        bool insert(Key _k, Data _d) throw(exception_cache_full,exception_invalid_key) {
+        bool insert(Key _k, Data _d) noexcept(false) {
             write_lock_type l = lock.lockWrite();
 
             this->_policyEvictInsert(_k);
