@@ -158,7 +158,7 @@ namespace stlcache {
      Check it's return value, to get sure, whether something was deleted or not.
 
      \section THREADS Thread safety.
-     
+
      \link stlcache::cache cache \endlink can be configured with different \link stlcache::lock locking \endlink implementations, thus implementing thread safety.
      By default a \link stlcache::lock_none non-locking \endlink approach is used and \link stlcache::cache cache \endlink is not thread-safe, allowing user to implement external locking.
      STL::Cache is shipped with the following locking implementations:
@@ -190,12 +190,12 @@ namespace stlcache {
       \endcode
      \subsection BIT lock_shared
 
-     \link stlcache::lock_shared lock_shared \endlink locking implementation allows user to execute some cache to calls in parallel and thread-safe way. 
+     \link stlcache::lock_shared lock_shared \endlink locking implementation allows user to execute some cache to calls in parallel and thread-safe way.
      You have to define USE_BOOST_OPTIONAL macro to access that locking implementation.
 
     \subsection BIM lfu_multi_index
-    
-    \link stlcache:lfu_multi_index lfu_multi_index \endlink implementes LFU algorithm using a Boost MultiIndex map, which is more slower, but uses less ram, comparing to the typical LFU implementation. 
+
+    \link stlcache:lfu_multi_index lfu_multi_index \endlink implementes LFU algorithm using a Boost MultiIndex map, which is more slower, but uses less ram, comparing to the typical LFU implementation.
     You have to define USE_BOOST_OPTIONAL macro to access that policy.
 
     \section Policies
@@ -404,17 +404,97 @@ namespace stlcache {
           */
         typedef typename storageType::const_pointer                                 const_pointer;
 
-        /*! \name std::map interface wrappers
-         *  Simple wrappers for std::map calls, that we are using only for mimicking the map interface
+        /*! \name std::map-like iterator interface.
+         *  Custom iterator implementation for STL::Cache, wrapping std::map iterators with added policy operations support.
          */
-        //@{
+        class iterator {
+          friend class cache;
+
+          /*! \brief Type used for address calculations, specific to a current platform (usually a ptrdiff_t)
+           */
+          typedef typename storageType::difference_type                               difference_type;
+          /*! \brief Combined key,value type
+           */
+          typedef pair<const Key, Data>                                         value_type;
+          /*! \brief Allocator::reference
+           */
+          typedef typename storageType::reference                                        reference;
+          /*! \brief Allocator::pointer
+           */
+          typedef typename storageType::pointer                                          pointer;
+
+          typedef std::random_access_iterator_tag iterator_category;
+
+          typename storageType::iterator _storageIterator;
+
+          cache<Key, Data, Policy, Compare, Allocator, Lock>* _owningCache;
+
+          explicit iterator(typename storageType::iterator _internal, cache<Key, Data, Policy, Compare, Allocator, Lock>* _cache): _storageIterator(_internal), _owningCache(_cache) { };
+
+        public:
+          iterator(const iterator& other): _storageIterator(other._storageIterator) {};
+          ~iterator() =default;
+
+          iterator& operator=(const iterator& other) {
+            this->_storageIterator = other._storageIterator;
+            this->_owningCache = other._owningCache;
+          }
+          bool operator==(const iterator& other) const {
+            return this->_storageIterator == other._storageIterator;
+          };
+          bool operator!=(const iterator& other) const {
+            return this->_storageIterator != other._storageIterator;
+          }
+
+          iterator& operator++() {
+            ++_storageIterator;
+            return *this;
+          }
+          iterator operator++(int) {
+            iterator tmp = *this;
+            ++_storageIterator;
+            return tmp;
+          }
+          iterator& operator--() {
+            _storageIterator--;
+            return *this;
+          }
+          iterator operator--(int) {
+            iterator tmp = *this;
+            --_storageIterator;
+            return tmp;
+          }
+
+          reference operator*() {
+            _owningCache->touch(_storageIterator->first);
+            return *_storageIterator;
+          };
+          pointer operator->() {
+            _owningCache->touch(_storageIterator->first);
+            return _storageIterator.operator->();
+          }
+        };
+
+      typedef std::reverse_iterator<iterator> reverse_iterator;
+
+      /*! \name std::map interface wrappers
+       *  Simple wrappers for std::map calls, that we are using only for mimicking the map interface
+       */
+      iterator begin() {
+        return iterator(_storage.begin(), this);
+      }
+      iterator end() {
+        return iterator(_storage.end(), this);
+      }
+
+      //@{
         /*! \brief Allocator object accessor
           *
           *  Provides access to the allocator object, used to constuct the container.
           *
           *  \return The allocator object of type Allocator<pair<const Key, Data> >.
           */
-        allocator_type get_allocator() const throw() {
+        allocator_type get_allocator() const noexcept {
             return _storage.get_allocator();
         }
 
@@ -431,7 +511,7 @@ namespace stlcache {
           *  \see check
           *
           */
-        size_type count ( const key_type& x ) const throw() {
+        size_type count ( const key_type& x ) const noexcept {
             read_lock_type l = lock.lockRead();
             return _storage.count(x);
         }
@@ -442,7 +522,7 @@ namespace stlcache {
          *
          *   \return The value comparison object of type value_compare, defined as described above.
          */
-        value_compare value_comp ( ) const throw() {
+        value_compare value_comp ( ) const noexcept {
             return _storage.value_comp();
         }
 
@@ -457,7 +537,7 @@ namespace stlcache {
           *
           *  \return The key comparison object of type key_compare, defined to Compare, which is the fourth template parameter in the map class template.
           */
-        key_compare key_comp ( ) const throw() {
+        key_compare key_comp ( ) const noexcept {
             return _storage.key_comp();
         }
 
@@ -472,7 +552,7 @@ namespace stlcache {
           *
           *   \see size
           */
-        bool empty() const throw() {
+        bool empty() const noexcept {
             read_lock_type l = lock.lockRead();
             return _storage.empty();
         }
@@ -491,7 +571,7 @@ namespace stlcache {
          * \see empty
          *
          */
-        void clear() throw() {
+        void clear() noexcept {
             write_lock_type l = lock.lockWrite();
             _storage.clear();
             _policy->clear();
@@ -510,7 +590,7 @@ namespace stlcache {
          *
          * \see cache::operator=
          */
-        void swap ( cache<Key,Data,Policy,Compare,Allocator>& mp ) throw(exception_invalid_policy) {
+        void swap ( cache<Key,Data,Policy,Compare,Allocator>& mp ) noexcept(false) {
             write_lock_type l = lock.lockWrite();
             _storage.swap(mp._storage);
             _policy->swap(*mp._policy);
@@ -533,7 +613,7 @@ namespace stlcache {
          *
          * \return 1 when entry is removed (ie number of removed emtries, which is always 1, as keys are unique) or zero when nothing was done.
          */
-        size_type erase ( const key_type& x ) throw() {
+        size_type erase ( const key_type& x ) noexcept {
             write_lock_type l = lock.lockWrite();
             return this->_erase(x);
         }
@@ -550,7 +630,7 @@ namespace stlcache {
          *
          * \return true if the new elemented was inserted or false if an element with the same key existed.
          */
-        bool insert(Key _k, Data _d) throw(exception_cache_full,exception_invalid_key) {
+        bool insert(Key _k, Data _d) noexcept(false) {
             write_lock_type l = lock.lockWrite();
 
             this->_policyEvictInsert(_k);
@@ -568,7 +648,7 @@ namespace stlcache {
          *
          * Will check, whether element with the specified key exists in the map and, in case it exists, will update it's value and increase reference count of the element.
          *
-         * Otherwise it will insert single new element. This effectively increases the cache size. Because cache do not allow for duplicate key values, the insertion operation checks 
+         * Otherwise it will insert single new element. This effectively increases the cache size. Because cache do not allow for duplicate key values, the insertion operation checks
          * for each element inserted whether another element exists already in the container with the same key value, if so, the element is not inserted and its mapped value is not changed in any way.
          * Extension of cache could result in removal of some elements, depending of the cache fullness and used policy. It is also possible, that removal of excessive entries
          * will fail, therefore insert operation will fail too.
@@ -583,7 +663,7 @@ namespace stlcache {
                 this->insert(_k, _d);
                 return true;
             }
-            
+
             _policy->touch(_k);
             _storage.erase(_k);
             _storage.insert(value_type(_k,_d)).second;
