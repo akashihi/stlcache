@@ -435,17 +435,16 @@ namespace stlcache {
           iterator(const iterator& other): _storageIterator(other._storageIterator) {};
           ~iterator() =default;
 
-          iterator& operator=(const iterator&);
+          iterator& operator=(const iterator& other) {
+            this->_storageIterator = other._storageIterator;
+            this->_owningCache = other._owningCache;
+          }
           bool operator==(const iterator& other) const {
             return this->_storageIterator == other._storageIterator;
           };
           bool operator!=(const iterator& other) const {
             return this->_storageIterator != other._storageIterator;
           }
-          bool operator<(const iterator&) const;
-          bool operator>(const iterator&) const;
-          bool operator<=(const iterator&) const;
-          bool operator>=(const iterator&) const;
 
           iterator& operator++() {
             ++_storageIterator;
@@ -465,7 +464,6 @@ namespace stlcache {
             --_storageIterator;
             return tmp;
           }
-          difference_type operator-(iterator) const;
 
           reference operator*() {
             _owningCache->touch(_storageIterator->first);
@@ -487,12 +485,6 @@ namespace stlcache {
       }
       iterator end() {
         return iterator(_storage.end(), this);
-      }
-      reverse_iterator rbegin() {
-        return reverse_iterator(begin(), this);
-      }
-      reverse_iterator rend() {
-        return reverse_iterator(end(), this);
       }
 
       //@{

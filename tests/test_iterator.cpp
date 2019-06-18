@@ -8,6 +8,8 @@
 #define BOOST_TEST_MODULE "STLCacheIterator"
 #include <boost/test/unit_test.hpp>
 
+#include <algorithm>
+
 #include <stlcache/stlcache.hpp>
 
 using namespace stlcache;
@@ -46,6 +48,21 @@ BOOST_AUTO_TEST_SUITE(STLCacheSuite)
     BOOST_CHECK(it->second == "one");
   }
 
+  BOOST_AUTO_TEST_CASE(compare) {
+    cache<int,string,policy_none> c(10);
+
+    c.insert(1, string("one"));
+    c.insert(2, string("two"));
+    c.insert(3, string("three"));
+
+    auto first = c.begin();
+    auto middle = c.begin();
+    auto last = c.end();
+
+    BOOST_CHECK(first == middle);
+    BOOST_CHECK(first != last);
+  }
+
   BOOST_AUTO_TEST_CASE(touch) {
     cache<int,string,policy_lru> c(3);
 
@@ -68,5 +85,4 @@ BOOST_AUTO_TEST_SUITE(STLCacheSuite)
 
     BOOST_REQUIRE_THROW(c.fetch(1),exception_invalid_key); //Must be removed by LRU policy (cause 3 is touched)
   }
-
 BOOST_AUTO_TEST_SUITE_END()
