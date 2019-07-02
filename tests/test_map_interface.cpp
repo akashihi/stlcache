@@ -43,4 +43,35 @@ BOOST_AUTO_TEST_CASE(brackets) {
   BOOST_CHECK(c.size()==3);
 }
 
+BOOST_AUTO_TEST_CASE(find) {
+  cache<int,string,policy_lfu> c(3);
+
+  c.insert(1,"data1");
+  c.insert(2,"data2");
+
+  auto actual = c.find(2);
+
+  BOOST_CHECK(!actual->second.compare("data2"));
+
+  BOOST_CHECK(c.find(3) == c.end());
+}
+
+BOOST_AUTO_TEST_CASE(bounds) {
+  cache<int,string,policy_lfu> c(10);
+
+  c.insert(1,"data1");
+  c.insert(2,"data2");
+  c.insert(3,"data3");
+  c.insert(4,"data4");
+  c.insert(5,"data5");
+
+  BOOST_CHECK(!c.lower_bound(2)->second.compare("data2"));
+  BOOST_CHECK(!c.lower_bound(0)->second.compare("data1"));
+  BOOST_CHECK(c.lower_bound(6) == c.end());
+
+  BOOST_CHECK(!c.upper_bound(4)->second.compare("data5"));
+  BOOST_CHECK(!c.upper_bound(0)->second.compare("data1"));
+  BOOST_CHECK(c.upper_bound(6) == c.end());
+}
+
 BOOST_AUTO_TEST_SUITE_END()

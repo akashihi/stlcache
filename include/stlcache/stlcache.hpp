@@ -475,8 +475,6 @@ namespace stlcache {
           }
         };
 
-      typedef std::reverse_iterator<iterator> reverse_iterator;
-
       /*! \name std::map interface wrappers
        *  Simple wrappers for std::map calls, that we are using only for mimicking the map interface
        */
@@ -813,6 +811,76 @@ namespace stlcache {
             return (*this)[const_cast<const Key&&>(_k)];
         }
 
+        /*!
+         * \brief Finds an element with key equivalent to key.
+         *
+         * Returns an iterator, pointing to first found element. In case of non-existing key, a past-the-end (\see end()) iterator will be returned.
+         * As key is not actually accessed, it's usage count will not be updated.
+         *
+         * \param <_k> key to the data
+         * @return Iterator pointing to first found element or past-the-end iterator.
+         */
+        iterator find( const Key& _k ) {
+          read_lock_type l = lock.lockRead();
+          auto _it = _storage.find(_k);
+          if ( _it == _storage.end() ) {
+            return this->end();
+          }
+          return iterator(_it, this);
+        }
+
+        /*!
+         * \brief Finds an element with key not less than specified
+         *
+         * Returns an iterator, pointing to first element which is not less then specified. In case of non-existing key, a past-the-end (\see end()) iterator will be returned.
+         * As key is not actually accessed, it's usage count will not be updated.
+
+         * @param _k key to compare
+         * @return Iterator pointing to the first element that is not less than key. If no such element is found, a past-the-end iterator (\see end()) is returned.
+         */
+        iterator lower_bound( const Key& _k ) {
+          read_lock_type l = lock.lockRead();
+          auto _it = _storage.lower_bound(_k);
+          if ( _it == _storage.end()) {
+            return this->end();
+          }
+          return iterator(_it, this);
+        }
+
+        /*!
+         * \brief Finds an element with key greater than specified
+         *
+         * Returns an iterator, pointing to first element which is greater than specified. In case of non-existing key, a past-the-end (\see end()) iterator will be returned.
+         * As key is not actually accessed, it's usage count will not be updated.
+
+         * @param _k key to compare
+         * @return Iterator pointing to the first element that is greater than key. If no such element is found, a past-the-end iterator (\see end()) is returned.
+         */
+        iterator upper_bound( const Key& _k ) {
+          read_lock_type l = lock.lockRead();
+          auto _it = _storage.upper_bound(_k);
+          if ( _it == _storage.end()) {
+            return this->end();
+          }
+          return iterator(_it, this);
+        }
+
+        /*!
+         * \brief Finds an range with elements matching the key.
+         *
+         * Returns pair of iterators, where first element points to the first element, matching specified key and second point to first element greater then the key.
+         * As map keys are unique, distance between those iterators will always be one.
+         * In case of non-existing key, a pair of past-the-end (\see end()) iterators will be returned.
+         * As key is not actually accessed, it's usage count will not be updated.
+
+         * @param _k key to compare
+         * @return pair of iterators, pointing to the key and the next element or pair of past-the-end iterators.
+         */
+        std::pair<iterator,iterator> equal_range( const Key& _k ) {
+          read_lock_type l = lock.lockRead();
+          return std::make_pair(this->lower_bound(_k), this->upper_bound(_k));
+        }
+
 #ifdef USE_BOOST_OPTIONAL
         /*!
          * \brief Safe cache data access
@@ -851,7 +919,7 @@ namespace stlcache {
          *
          * \see count
          */
-        const bool check(const Key& _k) throw() {
+        const bool check(const Key& _k) noexcept {
             write_lock_type l = lock.lockWrite();
             return this->_check(_k);
         }
@@ -865,7 +933,7 @@ namespace stlcache {
          *  \param _k key to touch
          *
          */
-        void touch(const Key& _k) throw() {
+        void touch(const Key& _k) noexcept {
             write_lock_type l = lock.lockWrite();
             _policy->touch(_k);
         }
@@ -885,7 +953,7 @@ namespace stlcache {
          *
          * \see swap
          */
-        cache<Key,Data,Policy,Compare,Allocator>& operator= ( const cache<Key,Data,Policy,Compare,Allocator>& x) throw() {
+        cache<Key,Data,Policy,Compare,Allocator>& operator= ( const cache<Key,Data,Policy,Compare,Allocator>& x) noexcept {
             this->_storage=x._storage;
             this->_maxEntries=x._maxEntries;
             this->_currEntries=this->_storage.size();
@@ -905,7 +973,7 @@ namespace stlcache {
          *
          *  \param <x> a cache object with the same template parameters
          */
-        cache(const cache<Key,Data,Policy,Compare,Allocator>& x) throw() {
+        cache(const cache<Key,Data,Policy,Compare,Allocator>& x) noexcept {
             *this=x;
         }
         /*!
@@ -918,7 +986,7 @@ namespace stlcache {
          * \param <comp> Comparator object, compatible with Compare type. Defaults to Compare()
          *
          */
-        explicit cache(const size_type size, const Compare& comp = Compare()) throw() {
+        explicit cache(const size_type size, const Compare& comp = Compare()) noexcept {
             this->_storage=storageType(comp, Allocator<pair<const Key, Data> >());
             this->_maxEntries=size;
             this->_currEntries=0;
