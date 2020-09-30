@@ -1,6 +1,6 @@
 STL::Cache - in-memory cache for C++ applications
 
-Introduction
+Introduction :
 
    STL::Cache is just a simple wrapper over standard map, that implements
    some cache algorithms, thus allowing you to limit the storage size and
@@ -182,7 +182,7 @@ Policies
    The cache expiration policy must be specified as a third parameter of
    cache type and it is mandatory.
 
-your own policy
+Your own policy
 
    The policy implementation should keep track of entries in the cache and
    it must be able to tell the cache, what item should be expired at the
