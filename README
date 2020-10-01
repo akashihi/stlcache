@@ -8,9 +8,9 @@ Introduction
    interface is partially implemented, so it can't be used as a drop-in
    replacement for the std::map).
 
-   It is intented to be used for keeping any key/value data, especially
+   It is intended to be used for keeping any key/value data, especially
    when data's size are too big, to just put it into the map and keep the
-   whole thing. With STL::Cache you could put unlimited (really unlimited)
+   whole thing. With STL::Cache you could put enormous (really unlimited)
    amount of data into it, but it will store only some small part of your
    data. So re-usable data will be kept near your code and not so popular
    data will not spend expensive memory.
@@ -37,10 +37,10 @@ Getting and installing
    The STL::Cache is header only and does not require any building. Just
    copy the include/stlcache directory to your system's include
    directories or add it to your project's include directories.
-   Alternativaly you could build the sources and then install it, using
+   Alternatively you could build the sources and then install it, using
    our build system.
 
-   Yes, as i told you, the STL::Cache themself is a header-only library
+   Yes, as i told you, the STL::Cache itself is a header-only library
    and doesn't requires building. Indeed, it is shipped with tests,
    documentation and other stuff, that could be built and used. For
    STL::Cache building you need:
@@ -80,14 +80,14 @@ Usage
    Cache object 'myCache' is able to keep only 10 items. Cache size is
    configured at the construction time and cannot be changed in the future
    (with exceptions for assignment and swap operations). Additionally you
-   could specify a comparision object and allocator type, see the
+   could specify a comparison object and allocator type, see the
    cache class documentation for the details.
 
    You could put objects into your cache object using insert call:
      myCache.insert(1,"One)";
 
    Note, that the insert call could throw a cache full exception
-   or invalid key exception As keys have to be unique, the insert call
+   or invalid key exception, As keys have to be unique, the insert call
    may do nothing, if it meets the duplicate key. Don't forget to check
    it's return value.
 
@@ -263,7 +263,7 @@ alid_policy) {}
         };
 
    It's up to you, how you will implement those methods and so on. The
-   only importatn thing, we haven't mentioned yet, is a victim class.
+   only important thing, we haven't mentioned yet, is a victim class.
    It is a way to return optional value from a function. So, when your
    policy implementatiton cannot find any entry to remove, it will return
    empty victim object.
