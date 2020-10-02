@@ -1,6 +1,6 @@
 STL::Cache - in-memory cache for C++ applications
 
-Introduction
+Introduction:
 
    STL::Cache is just a simple wrapper over standard map, that implements
    some cache algorithms, thus allowing you to limit the storage size and
@@ -19,7 +19,7 @@ Introduction
    good, to be kept in cache or they should be thrown away. It is shipped
    with 8 policies and you are free to implement your own.
 
-Getting and installing
+Getting and installing:
 
    The STL::Cache source code is hosted on github, so you can download
    the source code using wget or other download tool:
@@ -65,7 +65,7 @@ Getting and installing
    are NOT installed by 'make install' command, so you have to copy them
    manually, if you really need them.
 
-Usage
+Usage:
 
    Select a cache expiration policy , configure cache with it,
    construct the cache, specifying it's size, and start putting data into
@@ -127,7 +127,7 @@ Usage
    Check it's return value, to get sure, whether something was deleted or
    not.
 
-Thread safety
+Thread safety:
 
     cache can be configured with different locking implementations, thus implementing thread safety. By default a non-locking approach is used and cache is not thread-safe, allowing user to implement external locking. STL::Cache is shipped with the following locking implementations:
 
@@ -160,7 +160,7 @@ Boost integration
     lfu_multi_index implementes LFU algorithm using a Boost MultiIndex map, which is more slower, but uses less RAM, comparing to the typical LFU implementation. You have to define USE_BOOST_OPTIONAL macro to access that policy.
 
 
-Policies
+Policies:
 
    The policy is a pluggable implementation of a cache algorithms,
    used for finding and removing excessive cache entries. STL::Cache is
@@ -182,7 +182,7 @@ Policies
    The cache expiration policy must be specified as a third parameter of
    cache type and it is mandatory.
 
-your own policy
+Your own policy:
 
    The policy implementation should keep track of entries in the cache and
    it must be able to tell the cache, what item should be expired at the
