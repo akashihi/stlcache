@@ -158,7 +158,7 @@ namespace stlcache {
      Check it's return value, to get sure, whether something was deleted or not.
 
      \section THREADS Thread safety.
-     
+
      \link stlcache::cache cache \endlink can be configured with different \link stlcache::lock locking \endlink implementations, thus implementing thread safety.
      By default a \link stlcache::lock_none non-locking \endlink approach is used and \link stlcache::cache cache \endlink is not thread-safe, allowing user to implement external locking.
      STL::Cache is shipped with the following locking implementations:
@@ -190,12 +190,12 @@ namespace stlcache {
       \endcode
      \subsection BIT lock_shared
 
-     \link stlcache::lock_shared lock_shared \endlink locking implementation allows user to execute some cache to calls in parallel and thread-safe way. 
+     \link stlcache::lock_shared lock_shared \endlink locking implementation allows user to execute some cache to calls in parallel and thread-safe way.
      You have to define USE_BOOST_OPTIONAL macro to access that locking implementation.
 
     \subsection BIM lfu_multi_index
-    
-    \link stlcache:lfu_multi_index lfu_multi_index \endlink implementes LFU algorithm using a Boost MultiIndex map, which is more slower, but uses less ram, comparing to the typical LFU implementation. 
+
+    \link stlcache:lfu_multi_index lfu_multi_index \endlink implementes LFU algorithm using a Boost MultiIndex map, which is more slower, but uses less ram, comparing to the typical LFU implementation.
     You have to define USE_BOOST_OPTIONAL macro to access that policy.
 
     \section Policies
@@ -406,10 +406,88 @@ namespace stlcache {
           */
         typedef typename storageType::const_pointer                                 const_pointer;
 
-        /*! \name std::map interface wrappers
-         *  Simple wrappers for std::map calls, that we are using only for mimicking the map interface
+        /*! \name std::map-like iterator interface.
+         *  Custom iterator implementation for STL::Cache, wrapping std::map iterators with added policy operations support.
          */
-        //@{
+        class iterator {
+          friend class cache;
+
+          /*! \brief Type used for address calculations, specific to a current platform (usually a ptrdiff_t)
+           */
+          typedef typename storageType::difference_type                               difference_type;
+          /*! \brief Combined key,value type
+           */
+          typedef pair<const Key, Data>                                         value_type;
+          /*! \brief Allocator::reference
+           */
+          typedef typename storageType::reference                                        reference;
+          /*! \brief Allocator::pointer
+           */
+          typedef typename storageType::pointer                                          pointer;
+
+          typedef std::random_access_iterator_tag iterator_category;
+
+          typename storageType::iterator _storageIterator;
+
+          cache<Key, Data, Policy, Compare, Allocator, Lock>* _owningCache;
+
+          explicit iterator(typename storageType::iterator _internal, cache<Key, Data, Policy, Compare, Allocator, Lock>* _cache): _storageIterator(_internal), _owningCache(_cache) { };
+
+        public:
+          iterator(const iterator& other): _storageIterator(other._storageIterator) {};
+          ~iterator() =default;
+
+          iterator& operator=(const iterator& other) {
+            this->_storageIterator = other._storageIterator;
+            this->_owningCache = other._owningCache;
+          }
+          bool operator==(const iterator& other) const {
+            return this->_storageIterator == other._storageIterator;
+          };
+          bool operator!=(const iterator& other) const {
+            return this->_storageIterator != other._storageIterator;
+          }
+
+          iterator& operator++() {
+            ++_storageIterator;
+            return *this;
+          }
+          iterator operator++(int) {
+            iterator tmp = *this;
+            ++_storageIterator;
+            return tmp;
+          }
+          iterator& operator--() {
+            _storageIterator--;
+            return *this;
+          }
+          iterator operator--(int) {
+            iterator tmp = *this;
+            --_storageIterator;
+            return tmp;
+          }
+
+          reference operator*() {
+            _owningCache->touch(_storageIterator->first);
+            return *_storageIterator;
+          };
+          pointer operator->() {
+            _owningCache->touch(_storageIterator->first);
+            return _storageIterator.operator->();
+          }
+        };
+
+      /*! \name std::map interface wrappers
+       *  Simple wrappers for std::map calls, that we are using only for mimicking the map interface
+       */
+      iterator begin() {
+        return iterator(_storage.begin(), this);
+      }
+      iterator end() {
+        return iterator(_storage.end(), this);
+      }
+
+      //@{
         /*! \brief Allocator object accessor
           *
           *  Provides access to the allocator object, used to constuct the container.
@@ -554,16 +632,8 @@ namespace stlcache {
          */
         bool insert(Key _k, Data _d) {
             write_lock_type l = lock.lockWrite();
-            while (this->_currEntries >= this->_maxEntries) {
-                _victim<Key> victim=_policy->victim();
-                if (!victim) {
-                    throw exception_cache_full("The cache is full and no element can be expired at the moment. Remove some elements manually");
-                }
-                this->_erase(*victim);
-            }
 
-            _policy->insert(_k);
-
+            this->_policyEvictInsert(_k);
 
             bool result=_storage.insert(value_type(_k,_d)).second;
             if (result) {
@@ -578,7 +648,7 @@ namespace stlcache {
          *
          * Will check, whether element with the specified key exists in the map and, in case it exists, will update it's value and increase reference count of the element.
          *
-         * Otherwise it will insert single new element. This effectively increases the cache size. Because cache do not allow for duplicate key values, the insertion operation checks 
+         * Otherwise it will insert single new element. This effectively increases the cache size. Because cache do not allow for duplicate key values, the insertion operation checks
          * for each element inserted whether another element exists already in the container with the same key value, if so, the element is not inserted and its mapped value is not changed in any way.
          * Extension of cache could result in removal of some elements, depending of the cache fullness and used policy. It is also possible, that removal of excessive entries
          * will fail, therefore insert operation will fail too.
@@ -593,7 +663,7 @@ namespace stlcache {
                 this->insert(_k, _d);
                 return true;
             }
-            
+
             _policy->touch(_k);
             _storage.erase(_k);
             _storage.insert(value_type(_k,_d)).second;
@@ -644,7 +714,49 @@ namespace stlcache {
             return this->_size();
         }
 
-        /*!
+      /*!
+         * \brief Access cache data
+         *
+         * Returns a reference to the mapped value of the element with key equivalent to key. If no such element exists, an exception of type std::out_of_range is thrown.
+         * If the specified key exists in the cache, it's usage count will be touched and reference to the element is returned.
+         * The data object itself is kept in the cache, so the reference will be valid until it is removed (either manually or due to cache overflow) or cache object destroyed.
+         *
+         * \param <_k> key to the data
+         *
+         * \throw  <std::out_of_range> Thrown when non-existent key is supplied. You could use \link cache::check check member \endlink or \link cache::count count member \endlink to check cache existence prior to fetching the data
+         *
+         * \return reference to the data, mapped by the key. of type Data of course.
+         *
+         * \see fetch
+         */
+        Data& at(const Key& _k) {
+          write_lock_type l = lock.lockWrite();
+          if (!this->_check(_k)) { //Call to the _check automatically touches entry.
+            throw out_of_range("Key is not in cache");
+          }
+          return (*(_storage.find(_k))).second;
+        }
+
+      /*!
+         * \brief Access cache data
+         *
+         * Returns a reference to the mapped value of the element with key equivalent to key. If no such element exists, an exception of type std::out_of_range is thrown.
+         * If the specified key exists in the cache, it's usage count will be touched and reference to the element is returned.
+         * The data object itself is kept in the cache, so the reference will be valid until it is removed (either manually or due to cache overflow) or cache object destroyed.
+         *
+         * \param <_k> key to the data
+         *
+         * \throw  <std::out_of_range> Thrown when non-existent key is supplied. You could use \link cache::check check member \endlink or \link cache::count count member \endlink to check cache existence prior to fetching the data
+         *
+         * \return constant reference to the data, mapped by the key. of type Data of course.
+         *
+         * \see fetch
+         */
+        const Data& at(const Key& _k) const {
+          return const_cast<const Data&>(this->at(_k));
+        }
+
+      /*!
          * \brief Access cache data
          *
          * Accessor to the data (values) stored in cache. If the specified key exists in the cache, it's usage count will be touched and reference to the element is returned.
@@ -654,16 +766,121 @@ namespace stlcache {
          *
          * \throw  <exception_invalid_key> Thrown when non-existent key is supplied. You could use \link cache::check check member \endlink or \link cache::count count member \endlink to check cache existence prior to fetching the data
          *
-         * \return constand reference to the data, mapped by the key. of type Data of course.
+         * \return constant reference to the data, mapped by the key. of type Data of course.
          *
          * \see check
          */
         const Data& fetch(const Key& _k) {
+            write_lock_type l = lock.lockWrite();
             if (!this->_check(_k)) {
                 throw exception_invalid_key("Key is not in cache",_k);
             }
-            _policy->touch(_k);
             return (*(_storage.find(_k))).second;
+        }
+
+      /*!
+         * \brief Access cache data
+         *
+         * Returns a reference to the value that is mapped to a key equivalent to key, performing an insertion if such key does not already exist.
+         * If the specified key exists in the cache, it's usage count will be touched.
+         * The data object itself is kept in the cache, so the reference will be valid until it is removed (either manually or due to cache overflow) or cache object destroyed.
+         *
+         * \param <_k> key to the data
+         *
+         * \return reference to the data, mapped by the key. of type Data of course.
+         */
+        Data& operator[](const Key& _k) noexcept {
+          write_lock_type l = lock.lockWrite();
+          if (!this->_check(_k)) {
+            this->_policyEvictInsert(_k);
+            _currEntries++;
+          }
+          return _storage[_k];
+        }
+
+      /*!
+         * \brief Access cache data
+         *
+         * Returns a reference to the value that is mapped to a key equivalent to key, performing an insertion if such key does not already exist.
+         * If the specified key exists in the cache, it's usage count will be touched.
+         * The data object itself is kept in the cache, so the reference will be valid until it is removed (either manually or due to cache overflow) or cache object destroyed.
+         *
+         * \param <_k> key to the data
+         *
+         * \return reference to the data, mapped by the key. of type Data of course.
+         */
+        Data& operator[](Key&& _k) {
+            return (*this)[const_cast<const Key&&>(_k)];
+        }
+
+        /*!
+         * \brief Finds an element with key equivalent to key.
+         *
+         * Returns an iterator, pointing to first found element. In case of non-existing key, a past-the-end (\see end()) iterator will be returned.
+         * As key is not actually accessed, it's usage count will not be updated.
+         *
+         * \param <_k> key to the data
+         * @return Iterator pointing to first found element or past-the-end iterator.
+         */
+        iterator find( const Key& _k ) {
+          read_lock_type l = lock.lockRead();
+          auto _it = _storage.find(_k);
+          if ( _it == _storage.end() ) {
+            return this->end();
+          }
+          return iterator(_it, this);
+        }
+
+        /*!
+         * \brief Finds an element with key not less than specified
+         *
+         * Returns an iterator, pointing to first element which is not less then specified. In case of non-existing key, a past-the-end (\see end()) iterator will be returned.
+         * As key is not actually accessed, it's usage count will not be updated.
+
+         * @param _k key to compare
+         * @return Iterator pointing to the first element that is not less than key. If no such element is found, a past-the-end iterator (\see end()) is returned.
+         */
+        iterator lower_bound( const Key& _k ) {
+          read_lock_type l = lock.lockRead();
+          auto _it = _storage.lower_bound(_k);
+          if ( _it == _storage.end()) {
+            return this->end();
+          }
+          return iterator(_it, this);
+        }
+
+        /*!
+         * \brief Finds an element with key greater than specified
+         *
+         * Returns an iterator, pointing to first element which is greater than specified. In case of non-existing key, a past-the-end (\see end()) iterator will be returned.
+         * As key is not actually accessed, it's usage count will not be updated.
+
+         * @param _k key to compare
+         * @return Iterator pointing to the first element that is greater than key. If no such element is found, a past-the-end iterator (\see end()) is returned.
+         */
+        iterator upper_bound( const Key& _k ) {
+          read_lock_type l = lock.lockRead();
+          auto _it = _storage.upper_bound(_k);
+          if ( _it == _storage.end()) {
+            return this->end();
+          }
+          return iterator(_it, this);
+        }
+
+        /*!
+         * \brief Finds an range with elements matching the key.
+         *
+         * Returns pair of iterators, where first element points to the first element, matching specified key and second point to first element greater then the key.
+         * As map keys are unique, distance between those iterators will always be one.
+         * In case of non-existing key, a pair of past-the-end (\see end()) iterators will be returned.
+         * As key is not actually accessed, it's usage count will not be updated.
+
+         * @param _k key to compare
+         * @return pair of iterators, pointing to the key and the next element or pair of past-the-end iterators.
+         */
+        std::pair<iterator,iterator> equal_range( const Key& _k ) {
+          read_lock_type l = lock.lockRead();
+          return std::make_pair(this->lower_bound(_k), this->upper_bound(_k));
         }
 
 #ifdef USE_BOOST_OPTIONAL
@@ -793,11 +1010,12 @@ namespace stlcache {
         }
         //@}
     protected:
-        const bool _check(const Key& _k) throw() {
+        const bool _check(const Key& _k) noexcept {
             _policy->touch(_k);
             return _storage.count(_k)==1;
         }
-        size_type _erase ( const key_type& x ) throw() {
+
+        size_type _erase ( const key_type& x ) noexcept {
             size_type ret=_storage.erase(x);
             _policy->remove(x);
 
@@ -805,7 +1023,20 @@ namespace stlcache {
 
             return ret;
         }
-        size_type _size() const throw() {
+
+        void _policyEvictInsert(const key_type& _k) noexcept(false) {
+          while (this->_currEntries >= this->_maxEntries) {
+            _victim<Key> victim=_policy->victim();
+            if (!victim) {
+              throw exception_cache_full("The cache is full and no element can be expired at the moment. Remove some elements manually");
+            }
+            this->_erase(*victim);
+          }
+
+          _policy->insert(_k);
+        }
+
+        size_type _size() const noexcept {
             assert(this->_currEntries==_storage.size());
             return this->_currEntries;
         }

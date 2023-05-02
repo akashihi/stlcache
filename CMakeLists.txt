@@ -1,5 +1,5 @@
 #Preamble
-cmake_minimum_required (VERSION 3.10)
+cmake_minimum_required (VERSION 3.5)
 project (STL::Cache)
 
 #Environment detection
@@ -8,7 +8,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 #Check for libraries presence
 SET(Boost_USE_STATIC_LIBS ON)
 SET(Boost_USE_MULTITHREADED ON)
-FIND_PACKAGE(Boost 1.66.0 COMPONENTS system unit_test_framework)
+FIND_PACKAGE(Boost 1.58.0 COMPONENTS system unit_test_framework)
 
 #Add MT libraries
 SET(LIBS ${Boost_LIBRARIES})
@@ -92,5 +92,13 @@ target_link_libraries(test_victim_perf ${LIBS})
 ADD_EXECUTABLE(test_lfu_multi tests/test_lfu_multi.cpp)
 target_link_libraries(test_lfu_multi ${LIBS})
 ADD_TEST(LFU-MultiIndex test_lfu_multi)
+
+ADD_EXECUTABLE(test_map_interface tests/test_map_interface.cpp)
+target_link_libraries(test_map_interface ${LIBS})
+ADD_TEST(MapInterface test_map_interface)
+
+ADD_EXECUTABLE(test_iterator tests/test_iterator.cpp)
+target_link_libraries(test_iterator ${LIBS})
+ADD_TEST(Iterator test_iterator)
 
 endif(Boost_FOUND)
