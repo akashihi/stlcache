@@ -50,7 +50,7 @@ IF(NOT_SUBPROJECT)
 	add_executable(tests
 			tests/test_main.cpp tests/test_map.cpp tests/test_map_interface.cpp tests/test_iterator.cpp
 			tests/test_victim.cpp tests/test_policy.cpp
-			tests/test_lru.cpp)
+			tests/test_lru.cpp tests/test_mru.cpp)
 	target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
 
 	# Add tests auto discovery
@@ -64,10 +64,6 @@ ENDIF()
 if(Boost_FOUND)
 enable_testing()
 SET(CTEST_ENVIRONMENT "BOOST_TEST_LOG_LEVEL=message")
-
-ADD_EXECUTABLE(test_mru tests/test_mru.cpp)
-target_link_libraries(test_mru ${LIBS})
-ADD_TEST(MRU test_mru)
 
 ADD_EXECUTABLE(test_lfu tests/test_lfu.cpp)
 target_link_libraries(test_lfu ${LIBS})
