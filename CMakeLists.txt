@@ -1,5 +1,11 @@
 #Preamble
-cmake_minimum_required (VERSION 3.5)
+cmake_minimum_required (VERSION 3.15)
+
+# Detect if we are bundled and skip building of tests in that case
+IF(NOT DEFINED PROJECT_NAME)
+	SET(NOT_SUBPROJECT ON)
+ENDIF()
+
 project (STL::Cache)
 
 #Environment detection
@@ -26,15 +32,33 @@ include_directories(${CMAKE_BINARY_DIR}
 
 install(DIRECTORY include/stlcache DESTINATION include)
 
+IF(NOT_SUBPROJECT)
+	# Retrieve the Catch2
+	Include(FetchContent)
+	FetchContent_Declare(
+			Catch2
+			GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+			GIT_TAG        v3.3.2 # or a later release
+	)
+	FetchContent_MakeAvailable(Catch2)
+
+	# Unit tests binary
+	add_executable(tests tests/test_main.cpp tests/test_map.cpp)
+	target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
+
+	# Add tests auto discovery
+	list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
+	include(CTest)
+	include(Catch)
+	enable_testing()
+	catch_discover_tests(tests)
+ENDIF()
+
 if(Boost_FOUND)
 enable_testing()
 SET(CTEST_ENVIRONMENT "BOOST_TEST_LOG_LEVEL=message")
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-ADD_EXECUTABLE(test_map tests/test_map.cpp)
-target_link_libraries(test_map ${LIBS})
-ADD_TEST(Map test_map)
 
 ADD_EXECUTABLE(test_victim tests/test_victim.cpp)
 target_link_libraries(test_victim ${LIBS})
@@ -80,14 +104,14 @@ ADD_EXECUTABLE(test_insert_assign tests/test_insert_assign.cpp)
 target_link_libraries(test_insert_assign ${Boost_LIBRARIES})
 ADD_TEST(IA test_insert_assign)
 
-ADD_EXECUTABLE(test_insert_perf tests/test_insert_perf.cpp)
-target_link_libraries(test_insert_perf ${LIBS})
+#ADD_EXECUTABLE(test_insert_perf tests/test_insert_perf.cpp)
+#target_link_libraries(test_insert_perf ${LIBS})
 
-ADD_EXECUTABLE(test_insdel_perf tests/test_insdel_perf.cpp)
-target_link_libraries(test_insdel_perf ${LIBS})
+#ADD_EXECUTABLE(test_insdel_perf tests/test_insdel_perf.cpp)
+#target_link_libraries(test_insdel_perf ${LIBS})
 
-ADD_EXECUTABLE(test_victim_perf tests/test_victim_perf.cpp)
-target_link_libraries(test_victim_perf ${LIBS})
+#ADD_EXECUTABLE(test_victim_perf tests/test_victim_perf.cpp)
+#target_link_libraries(test_victim_perf ${LIBS})
 
 ADD_EXECUTABLE(test_lfu_multi tests/test_lfu_multi.cpp)
 target_link_libraries(test_lfu_multi ${LIBS})
