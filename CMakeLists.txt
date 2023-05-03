@@ -43,7 +43,7 @@ IF(NOT_SUBPROJECT)
 	FetchContent_MakeAvailable(Catch2)
 
 	# Unit tests binary
-	add_executable(tests tests/test_main.cpp tests/test_map.cpp)
+	add_executable(tests tests/test_main.cpp tests/test_map.cpp tests/test_map_interface.cpp)
 	target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
 
 	# Add tests auto discovery
@@ -116,10 +116,6 @@ ADD_TEST(IA test_insert_assign)
 ADD_EXECUTABLE(test_lfu_multi tests/test_lfu_multi.cpp)
 target_link_libraries(test_lfu_multi ${LIBS})
 ADD_TEST(LFU-MultiIndex test_lfu_multi)
-
-ADD_EXECUTABLE(test_map_interface tests/test_map_interface.cpp)
-target_link_libraries(test_map_interface ${LIBS})
-ADD_TEST(MapInterface test_map_interface)
 
 ADD_EXECUTABLE(test_iterator tests/test_iterator.cpp)
 target_link_libraries(test_iterator ${LIBS})
