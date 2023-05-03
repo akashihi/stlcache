@@ -45,7 +45,7 @@ IF(NOT_SUBPROJECT)
 	# Unit tests binary
 	add_executable(tests
 			tests/test_main.cpp tests/test_map.cpp tests/test_map_interface.cpp tests/test_iterator.cpp
-			tests/test_victim.cpp)
+			tests/test_victim.cpp tests/test_policy.cpp)
 	target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
 
 	# Add tests auto discovery
@@ -61,10 +61,6 @@ enable_testing()
 SET(CTEST_ENVIRONMENT "BOOST_TEST_LOG_LEVEL=message")
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-ADD_EXECUTABLE(test_policy tests/test_policy.cpp)
-target_link_libraries(test_policy ${LIBS})
-ADD_TEST(Policy test_policy)
 
 ADD_EXECUTABLE(test_lru tests/test_lru.cpp)
 target_link_libraries(test_lru ${LIBS})
