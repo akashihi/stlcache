@@ -1,37 +1,42 @@
-#define BOOST_TEST_MODULE "STLCachePolicyMRU"
-#include <boost/test/unit_test.hpp>
+//
+// Copyright (C) 2011-2023 Denis V Chapligin, Martin Hrabovsky
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
+//
 
+#include <catch2/catch_all.hpp>
 #include <stlcache/stlcache.hpp>
 
 using namespace stlcache;
+using namespace Catch::Matchers;
 
-BOOST_AUTO_TEST_SUITE(STLCacheSuite)
+TEST_CASE("Insert/Assign/Merge", "[map]") {
+    SECTION("Insert/Assign") {
+        cache<int, string, policy_none> c(10);
 
-BOOST_AUTO_TEST_CASE(data) {
-    cache<int,string,policy_none> c(10);
+        CHECK(c.insert_or_assign(1, "data1"));
+        REQUIRE(c.fetch(1) == "data1");
+        CHECK(c.insert_or_assign(2, "data2"));
+        REQUIRE(c.fetch(2) == "data2");
+        CHECK(c.insert_or_assign(3, "data3"));
+        REQUIRE(c.fetch(3) == "data3");
+        CHECK_FALSE(c.insert_or_assign(1, "data4"));
 
-    c.insert_or_assign(1,"data1");
-    BOOST_CHECK(c.fetch(1)=="data1");
-    c.insert_or_assign(2,"data2");
-    BOOST_CHECK(c.fetch(2)=="data2");
-    c.insert_or_assign(3,"data3");
-    BOOST_CHECK(c.fetch(3)=="data3");
-    c.insert_or_assign(1,"data4");
+        REQUIRE(c.size() == 3); //It shouldn't be bigger nor smaller
 
-    BOOST_CHECK(c.size()==3); //It shouldn't be bigger nor smaller
+        REQUIRE(c.fetch(1) == "data4");
+        c.clear();
+        REQUIRE(c.empty());
+    }
 
-    BOOST_CHECK(c.fetch(1)=="data4");
-    c.clear();
-    BOOST_CHECK(c.size()==0);
+    SECTION("Merge") {
+        cache<int, string, policy_none> c(2);
+        cache<int, string, policy_none> d(2);
+        c.insert_or_assign(1, "data1");
+        d.insert_or_assign(2, "data2");
+        c.merge(d);
+        REQUIRE(c.fetch(1)=="data1");
+        REQUIRE(c.fetch(2)=="data2");
+    }
 }
-
-BOOST_AUTO_TEST_CASE(dataMerge) {
-    cache<int,string,policy_none> c(2);
-    cache<int,string,policy_none> d(2);
-    c.insert_or_assign(1,"data1");
-    d.insert_or_assign(2,"data2");
-    c.merge(d);
-    BOOST_CHECK(c.fetch(1)=="data1");
-    BOOST_CHECK(c.fetch(2)=="data2");
-}
-BOOST_AUTO_TEST_SUITE_END();

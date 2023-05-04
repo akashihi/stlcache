@@ -48,7 +48,7 @@ IF(NOT_SUBPROJECT)
 
 	# Unit tests binary
 	add_executable(tests
-			tests/test_main.cpp tests/test_map.cpp tests/test_map_interface.cpp tests/test_iterator.cpp tests/test_boost_optional.cpp
+			tests/test_main.cpp tests/test_map.cpp tests/test_map_interface.cpp tests/test_iterator.cpp tests/test_boost_optional.cpp tests/test_insert_assign.cpp
 			tests/test_victim.cpp tests/test_policy.cpp
 			tests/test_lru.cpp tests/test_mru.cpp
 			tests/test_lfu.cpp tests/test_lfustar.cpp tests/test_lfuaging.cpp tests/test_lfuagingstar.cpp tests/test_lfu_multi.cpp
@@ -63,14 +63,6 @@ IF(NOT_SUBPROJECT)
 	catch_discover_tests(tests)
 ENDIF()
 
-if(Boost_FOUND)
-enable_testing()
-SET(CTEST_ENVIRONMENT "BOOST_TEST_LOG_LEVEL=message")
-
-ADD_EXECUTABLE(test_insert_assign tests/test_insert_assign.cpp)
-target_link_libraries(test_insert_assign ${Boost_LIBRARIES})
-ADD_TEST(IA test_insert_assign)
-
 #ADD_EXECUTABLE(test_insert_perf tests/test_insert_perf.cpp)
 #target_link_libraries(test_insert_perf ${LIBS})
 
@@ -79,5 +71,3 @@ ADD_TEST(IA test_insert_assign)
 
 #ADD_EXECUTABLE(test_victim_perf tests/test_victim_perf.cpp)
 #target_link_libraries(test_victim_perf ${LIBS})
-
-endif(Boost_FOUND)
