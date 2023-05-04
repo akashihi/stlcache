@@ -30,27 +30,26 @@ static std::vector<int> get_data_vec() {
     return values;
 }
 
-template <class P> void BM_INSDEL(benchmark::State& state) {
+template <class P> void BM_EVICT(benchmark::State& state) {
     cache<unsigned int,unsigned int,P> c(NO_ITEMS);
-    auto values = get_data_vec();
-    for (int v : values) {
+    for (int v : get_data_vec()) {
         c.insert(v,v);
     }
 
     for (auto _ : state) {
-        for (int v : values) {
-            benchmark::DoNotOptimize(c.erase(v));
+        for (int v : get_data_vec()) {
+            benchmark::DoNotOptimize(c.insert(v,v));
         }
     }
 }
-BENCHMARK(BM_INSDEL<policy_none>);
-//BENCHMARK(BM_INSDEL<policy_lru>);
-BENCHMARK(BM_INSDEL<policy_mru>);
-//BENCHMARK(BM_INSDEL<policy_lfu>);
-//BENCHMARK(BM_INSDEL<policy_lfu_multi>);
-//BENCHMARK(BM_INSDEL<policy_lfustar>);
-//BENCHMARK(BM_INSDEL<policy_lfuaging<3600>>);
-//BENCHMARK(BM_INSDEL<policy_lfuagingstar<3600>>);
-//BENCHMARK(BM_INSDEL<policy_adaptive>);
+BENCHMARK(BM_EVICT<policy_none>);
+//BENCHMARK(BM_EVICT<policy_lru>);
+BENCHMARK(BM_EVICT<policy_mru>);
+//BENCHMARK(BM_EVICT<policy_lfu>);
+//BENCHMARK(BM_EVICT<policy_lfu_multi>);
+//BENCHMARK(BM_EVICT<policy_lfustar>);
+//BENCHMARK(BM_EVICT<policy_lfuaging<3600>>);
+//BENCHMARK(BM_EVICT<policy_lfuagingstar<3600>>);
+//BENCHMARK(BM_EVICT<policy_adaptive>);
 
 BENCHMARK_MAIN();

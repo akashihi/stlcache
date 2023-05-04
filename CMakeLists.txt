@@ -77,13 +77,7 @@ IF(NOT_SUBPROJECT)
 
 	add_executable(insdel_perf benchmarks/insdel_perf.cpp)
 	target_link_libraries(insdel_perf benchmark::benchmark)
+
+	add_executable(eviction_perf benchmarks/eviction_perf.cpp)
+	target_link_libraries(eviction_perf benchmark::benchmark)
 ENDIF()
-
-#ADD_EXECUTABLE(test_insert_perf )
-#target_link_libraries(test_insert_perf ${LIBS})
-
-#ADD_EXECUTABLE(test_insdel_perf tests/test_insdel_perf.cpp)
-#target_link_libraries(test_insdel_perf ${LIBS})
-
-#ADD_EXECUTABLE(test_victim_perf tests/test_victim_perf.cpp)
-#target_link_libraries(test_victim_perf ${LIBS})
