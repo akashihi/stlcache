@@ -6,3 +6,5 @@
 build
 include/.vscode/
 .vscode/
+cmake-build-debug
+.idea

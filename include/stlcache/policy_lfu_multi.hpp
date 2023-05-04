@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2011-2017 Denis V Chapligin, Martin Hrabovsky
+// Copyright (C) 2011-2023 Denis V Chapligin, Martin Hrabovsky, Vojtech Ondruj
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -8,6 +8,7 @@
 #ifndef STLCACHE_POLICY_LFU_MULTI_HPP_INCLUDED
 #define STLCACHE_POLICY_LFU_MULTI_HPP_INCLUDED
 
+#ifdef USE_BOOST
 #include <set>
 #include <map>
 
@@ -18,7 +19,6 @@
 #include <boost/multi_index/identity.hpp>
 #include <boost/multi_index/member.hpp>
 
-using namespace std;
 
 #include <stlcache/policy.hpp>
 
@@ -52,14 +52,14 @@ namespace stlcache {
         entriesType _entries;        
 
     public:
-        _policy_lfu_multi_type<Key,Allocator>& operator= ( const _policy_lfu_multi_type<Key,Allocator>& x) throw() {
+        _policy_lfu_multi_type<Key,Allocator>& operator= ( const _policy_lfu_multi_type<Key,Allocator>& x) noexcept {
             this->_entries=x._entries;
             return *this;
         }
-        _policy_lfu_multi_type(const _policy_lfu_multi_type<Key,Allocator>& x) throw() {
+        _policy_lfu_multi_type(const _policy_lfu_multi_type<Key,Allocator>& x) noexcept {
             *this=x;
         }
-        _policy_lfu_multi_type(const size_t& size ) throw() { }
+        explicit _policy_lfu_multi_type(const size_t& size ) noexcept { }
 
         virtual void insert(const Key& _k,unsigned int refCount) noexcept(false){
             //1 - is initial reference value
@@ -70,7 +70,7 @@ namespace stlcache {
             this->insert(_k,1);
         }
 
-        virtual void remove(const Key& _k) throw() {
+        virtual void remove(const Key& _k) noexcept {
             auto itFound = _entries.find(_k);
             if(itFound == _entries.end())
             {
@@ -78,7 +78,7 @@ namespace stlcache {
             }
             _entries.erase(_k);
         }
-        virtual void touch(const Key& _k) throw() {
+        virtual void touch(const Key& _k) noexcept {
             auto itFound = _entries.find(_k);
             if(itFound == _entries.end())
             {
@@ -88,19 +88,19 @@ namespace stlcache {
             r.refCount+=1;
             _entries.replace(itFound, r);         
         }
-        virtual void clear() throw() {
+        virtual void clear() noexcept {
             _entries.clear();
         }
         virtual void swap(policy<Key,Allocator>& _p) noexcept(false) {
             try {
-                _policy_lfu_multi_type<Key,Allocator>& _pn=dynamic_cast<_policy_lfu_multi_type<Key,Allocator>& >(_p);
+                auto& _pn=dynamic_cast<_policy_lfu_multi_type<Key,Allocator>& >(_p);
                 _entries.swap(_pn._entries);
             } catch (const std::bad_cast& ) {
                 throw exception_invalid_policy("Attempted to swap incompatible policies");
             }
         }
 
-        virtual const _victim<Key> victim() throw()  {
+        virtual const _victim<Key> victim() noexcept  {
             //
             if (_entries.begin()==_entries.end()) {
                 return _victim<Key>();
@@ -116,7 +116,7 @@ namespace stlcache {
         const entriesType& entries() const {
             return this->_entries;
         }
-        virtual unsigned long long untouch(const Key& _k) throw() {
+        virtual unsigned long long untouch(const Key& _k) noexcept {
             auto itFound = _entries.find(_k);
             Reference r = *itFound;
             if(itFound == _entries.end())
@@ -124,7 +124,7 @@ namespace stlcache {
                 return 0;
             }
             unsigned int refCount = itFound->refCount;
-            if (!(refCount>1))
+            if (refCount <= 1)
             {
                 return refCount;
             }
@@ -159,9 +159,9 @@ namespace stlcache {
         template <typename Key, template <typename T> class Allocator>
             struct bind : _policy_lfu_multi_type<Key,Allocator> { 
                 bind(const bind& x) : _policy_lfu_multi_type<Key,Allocator>(x)  { }
-                bind(const size_t& size) : _policy_lfu_multi_type<Key,Allocator>(size) { }
+                explicit bind(const size_t& size) : _policy_lfu_multi_type<Key,Allocator>(size) { }
             };
     };
 }
-
+#endif /* USE_BOOST */
 #endif /* STLCACHE_POLICY_LFU_MULTI_HPP_INCLUDED */

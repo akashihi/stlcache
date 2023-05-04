@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2011-2017 Denis V Chapligin, Martin Hrabovsky
+// Copyright (C) 2011-2023 Denis V Chapligin, Martin Hrabovsky, Vojtech Ondruj
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -8,12 +8,7 @@
 #ifndef STLCACHE_LOCK_SHARED_HPP_INCLUDED
 #define STLCACHE_LOCK_SHARED_HPP_INCLUDED
 
-#ifdef USE_BOOST_OPTIONAL
-
-#include <boost/thread/shared_mutex.hpp>
-#include <boost/thread/locks.hpp>
-
-using namespace std;
+#include <shared_mutex>
 
 #include <stlcache/lock.hpp>
 
@@ -25,19 +20,17 @@ namespace stlcache {
      * parallel, while writing threads will be locked exclusively and only one writing thread will be able 
      * to modify the cache.
      */
-    class lock_shared : public lock<boost::shared_lock<boost::shared_mutex>, boost::unique_lock<boost::shared_mutex> > {
-         mutable boost::shared_mutex mtx;
+    class lock_shared : public lock<std::shared_lock<std::shared_mutex>, std::unique_lock<std::shared_mutex> > {
+         mutable std::shared_mutex mtx;
     public:
-		write lockWrite() const {
+		write lockWrite() const override {
 			return write(mtx);
 		}
 
-		read lockRead() const {
+		read lockRead() const override {
 			return read(mtx);
 		}
     };
 }
-
-#endif /* USE_BOOST_OPTIONAL */
 
 #endif /* STLCACHE_LOCK_SHARED_HPP_INCLUDED */

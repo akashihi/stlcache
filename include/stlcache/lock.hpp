@@ -1,12 +1,5 @@
 //
-// Copyright (C) 2011-2017 Denis V Chapligin, Martin Hrabovsky
-// Distributed under the Boost Software License, Version 1.0.
-// (See accompanying file LICENSE_1_0.txt or copy at
-// http://www.boost.org/LICENSE_1_0.txt)
-//
-
-//
-// Copyright (C) 2011 Denis V Chapligin
+// Copyright (C) 2011-2023 Denis V Chapligin, Martin Hrabovsky, Vojtech Ondruj
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -16,9 +9,6 @@
 #define STLCACHE_LOCK_HPP_INCLUDED
 
 using namespace std;
-
-#include <boost/thread/shared_mutex.hpp>
-#include <boost/thread/locks.hpp>
 
 namespace stlcache {
     /*!

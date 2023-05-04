@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2011-2018 Denis V Chapligin, Martin Hrabovsky, Vojtech Ondruj
+// Copyright (C) 2011-2023 Denis V Chapligin, Martin Hrabovsky, Vojtech Ondruj
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -15,12 +15,9 @@
 #include <stdexcept>
 #include <typeinfo>
 #include <map>
+#include <optional>
 
 using namespace std;
-
-#ifdef USE_BOOST_OPTIONAL
-#include <boost/optional.hpp>
-#endif /* USE_BOOST_OPTIONAL */
 
 #include <stlcache/exceptions.hpp>
 #include <stlcache/policy.hpp>
@@ -46,7 +43,7 @@ namespace stlcache {
      STL::Cache is just a simple wrapper over standard map, that implements some cache algorithms, thus allowing you to limit the storage size
      and automatically remove unused items from it. (Right now the std::map interface is partially implemented, so it can't be used as a drop-in replacement for the std::map).
 
-     It is intented to be used for keeping any key/value data, especially when data's size are too big, to just put it into the map and keep the whole thing.
+     It is intended to be used for keeping any key/value data, especially when data's size are too big, to just put it into the map and keep the whole thing.
      With STL::Cache you could put unlimited (really unlimited) amount of data into it, but it will store only some small part of your data. So re-usable
      data will be kept near your code and not so popular data will not spend expensive memory.
 
@@ -76,7 +73,7 @@ namespace stlcache {
      other stuff, that could be built and used. For STL::Cache building you need:
 
      \li <a href="http://www.cmake.org/">Recent CMake (required)</a>
-     \li <a href="http://www.boost.org/">Boost library Boost library (required for tests otherwise optional)</a>
+     \li <a href="http://www.boost.org/">Boost library (optional)</a>
      \li <a href="http://www.doxygen.org/">Doxygen (optional, only for documentation processing)</a>
 
      After getting this stuff up and running, select a directory for building and issue the following commands:
@@ -164,39 +161,17 @@ namespace stlcache {
      STL::Cache is shipped with the following locking implementations:
      \li \link stlcache::lock_none non-locking \endlink - No locking will be done with that implementation, leaving \link stlcache::cache cache \endlink non thread-safe.
      \li \link stlcache::lock_exclusive exclusive locking \endlink - \link stlcache::cache cache \endlink will be locked exclusively on almost every call, thus limiting parallel usage to a single thread.
-     \li \link stlcache::lock_shared shared locking \endlink - Some calls will be allowed to be run in parallel with this policy. But, due to nature of the \link stlcache::cache cache \endlink, even operations, that seems to be non-modifying, require exclusive lock to update access tracking data. This implementation is only available when \link BI Boost extensions \endlink are enabled.
+     \li \link stlcache::lock_shared shared locking \endlink - Some calls will be allowed to be run in parallel with this policy. But, due to nature of the \link stlcache::cache cache \endlink, even operations, that seems to be non-modifying, require exclusive lock to update access tracking data.
 
      The locking implementation must be specified as a last parameter of \link stlcache::cache cache \endlink type and it is optional.
      \section BI Boost integration
 
-     Since version 0.3 stlcache includes some Boost specific extensions: optional values, multi-map based policies and not really effective
-     thread safety.
-
-     \subsection BIO boost::optional
-
-     boost::optional allows user to safely \link cache::get() get\endlink values from the cache for any key, whether key exists or not.
-     You will need boost:optional headers available and have to define USE_BOOST_OPTIONAL macro.
-
-     Example:
-      \code
-          cache<string,string,policy_lru> cache_lru(3);
-          cache_lru.insert("key","value");
-          cache_lru.touch("key");
-          optional<string> value = cache_lru.get("key");
-          if (name) {
-            cout<<"We have some value in the cache: "<<*name;
-          }
-          cache_lru.erase("key");
-      \endcode
-     \subsection BIT lock_shared
-
-     \link stlcache::lock_shared lock_shared \endlink locking implementation allows user to execute some cache to calls in parallel and thread-safe way.
-     You have to define USE_BOOST_OPTIONAL macro to access that locking implementation.
+     Since version 0.3 stlcache includes  Boost specific multi-map based LFU policy: \link stlcache::lfu_multi_index lfu_multi_index \endlink.
 
     \subsection BIM lfu_multi_index
 
-    \link stlcache:lfu_multi_index lfu_multi_index \endlink implementes LFU algorithm using a Boost MultiIndex map, which is more slower, but uses less ram, comparing to the typical LFU implementation.
-    You have to define USE_BOOST_OPTIONAL macro to access that policy.
+    \link stlcache:lfu_multi_index lfu_multi_index \endlink implements LFU algorithm using a Boost MultiIndex map, which is more slower, but uses less ram, comparing to the typical LFU implementation.
+    You have to define USE_BOOST macro to access that policy.
 
     \section Policies
 
@@ -883,32 +858,29 @@ namespace stlcache {
           return std::make_pair(this->lower_bound(_k), this->upper_bound(_k));
         }
 
-#ifdef USE_BOOST_OPTIONAL
         /*!
          * \brief Safe cache data access
          *
          * Accessor to the data (values) stored in cache. If the specified key exists in the cache, it's usage count will be touched
-         * and reference to the element, wrapped to boost::optional  is returned.  For non-exsitent key empty boost::optional container is returned
-         * The data object itself is kept in the cache, so the reference will be valid until it is removed (either manually or due to cache overflow) or cache object destroyed.
+         * and a copy of the element, wrapped to std::optional  is returned.  For non-exsitent key empty std::optional container is returned.
          *
-         *  This function is only available if USE_BOOST_OPTIONAL macro is defined
+         * Copying data to the std::optional requires Data type to be Copyable.
          *
          * \param <_k> key to the data
          *
-         * \return constant boost::optional wrapper, holding constant reference to the data, in case when key were in the cache,
-         * or empty constant boost::optional wrapper for non-existent key.
+         * \return constant std::optional wrapper, holding copy of the data, in case when key were in the cache,
+         * or empty constant std::optional wrapper for non-existent key.
          *
          * \see check, fetch
          */
-        const boost::optional<const Data&> get(const Key& _k) throw() {
+        const std::optional<const Data> get(const Key& _k) throw() {
             write_lock_type l = lock.lockWrite();
             if (!this->_check(_k)) {
-                return boost::optional<const Data&>();
+                return std::nullopt;
             }
             _policy->touch(_k);
-            return boost::optional<const Data&>((*(_storage.find(_k))).second);
+            return std::make_optional<const Data>((*(_storage.find(_k))).second);
         }
-#endif /* USE_BOOST_OPTIONAL */
 
         /*!
          * \brief Check for the key presence in cache
