@@ -161,34 +161,13 @@ namespace stlcache {
      STL::Cache is shipped with the following locking implementations:
      \li \link stlcache::lock_none non-locking \endlink - No locking will be done with that implementation, leaving \link stlcache::cache cache \endlink non thread-safe.
      \li \link stlcache::lock_exclusive exclusive locking \endlink - \link stlcache::cache cache \endlink will be locked exclusively on almost every call, thus limiting parallel usage to a single thread.
-     \li \link stlcache::lock_shared shared locking \endlink - Some calls will be allowed to be run in parallel with this policy. But, due to nature of the \link stlcache::cache cache \endlink, even operations, that seems to be non-modifying, require exclusive lock to update access tracking data. This implementation is only available when \link BI Boost extensions \endlink are enabled.
+     \li \link stlcache::lock_shared shared locking \endlink - Some calls will be allowed to be run in parallel with this policy. But, due to nature of the \link stlcache::cache cache \endlink, even operations, that seems to be non-modifying, require exclusive lock to update access tracking data.
 
      The locking implementation must be specified as a last parameter of \link stlcache::cache cache \endlink type and it is optional.
      \section BI Boost integration
 
      Since version 0.3 stlcache includes some Boost specific extensions: optional values, multi-map based policies and not really effective
      thread safety.
-
-     \subsection BIO boost::optional
-
-     boost::optional allows user to safely \link cache::get() get\endlink values from the cache for any key, whether key exists or not.
-     You will need boost:optional headers available and have to define USE_BOOST_OPTIONAL macro.
-
-     Example:
-      \code
-          cache<string,string,policy_lru> cache_lru(3);
-          cache_lru.insert("key","value");
-          cache_lru.touch("key");
-          optional<string> value = cache_lru.get("key");
-          if (name) {
-            cout<<"We have some value in the cache: "<<*name;
-          }
-          cache_lru.erase("key");
-      \endcode
-     \subsection BIT lock_shared
-
-     \link stlcache::lock_shared lock_shared \endlink locking implementation allows user to execute some cache to calls in parallel and thread-safe way.
-     You have to define USE_BOOST_OPTIONAL macro to access that locking implementation.
 
     \subsection BIM lfu_multi_index
 
