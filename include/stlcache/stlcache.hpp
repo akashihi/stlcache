@@ -43,7 +43,7 @@ namespace stlcache {
      STL::Cache is just a simple wrapper over standard map, that implements some cache algorithms, thus allowing you to limit the storage size
      and automatically remove unused items from it. (Right now the std::map interface is partially implemented, so it can't be used as a drop-in replacement for the std::map).
 
-     It is intented to be used for keeping any key/value data, especially when data's size are too big, to just put it into the map and keep the whole thing.
+     It is intended to be used for keeping any key/value data, especially when data's size are too big, to just put it into the map and keep the whole thing.
      With STL::Cache you could put unlimited (really unlimited) amount of data into it, but it will store only some small part of your data. So re-usable
      data will be kept near your code and not so popular data will not spend expensive memory.
 
@@ -73,7 +73,7 @@ namespace stlcache {
      other stuff, that could be built and used. For STL::Cache building you need:
 
      \li <a href="http://www.cmake.org/">Recent CMake (required)</a>
-     \li <a href="http://www.boost.org/">Boost library Boost library (required for tests otherwise optional)</a>
+     \li <a href="http://www.boost.org/">Boost library (optional)</a>
      \li <a href="http://www.doxygen.org/">Doxygen (optional, only for documentation processing)</a>
 
      After getting this stuff up and running, select a directory for building and issue the following commands:
