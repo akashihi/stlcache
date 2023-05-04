@@ -42,9 +42,18 @@ IF(NOT_SUBPROJECT)
 	FetchContent_Declare(
 			Catch2
 			GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-			GIT_TAG        v3.3.2 # or a later release
+			GIT_TAG        v3.3.2
 	)
 	FetchContent_MakeAvailable(Catch2)
+
+	# Retrieve Google Benchmark
+	SET(BENCHMARK_DOWNLOAD_DEPENDENCIES ON)
+	FetchContent_Declare(
+			Benchmark
+			GIT_REPOSITORY https://github.com/google/benchmark.git
+			GIT_TAG        v1.7.1
+	)
+	FetchContent_MakeAvailable(Benchmark)
 
 	# Unit tests binary
 	add_executable(tests
@@ -61,13 +70,14 @@ IF(NOT_SUBPROJECT)
 	include(Catch)
 	enable_testing()
 	catch_discover_tests(tests)
+
+	# Benchmarks
+	add_executable(insert_perf benchmarks/insert_perf.cpp)
+	target_link_libraries(insert_perf benchmark::benchmark)
+
+	add_executable(insdel_perf benchmarks/insdel_perf.cpp)
+	target_link_libraries(insdel_perf benchmark::benchmark)
+
+	add_executable(eviction_perf benchmarks/eviction_perf.cpp)
+	target_link_libraries(eviction_perf benchmark::benchmark)
 ENDIF()
-
-#ADD_EXECUTABLE(test_insert_perf tests/test_insert_perf.cpp)
-#target_link_libraries(test_insert_perf ${LIBS})
-
-#ADD_EXECUTABLE(test_insdel_perf tests/test_insdel_perf.cpp)
-#target_link_libraries(test_insdel_perf ${LIBS})
-
-#ADD_EXECUTABLE(test_victim_perf tests/test_victim_perf.cpp)
-#target_link_libraries(test_victim_perf ${LIBS})
