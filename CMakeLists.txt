@@ -72,8 +72,11 @@ IF(NOT_SUBPROJECT)
 	catch_discover_tests(tests)
 
 	# Benchmarks
-	add_executable(test_insert_perf benchmarks/insert_perf.cpp)
-	target_link_libraries(test_insert_perf benchmark::benchmark)
+	add_executable(insert_perf benchmarks/insert_perf.cpp)
+	target_link_libraries(insert_perf benchmark::benchmark)
+
+	add_executable(insdel_perf benchmarks/insdel_perf.cpp)
+	target_link_libraries(insdel_perf benchmark::benchmark)
 ENDIF()
 
 #ADD_EXECUTABLE(test_insert_perf )

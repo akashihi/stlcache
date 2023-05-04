@@ -30,22 +30,26 @@ static std::vector<int> get_data_vec() {
     return values;
 }
 
-template <class P> void BM_INSERT(benchmark::State& state) {
+template <class P> void BM_INSDEL(benchmark::State& state) {
     cache<unsigned int,unsigned int,P> c(NO_ITEMS);
+    for (int v : get_data_vec()) {
+        benchmark::DoNotOptimize(c.insert(v,v));
+    }
+
     for (auto _ : state) {
         for (int v : get_data_vec()) {
-            benchmark::DoNotOptimize(c.insert(v,v));
+            c.erase(v);
         }
     }
 }
-BENCHMARK(BM_INSERT<policy_none>);
-//BENCHMARK(BM_INSERT<policy_lru>);
-BENCHMARK(BM_INSERT<policy_mru>);
-//BENCHMARK(BM_INSERT<policy_lfu>);
-//BENCHMARK(BM_INSERT<policy_lfu_multi>);
-//BENCHMARK(BM_INSERT<policy_lfustar>);
-//BENCHMARK(BM_INSERT<policy_lfuaging<3600>>);
-//BENCHMARK(BM_INSERT<policy_lfuagingstar<3600>>);
-//BENCHMARK(BM_INSERT<policy_adaptive>);
+BENCHMARK(BM_INSDEL<policy_none>);
+//BENCHMARK(BM_INSDEL<policy_lru>);
+BENCHMARK(BM_INSDEL<policy_mru>);
+//BENCHMARK(BM_INSDEL<policy_lfu>);
+//BENCHMARK(BM_INSDEL<policy_lfu_multi>);
+//BENCHMARK(BM_INSDEL<policy_lfustar>);
+//BENCHMARK(BM_INSDEL<policy_lfuaging<3600>>);
+//BENCHMARK(BM_INSDEL<policy_lfuagingstar<3600>>);
+//BENCHMARK(BM_INSDEL<policy_adaptive>);
 
 BENCHMARK_MAIN();
