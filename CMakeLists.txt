@@ -48,12 +48,12 @@ IF(NOT_SUBPROJECT)
 
 	# Unit tests binary
 	add_executable(tests
-			tests/test_main.cpp tests/test_map.cpp tests/test_map_interface.cpp tests/test_iterator.cpp
+			tests/test_main.cpp tests/test_map.cpp tests/test_map_interface.cpp tests/test_iterator.cpp tests/test_boost_optional.cpp
 			tests/test_victim.cpp tests/test_policy.cpp
 			tests/test_lru.cpp tests/test_mru.cpp
 			tests/test_lfu.cpp tests/test_lfustar.cpp tests/test_lfuaging.cpp tests/test_lfuagingstar.cpp tests/test_lfu_multi.cpp
 			tests/test_adaptive.cpp)
-	target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
+	target_link_libraries(tests PRIVATE Catch2::Catch2WithMain ${LIBS})
 
 	# Add tests auto discovery
 	list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
@@ -66,10 +66,6 @@ ENDIF()
 if(Boost_FOUND)
 enable_testing()
 SET(CTEST_ENVIRONMENT "BOOST_TEST_LOG_LEVEL=message")
-
-ADD_EXECUTABLE(test_boost_optional tests/test_boost_optional.cpp)
-target_link_libraries(test_boost_optional ${LIBS})
-ADD_TEST(boost::optional test_boost_optional)
 
 ADD_EXECUTABLE(test_insert_assign tests/test_insert_assign.cpp)
 target_link_libraries(test_insert_assign ${Boost_LIBRARIES})
