@@ -6,8 +6,6 @@
 //
 
 #include <catch2/catch_all.hpp>
-#include <boost/optional/optional_io.hpp>
-#define USE_BOOST_OPTIONAL
 #include <stlcache/stlcache.hpp>
 
 using namespace stlcache;

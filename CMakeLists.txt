@@ -11,6 +11,11 @@ project (STL::Cache)
 #Environment detection
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
+#Check for libraries presence
+SET(Boost_USE_STATIC_LIBS ON)
+SET(Boost_USE_MULTITHREADED ON)
+FIND_PACKAGE(Boost 1.58.0 COMPONENTS system unit_test_framework)
+
 #Documentation stuff
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 include(UseDoxygen)
@@ -19,6 +24,7 @@ set(DOXYFILE_LATEX OFF)
 #Build configuration
 include_directories(${CMAKE_BINARY_DIR}
 		    ${CMAKE_SOURCE_DIR}/include
+		${Boost_INCLUDE_DIRS}
 )
 
 install(DIRECTORY include/stlcache DESTINATION include)
@@ -48,12 +54,12 @@ IF(NOT_SUBPROJECT)
 
 	# Unit tests binary
 	add_executable(tests
-			tests/test_main.cpp tests/test_map.cpp tests/test_map_interface.cpp tests/test_iterator.cpp tests/test_boost_optional.cpp tests/test_insert_assign.cpp
+			tests/test_main.cpp tests/test_map.cpp tests/test_map_interface.cpp tests/test_iterator.cpp tests/test_optional.cpp tests/test_insert_assign.cpp
 			tests/test_victim.cpp tests/test_policy.cpp
 			tests/test_lru.cpp tests/test_mru.cpp
 			tests/test_lfu.cpp tests/test_lfustar.cpp tests/test_lfuaging.cpp tests/test_lfuagingstar.cpp tests/test_lfu_multi.cpp
 			tests/test_adaptive.cpp)
-	target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
+	target_link_libraries(tests PRIVATE Catch2::Catch2WithMain ${LIBS})
 
 	# Add tests auto discovery
 	list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)

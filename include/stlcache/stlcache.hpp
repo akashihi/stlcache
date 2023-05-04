@@ -15,12 +15,9 @@
 #include <stdexcept>
 #include <typeinfo>
 #include <map>
+#include <optional>
 
 using namespace std;
-
-#ifdef USE_BOOST_OPTIONAL
-#include <boost/optional.hpp>
-#endif /* USE_BOOST_OPTIONAL */
 
 #include <stlcache/exceptions.hpp>
 #include <stlcache/policy.hpp>
@@ -883,32 +880,29 @@ namespace stlcache {
           return std::make_pair(this->lower_bound(_k), this->upper_bound(_k));
         }
 
-#ifdef USE_BOOST_OPTIONAL
         /*!
          * \brief Safe cache data access
          *
          * Accessor to the data (values) stored in cache. If the specified key exists in the cache, it's usage count will be touched
-         * and reference to the element, wrapped to boost::optional  is returned.  For non-exsitent key empty boost::optional container is returned
-         * The data object itself is kept in the cache, so the reference will be valid until it is removed (either manually or due to cache overflow) or cache object destroyed.
+         * and a copy of the element, wrapped to std::optional  is returned.  For non-exsitent key empty std::optional container is returned.
          *
-         *  This function is only available if USE_BOOST_OPTIONAL macro is defined
+         * Copying data to the std::optional requires Data type to be Copyable.
          *
          * \param <_k> key to the data
          *
-         * \return constant boost::optional wrapper, holding constant reference to the data, in case when key were in the cache,
-         * or empty constant boost::optional wrapper for non-existent key.
+         * \return constant std::optional wrapper, holding copy of the data, in case when key were in the cache,
+         * or empty constant std::optional wrapper for non-existent key.
          *
          * \see check, fetch
          */
-        const boost::optional<const Data&> get(const Key& _k) throw() {
+        const std::optional<const Data> get(const Key& _k) throw() {
             write_lock_type l = lock.lockWrite();
             if (!this->_check(_k)) {
-                return boost::optional<const Data&>();
+                return std::nullopt;
             }
             _policy->touch(_k);
-            return boost::optional<const Data&>((*(_storage.find(_k))).second);
+            return std::make_optional<const Data>((*(_storage.find(_k))).second);
         }
-#endif /* USE_BOOST_OPTIONAL */
 
         /*!
          * \brief Check for the key presence in cache
