@@ -138,10 +138,9 @@ Thread safety:
 The locking implementation must be specified as a last parameter of cache type and it is optional.
 
 Boost integration
-    Since version 0.3 stlcache includes some Boost specific extensions: optional values, multi-map based policies and not really effective thread safety.
+    Since version 0.3 stlcache includes Boost specific multi-map based LFU policy: lfu_multi_index
 
-  lfu_multi_index
-    lfu_multi_index implementes LFU algorithm using a Boost MultiIndex map, which is more slower, but uses less RAM, comparing to the typical LFU implementation. You have to define USE_BOOST_OPTIONAL macro to access that policy.
+    lfu_multi_index implementes LFU algorithm using a Boost MultiIndex map, which is more slower, but uses less RAM, comparing to the typical LFU implementation. You have to define USE_BOOST macro to access that policy.
 
 
 Policies:

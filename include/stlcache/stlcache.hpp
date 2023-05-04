@@ -166,13 +166,12 @@ namespace stlcache {
      The locking implementation must be specified as a last parameter of \link stlcache::cache cache \endlink type and it is optional.
      \section BI Boost integration
 
-     Since version 0.3 stlcache includes some Boost specific extensions: optional values, multi-map based policies and not really effective
-     thread safety.
+     Since version 0.3 stlcache includes  Boost specific multi-map based LFU policy: \link stlcache::lfu_multi_index lfu_multi_index \endlink.
 
     \subsection BIM lfu_multi_index
 
-    \link stlcache:lfu_multi_index lfu_multi_index \endlink implementes LFU algorithm using a Boost MultiIndex map, which is more slower, but uses less ram, comparing to the typical LFU implementation.
-    You have to define USE_BOOST_OPTIONAL macro to access that policy.
+    \link stlcache:lfu_multi_index lfu_multi_index \endlink implements LFU algorithm using a Boost MultiIndex map, which is more slower, but uses less ram, comparing to the typical LFU implementation.
+    You have to define USE_BOOST macro to access that policy.
 
     \section Policies
 

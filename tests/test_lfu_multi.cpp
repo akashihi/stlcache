@@ -5,6 +5,10 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
+
+// This test will only be compiles and executed if the Boost library is detected.
+
+#ifdef USE_BOOST
 #include <catch2/catch_all.hpp>
 #include <stlcache/stlcache.hpp>
 
@@ -49,3 +53,4 @@ TEST_CASE("LFU Multi", "[policy,lfu]") {
         CHECK_THROWS_AS(c1.fetch(2),exception_invalid_key); //Must be removed by LFU policy (cause 1&2 are touched)
     }
 }
+#endif /* USE_BOOST */
