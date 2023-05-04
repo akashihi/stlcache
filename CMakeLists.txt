@@ -50,7 +50,8 @@ IF(NOT_SUBPROJECT)
 	add_executable(tests
 			tests/test_main.cpp tests/test_map.cpp tests/test_map_interface.cpp tests/test_iterator.cpp
 			tests/test_victim.cpp tests/test_policy.cpp
-			tests/test_lru.cpp tests/test_mru.cpp)
+			tests/test_lru.cpp tests/test_mru.cpp
+			tests/test_lfu.cpp tests/test_lfustar.cpp tests/test_lfuaging.cpp tests/test_lfuagingstar.cpp tests/test_lfu_multi.cpp)
 	target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
 
 	# Add tests auto discovery
@@ -64,22 +65,6 @@ ENDIF()
 if(Boost_FOUND)
 enable_testing()
 SET(CTEST_ENVIRONMENT "BOOST_TEST_LOG_LEVEL=message")
-
-ADD_EXECUTABLE(test_lfu tests/test_lfu.cpp)
-target_link_libraries(test_lfu ${LIBS})
-ADD_TEST(LFU test_lfu)
-
-ADD_EXECUTABLE(test_lfustar tests/test_lfustar.cpp)
-target_link_libraries(test_lfustar ${LIBS})
-ADD_TEST(LFU* test_lfustar)
-
-ADD_EXECUTABLE(test_lfuaging tests/test_lfuaging.cpp)
-target_link_libraries(test_lfuaging ${LIBS})
-ADD_TEST(LFU-Aging test_lfuaging)
-
-ADD_EXECUTABLE(test_lfuagingstar tests/test_lfuagingstar.cpp)
-target_link_libraries(test_lfuagingstar ${LIBS})
-ADD_TEST(LFU*-Aging test_lfuagingstar)
 
 ADD_EXECUTABLE(test_adaptive tests/test_adaptive.cpp)
 target_link_libraries(test_adaptive ${LIBS})
@@ -101,9 +86,5 @@ ADD_TEST(IA test_insert_assign)
 
 #ADD_EXECUTABLE(test_victim_perf tests/test_victim_perf.cpp)
 #target_link_libraries(test_victim_perf ${LIBS})
-
-ADD_EXECUTABLE(test_lfu_multi tests/test_lfu_multi.cpp)
-target_link_libraries(test_lfu_multi ${LIBS})
-ADD_TEST(LFU-MultiIndex test_lfu_multi)
 
 endif(Boost_FOUND)
