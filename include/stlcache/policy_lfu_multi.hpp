@@ -61,11 +61,11 @@ namespace stlcache {
         }
         _policy_lfu_multi_type(const size_t& size ) throw() { }
 
-        virtual void insert(const Key& _k,unsigned int refCount) throw(exception_invalid_key) {
+        virtual void insert(const Key& _k,unsigned int refCount) noexcept(false){
             //1 - is initial reference value
             _entries.insert({_k,refCount});
         }
-        virtual void insert(const Key& _k) throw(exception_invalid_key) {
+        virtual void insert(const Key& _k) noexcept(false){
             //1 - is initial reference value
             this->insert(_k,1);
         }
@@ -91,7 +91,7 @@ namespace stlcache {
         virtual void clear() throw() {
             _entries.clear();
         }
-        virtual void swap(policy<Key,Allocator>& _p) throw(exception_invalid_policy) {
+        virtual void swap(policy<Key,Allocator>& _p) noexcept(false) {
             try {
                 _policy_lfu_multi_type<Key,Allocator>& _pn=dynamic_cast<_policy_lfu_multi_type<Key,Allocator>& >(_p);
                 _entries.swap(_pn._entries);

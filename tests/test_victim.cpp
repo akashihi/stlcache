@@ -1,74 +1,70 @@
 //
-// Copyright (C) 2011-2017 Denis V Chapligin, Martin Hrabovsky
+// Copyright (C) 2011-2023 Denis V Chapligin, Martin Hrabovsky
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define BOOST_TEST_MODULE "STLCacheVictim"
-#include <boost/test/unit_test.hpp>
-
+#include <catch2/catch_all.hpp>
 #include <stlcache/stlcache.hpp>
 
 using namespace stlcache;
+using namespace Catch::Matchers;
 
-BOOST_AUTO_TEST_SUITE(STLCacheSuite)
-
-BOOST_AUTO_TEST_CASE(empty) {
+TEST_CASE("Empty victim", "[victim]") {
     _victim<int> v;
 
-    BOOST_CHECK(v.isInitialized()==false);
-    BOOST_CHECK(!v);
+    CHECK_FALSE(v.isInitialized());
+    CHECK_FALSE(v);
 
-    BOOST_REQUIRE_THROW(v.value(),exception_empty_victim);
-    BOOST_REQUIRE_THROW(*v,exception_empty_victim);
+    CHECK_THROWS_AS(v.value(),exception_empty_victim);
+    CHECK_THROWS_AS(*v,exception_empty_victim);
+
 }
 
-BOOST_AUTO_TEST_CASE(filled) {
+TEST_CASE("Victim with value", "[victim]") {
     _victim<int> v(1);
 
-    BOOST_CHECK(v.isInitialized()==true);
-    BOOST_CHECK(v);
+    CHECK(v.isInitialized());
+    CHECK(v);
 
-    BOOST_REQUIRE_NO_THROW(v.value());
-    BOOST_REQUIRE_NO_THROW(*v);
+    REQUIRE_NOTHROW(v.value());
+    REQUIRE_NOTHROW(*v);
 
-    BOOST_CHECK(v.value()==1);
-    BOOST_CHECK(*v==1);
+    REQUIRE(v.value()==1);
+    REQUIRE(*v==1);
 }
 
-BOOST_AUTO_TEST_CASE(copy) {
+TEST_CASE("Victim copy", "[victim]") {
     _victim<int> v;
 
-    BOOST_CHECK(v.isInitialized()==false);
-    BOOST_CHECK(!v);
+    CHECK_FALSE(v.isInitialized());
+    CHECK_FALSE(v);
 
-    BOOST_REQUIRE_THROW(v.value(),exception_empty_victim);
-    BOOST_REQUIRE_THROW(*v,exception_empty_victim);
+    CHECK_THROWS_AS(v.value(),exception_empty_victim);
+    CHECK_THROWS_AS(*v,exception_empty_victim);
 
     _victim<int> v1(1);
 
     v=v1;
 
-    BOOST_CHECK(v.isInitialized()==true);
-    BOOST_CHECK(v);
+    CHECK(v.isInitialized());
+    CHECK(v);
 
-    BOOST_REQUIRE_NO_THROW(v.value());
-    BOOST_REQUIRE_NO_THROW(*v);
+    REQUIRE_NOTHROW(v.value());
+    REQUIRE_NOTHROW(*v);
 
-    BOOST_CHECK(v.value()==1);
-    BOOST_CHECK(*v==1);
+    REQUIRE(v.value()==1);
+    REQUIRE(*v==1);
 
     _victim<int> v2(v);
 
-    BOOST_CHECK(v2.isInitialized()==true);
-    BOOST_CHECK(v2);
+    CHECK(v2.isInitialized());
+    CHECK(v2);
 
-    BOOST_REQUIRE_NO_THROW(v2.value());
-    BOOST_REQUIRE_NO_THROW(*v2);
+    REQUIRE_NOTHROW(v2.value());
+    REQUIRE_NOTHROW(*v2);
 
-    BOOST_CHECK(v2.value()==1);
-    BOOST_CHECK(*v2==1);
+    REQUIRE(v2.value()==1);
+    REQUIRE(*v2==1);
 }
-
-BOOST_AUTO_TEST_SUITE_END();
