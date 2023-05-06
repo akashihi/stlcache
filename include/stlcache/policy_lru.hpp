@@ -9,6 +9,7 @@
 #define STLCACHE_POLICY_LRU_HPP_INCLUDED
 
 #include <list>
+#include <unordered_map>
 
 #include <stlcache/policy.hpp>
 
@@ -17,7 +18,7 @@ namespace stlcache {
         std::list<Key,Allocator<Key> > _entries;
         typedef typename std::list<Key,Allocator<Key> >::iterator entriesIterator;
 
-        std::map<Key,entriesIterator,less<Key>,Allocator<pair<Key,entriesIterator> > > _entriesMap;
+        std::unordered_map<Key,entriesIterator,std::hash<Key>,std::equal_to<Key>,Allocator<pair<Key,entriesIterator> > > _entriesMap;
     public:
         _policy_lru_type<Key,Allocator>& operator= ( const _policy_lru_type<Key,Allocator>& x) {
             this->_entries=x._entries;
