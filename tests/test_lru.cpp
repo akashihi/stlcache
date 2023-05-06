@@ -44,7 +44,8 @@ TEST_CASE("LRU", "[policy,lru]") {
         c1.insert(2,"data2");
         c1.insert(3,"data3");
 
-        cache<int,string,policy_lru> c2 = c1;
+        cache<int,string,policy_lru> c2(10);
+        c2=c1;
         c2.touch(1);
 
         c2.insert(4,"data4");

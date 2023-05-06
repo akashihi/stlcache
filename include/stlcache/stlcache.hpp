@@ -427,7 +427,7 @@ namespace stlcache {
             ++_storageIterator;
             return *this;
           }
-          iterator operator++(int) {
+          iterator operator++(int)  {
             iterator tmp = *this;
             ++_storageIterator;
             return tmp;
@@ -527,7 +527,7 @@ namespace stlcache {
           *
           *   \see size
           */
-        bool empty() const {
+        [[nodiscard]] bool empty() const {
             read_lock_type l = lock.lockRead();
             return _storage.empty();
         }
@@ -645,8 +645,8 @@ namespace stlcache {
             return false;
         }
 
-        /*
-         * \bried Merge two caches
+        /*!
+         * \brief Merge two caches
          *
          * Inserts items, missing in *this, but existing in the second to *this.
          * For the existing items, reference count will be increased.
@@ -873,7 +873,7 @@ namespace stlcache {
          *
          * \see check, fetch
          */
-        const std::optional<const Data> get(const Key& _k) throw() {
+        std::optional<const Data> get(const Key& _k) noexcept {
             write_lock_type l = lock.lockWrite();
             if (!this->_check(_k)) {
                 return std::nullopt;
@@ -893,7 +893,7 @@ namespace stlcache {
          *
          * \see count
          */
-        const bool check(const Key& _k) {
+        bool check(const Key& _k) {
             write_lock_type l = lock.lockWrite();
             return this->_check(_k);
         }
@@ -947,7 +947,7 @@ namespace stlcache {
          *
          *  \param <x> a cache object with the same template parameters
          */
-        cache(const cache<Key,Data,Policy,Compare,Allocator>& x) {
+        explicit cache(const cache<Key,Data,Policy,Compare,Allocator>& x) : _maxEntries(x._maxEntries), _currEntries(x._currEntries) {
             *this=x;
         }
         /*!
@@ -960,10 +960,8 @@ namespace stlcache {
          * \param <comp> Comparator object, compatible with Compare type. Defaults to Compare()
          *
          */
-        explicit cache(const size_type size, const Compare& comp = Compare()) {
+        explicit cache(const size_type size, const Compare& comp = Compare()) : _maxEntries(size), _currEntries(0) {
             this->_storage=storageType(comp, Allocator<pair<const Key, Data> >());
-            this->_maxEntries=size;
-            this->_currEntries=0;
 
             policy_type localPolicy(size);
             this->_policy = policyAlloc.allocate(1);
@@ -982,7 +980,7 @@ namespace stlcache {
         }
         //@}
     protected:
-        const bool _check(const Key& _k) noexcept {
+        bool _check(const Key& _k) noexcept {
             _policy->touch(_k);
             return _storage.count(_k)==1;
         }
