@@ -44,13 +44,13 @@ template <class P> void BM_INSDEL(benchmark::State& state) {
     }
 }
 BENCHMARK(BM_INSDEL<policy_none>);
-//BENCHMARK(BM_INSDEL<policy_lru>);
+BENCHMARK(BM_INSDEL<policy_lru>);
 BENCHMARK(BM_INSDEL<policy_mru>);
-//BENCHMARK(BM_INSDEL<policy_lfu>);
-//BENCHMARK(BM_INSDEL<policy_lfu_multi>);
-//BENCHMARK(BM_INSDEL<policy_lfustar>);
-//BENCHMARK(BM_INSDEL<policy_lfuaging<3600>>);
-//BENCHMARK(BM_INSDEL<policy_lfuagingstar<3600>>);
-//BENCHMARK(BM_INSDEL<policy_adaptive>);
+BENCHMARK(BM_INSDEL<policy_lfu>);
+BENCHMARK(BM_INSDEL<policy_lfu_multi>);
+BENCHMARK(BM_INSDEL<policy_lfustar>);
+BENCHMARK(BM_INSDEL<policy_lfuaging<3600>>);
+BENCHMARK(BM_INSDEL<policy_lfuagingstar<3600>>);
+BENCHMARK(BM_INSDEL<policy_adaptive>);
 
 BENCHMARK_MAIN();
