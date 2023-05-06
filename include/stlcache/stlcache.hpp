@@ -607,7 +607,10 @@ namespace stlcache {
          */
         bool insert(Key _k, Data _d) {
             write_lock_type l = lock.lockWrite();
-
+            if(this->_storage.find(_k)!=this->_storage.end()){
+                _policy->touch(_k);
+                return false;
+            }
             this->_policyEvictInsert(_k);
 
             bool result=_storage.insert(value_type(_k,_d)).second;
@@ -634,6 +637,7 @@ namespace stlcache {
          * \return true if the new elemented was inserted or false if an element with the same key existed.
          */
         bool insert_or_assign(Key _k, Data _d) {
+            write_lock_type l = lock.lockWrite();
             if(this->_storage.find(_k)==this->_storage.end()){
                 this->insert(_k, _d);
                 return true;

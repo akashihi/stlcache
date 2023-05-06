@@ -39,13 +39,13 @@ template <class P> void BM_INSERT(benchmark::State& state) {
     }
 }
 BENCHMARK(BM_INSERT<policy_none>);
-//BENCHMARK(BM_INSERT<policy_lru>);
+BENCHMARK(BM_INSERT<policy_lru>);
 BENCHMARK(BM_INSERT<policy_mru>);
-//BENCHMARK(BM_INSERT<policy_lfu>);
-//BENCHMARK(BM_INSERT<policy_lfu_multi>);
-//BENCHMARK(BM_INSERT<policy_lfustar>);
-//BENCHMARK(BM_INSERT<policy_lfuaging<3600>>);
-//BENCHMARK(BM_INSERT<policy_lfuagingstar<3600>>);
-//BENCHMARK(BM_INSERT<policy_adaptive>);
+BENCHMARK(BM_INSERT<policy_lfu>);
+BENCHMARK(BM_INSERT<policy_lfu_multi>);
+BENCHMARK(BM_INSERT<policy_lfustar>);
+BENCHMARK(BM_INSERT<policy_lfuaging<3600>>);
+BENCHMARK(BM_INSERT<policy_lfuagingstar<3600>>);
+BENCHMARK(BM_INSERT<policy_adaptive>);
 
 BENCHMARK_MAIN();

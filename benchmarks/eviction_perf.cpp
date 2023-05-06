@@ -43,13 +43,13 @@ template <class P> void BM_EVICT(benchmark::State& state) {
     }
 }
 BENCHMARK(BM_EVICT<policy_none>);
-//BENCHMARK(BM_EVICT<policy_lru>);
+BENCHMARK(BM_EVICT<policy_lru>);
 BENCHMARK(BM_EVICT<policy_mru>);
-//BENCHMARK(BM_EVICT<policy_lfu>);
-//BENCHMARK(BM_EVICT<policy_lfu_multi>);
-//BENCHMARK(BM_EVICT<policy_lfustar>);
-//BENCHMARK(BM_EVICT<policy_lfuaging<3600>>);
-//BENCHMARK(BM_EVICT<policy_lfuagingstar<3600>>);
-//BENCHMARK(BM_EVICT<policy_adaptive>);
+BENCHMARK(BM_EVICT<policy_lfu>);
+BENCHMARK(BM_EVICT<policy_lfu_multi>);
+BENCHMARK(BM_EVICT<policy_lfustar>);
+BENCHMARK(BM_EVICT<policy_lfuaging<3600>>);
+BENCHMARK(BM_EVICT<policy_lfuagingstar<3600>>);
+BENCHMARK(BM_EVICT<policy_adaptive>);
 
 BENCHMARK_MAIN();

@@ -73,4 +73,19 @@ TEST_CASE("LRU", "[policy,lru]") {
         REQUIRE_NOTHROW(c1.fetch(4));
         REQUIRE_NOTHROW(c1.fetch(5));
     }
+
+    SECTION("LRU handles insertion of duplicates to the cache properly") {
+        // https://github.com/akashihi/stlcache/issues/20
+        const int capacity = 10;
+        const int duplicateEvery = 4;
+        const int duplcateValue = -1;
+        cache<int,string,policy_lru> cache(capacity);
+
+        for (int i = 0; i < capacity * 10; i++) {
+            bool doDuplicate = (i % duplicateEvery) == 0;
+            int key = doDuplicate ? duplcateValue : i;
+            string value = std::to_string(static_cast<unsigned long long>(key));
+            cache.insert(key, value);
+        }
+    }
 }

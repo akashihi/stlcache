@@ -36,6 +36,7 @@ TEST_CASE("Cache data management", "[map") {
     }
     SECTION("Data storage") {
         CHECK(c.insert(1,string("test"))); //Insert returns true for new entries
+        CHECK_FALSE(c.insert(1,string("test2"))); //Insert returns false for existing keys and leaves value intact
 
         CHECK_FALSE(c.empty());
         REQUIRE(c.size()==1);
