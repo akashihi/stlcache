@@ -17,7 +17,7 @@ using namespace std;
 namespace stlcache {
     template <class Key,template <typename T> class Allocator> class _policy_mru_type : public _policy_lru_type<Key,Allocator> {
     public:
-        _policy_mru_type(const size_t& size ) : _policy_lru_type<Key,Allocator>(size) { }
+        explicit _policy_mru_type(const size_t& size ) : _policy_lru_type<Key,Allocator>(size) { }
 
         virtual const _victim<Key> victim()  {
             return _victim<Key>(this->entries().front());
@@ -40,7 +40,7 @@ namespace stlcache {
         template <typename Key, template <typename T> class Allocator>
             struct bind : _policy_mru_type<Key,Allocator> {
                 bind(const bind& x) : _policy_mru_type<Key,Allocator>(x)  { }
-                bind(const size_t& size) : _policy_mru_type<Key,Allocator>(size) { }
+                explicit bind(const size_t& size) : _policy_mru_type<Key,Allocator>(size) { }
             };
     };
 }
