@@ -11,10 +11,8 @@
 #include <map>
 #include <chrono>
 
-using namespace std;
-
 #include <stlcache/policy.hpp>
-
+//246/17/292
 namespace stlcache {
     template <unsigned int Age,class Key,template <typename T> class Allocator> class _policy_lfuaging_type : public virtual _policy_lfu_type<Key,Allocator> {
         map<Key,std::chrono::time_point<std::chrono::steady_clock>, less<Key>, Allocator<pair<const Key, std::chrono::time_point<std::chrono::steady_clock> > > > _timeKeeper;
@@ -33,7 +31,7 @@ namespace stlcache {
 
         virtual void insert(const Key& _k) {
             _policy_lfu_type<Key,Allocator>::insert(_k);
-            _timeKeeper.insert(std::make_pair(_k,std::chrono::steady_clock::now())); //Because touch always increases the refcount, so it couldn't be 1 after touch
+            _timeKeeper.insert(std::make_pair(_k,std::chrono::steady_clock::now()));
         }
         virtual void remove(const Key& _k) {
             _policy_lfu_type<Key,Allocator>::remove(_k);
@@ -41,8 +39,10 @@ namespace stlcache {
         }
         virtual void touch(const Key& _k) {
             _policy_lfu_type<Key,Allocator>::touch(_k);
-            _timeKeeper.erase(_k);
-            _timeKeeper.insert(std::make_pair(_k,std::chrono::steady_clock::now())); //Because touch always increases the refcount, so it couldn't be 1 after touch
+            auto item = _timeKeeper.find(_k);
+            if (item != _timeKeeper.end()) {
+                item->second = std::chrono::steady_clock::now();
+            }
         }
         virtual void clear() {
             _policy_lfu_type<Key,Allocator>::clear();
