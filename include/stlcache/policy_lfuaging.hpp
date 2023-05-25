@@ -8,20 +8,16 @@
 #ifndef STLCACHE_POLICY_LFUAGING_HPP_INCLUDED
 #define STLCACHE_POLICY_LFUAGING_HPP_INCLUDED
 
-#include <set>
 #include <map>
-#include <ctime>
-
-using namespace std;
+#include <chrono>
 
 #include <stlcache/policy.hpp>
 
 namespace stlcache {
-    template <time_t Age,class Key,template <typename T> class Allocator> class _policy_lfuaging_type : public virtual _policy_lfu_type<Key,Allocator> {
-        typedef set<Key, less<Key>, Allocator<Key> > keySet;
-        map<Key,time_t, less<Key>, Allocator<pair<const Key, time_t> > > _timeKeeper;
-        time_t _oldestEntry;
-        time_t age;
+    template <unsigned int Age,class Key,template <typename T> class Allocator> class _policy_lfuaging_type : public virtual _policy_lfu_type<Key,Allocator> {
+        map<Key,std::chrono::time_point<std::chrono::steady_clock>, less<Key>, Allocator<pair<const Key, std::chrono::time_point<std::chrono::steady_clock> > > > _timeKeeper;
+        std::chrono::time_point<std::chrono::steady_clock> _oldestEntry;
+        std::chrono::seconds age;
     public:
         _policy_lfuaging_type<Age,Key,Allocator>& operator= ( const _policy_lfuaging_type<Age,Key,Allocator>& x) {
             _policy_lfu_type<Key,Allocator>::operator=(x);
@@ -30,17 +26,12 @@ namespace stlcache {
             this->age=x.age;
             return *this;
         }
-        _policy_lfuaging_type(const _policy_lfuaging_type<Age,Key,Allocator>& x)  : _policy_lfu_type<Key,Allocator>(x) {
-            *this=x;
-        }
-        _policy_lfuaging_type(const size_t& size ) : _policy_lfu_type<Key,Allocator>(size) {
-            this->age=Age;
-            this->_oldestEntry=time(NULL);
-        }
+        _policy_lfuaging_type(const _policy_lfuaging_type<Age,Key,Allocator>& x)  : _policy_lfu_type<Key,Allocator>(x), _timeKeeper(x._timeKeeper), _oldestEntry(x._oldestEntry), age(x.age) { }
+        explicit _policy_lfuaging_type(const size_t& size ) : _policy_lfu_type<Key,Allocator>(size), age(Age), _oldestEntry(std::chrono::steady_clock::now()) { }
 
         virtual void insert(const Key& _k) {
             _policy_lfu_type<Key,Allocator>::insert(_k);
-            _timeKeeper.insert(std::pair<Key,time_t>(_k,time(NULL))); //Because touch always increases the refcount, so it couldn't be 1 after touch
+            _timeKeeper.insert(std::make_pair(_k,std::chrono::steady_clock::now()));
         }
         virtual void remove(const Key& _k) {
             _policy_lfu_type<Key,Allocator>::remove(_k);
@@ -48,8 +39,10 @@ namespace stlcache {
         }
         virtual void touch(const Key& _k) {
             _policy_lfu_type<Key,Allocator>::touch(_k);
-            _timeKeeper.erase(_k);
-            _timeKeeper.insert(std::pair<Key,time_t>(_k,time(NULL))); //Because touch always increases the refcount, so it couldn't be 1 after touch
+            auto item = _timeKeeper.find(_k);
+            if (item != _timeKeeper.end()) {
+                item->second = std::chrono::steady_clock::now();
+            }
         }
         virtual void clear() {
             _policy_lfu_type<Key,Allocator>::clear();
@@ -57,14 +50,14 @@ namespace stlcache {
         }
         virtual void swap(policy<Key,Allocator>& _p) {
             try {
-                _policy_lfuaging_type<Age,Key,Allocator>& _pn=dynamic_cast<_policy_lfuaging_type<Age,Key,Allocator>& >(_p);
+                auto& _pn=dynamic_cast<_policy_lfuaging_type<Age,Key,Allocator>& >(_p);
                 _timeKeeper.swap(_pn._timeKeeper);
 
-                time_t _oldest=this->_oldestEntry;
+                std::chrono::time_point<std::chrono::steady_clock> _oldest=this->_oldestEntry;
                 this->_oldestEntry=_pn._oldestEntry;
                 _pn._oldestEntry=_oldest;
 
-                time_t a = this->age;
+                std::chrono::seconds a = this->age;
                 this->age=_pn.age;
                 _pn.age=a;
 
@@ -79,37 +72,29 @@ namespace stlcache {
         }
 	protected:
 		virtual void expire() {
-            if ((_oldestEntry+age)<time(NULL)) {
-                list<Key,Allocator<Key> > toErase;
-                list<Key,Allocator<Key> > toInsert;
+            auto oldestEntryAge = std::chrono::steady_clock::now()-_oldestEntry;
+            if (oldestEntryAge>age) {
 
                 //Time to clean up
-                this->_oldestEntry=time(NULL);
-                typedef typename map<Key,time_t,less<Key>,Allocator<pair<const Key,time_t> > >::iterator timeMapIterator;
-                for (timeMapIterator it=_timeKeeper.begin();it!=_timeKeeper.end();++it) {
-                    if ((*it).second+age<time(NULL)) {
+                this->_oldestEntry=std::chrono::steady_clock::now();
+                auto it = _timeKeeper.begin();
+                while (it != _timeKeeper.end()) {
+                    if ((std::chrono::steady_clock::now()-(*it).second)>age) {
                         //Too old :(
-                        Key itCopy=(*it).first;
                         unsigned long long currentRef=this->untouch((*it).first);
-                        toErase.push_front(itCopy);
 
                         if (currentRef>1) {
-                            toInsert.push_front(itCopy);
+                            it->second = std::chrono::steady_clock::now(); //For expired, but still referenced items - just update age
+                            it++;
+                        } else {
+                            it = _timeKeeper.erase(it); //Otherwise - remove it
                         }
-                    } else {
+                    } else {//Use non-expired items as the _oldestEntry
                         if ((*it).second<this->_oldestEntry) {
                             this->_oldestEntry=(*it).second;
                         }
+                        it++;
                     }
-                }
-
-                //Delete entries
-                typedef typename list<Key,Allocator<Key> >::iterator listIterator;
-                for(listIterator it=toErase.begin();it!=toErase.end();++it) {
-                    _timeKeeper.erase(*it);
-                }
-                for(listIterator it=toInsert.begin();it!=toInsert.end();++it) {
-                    _timeKeeper.insert(std::pair<Key,time_t>(*it,time(NULL)));
                 }
             }
 		}
@@ -138,11 +123,11 @@ namespace stlcache {
      * \see policy_lfu
      * \see policu_lfuagingstar
      */
-    template <time_t Age> struct policy_lfuaging {
+    template <unsigned int Age> struct policy_lfuaging {
         template <typename Key, template <typename T> class Allocator>
             struct bind : _policy_lfuaging_type<Age,Key,Allocator> {
                 bind(const bind& x) : _policy_lfuaging_type<Age,Key,Allocator>(x),_policy_lfu_type<Key,Allocator>(x)  { }
-                bind(const size_t& size) : _policy_lfuaging_type<Age,Key,Allocator>(size),_policy_lfu_type<Key,Allocator>(size) { }
+                explicit bind(const size_t& size) : _policy_lfuaging_type<Age,Key,Allocator>(size),_policy_lfu_type<Key,Allocator>(size) { }
             };
     };
 }
