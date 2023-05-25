@@ -8,7 +8,6 @@
 #ifndef STLCACHE_POLICY_LFUAGING_HPP_INCLUDED
 #define STLCACHE_POLICY_LFUAGING_HPP_INCLUDED
 
-#include <set>
 #include <map>
 #include <ctime>
 
@@ -18,7 +17,6 @@ using namespace std;
 
 namespace stlcache {
     template <time_t Age,class Key,template <typename T> class Allocator> class _policy_lfuaging_type : public virtual _policy_lfu_type<Key,Allocator> {
-        typedef set<Key, less<Key>, Allocator<Key> > keySet;
         map<Key,time_t, less<Key>, Allocator<pair<const Key, time_t> > > _timeKeeper;
         time_t _oldestEntry;
         time_t age;
@@ -30,13 +28,8 @@ namespace stlcache {
             this->age=x.age;
             return *this;
         }
-        _policy_lfuaging_type(const _policy_lfuaging_type<Age,Key,Allocator>& x)  : _policy_lfu_type<Key,Allocator>(x) {
-            *this=x;
-        }
-        _policy_lfuaging_type(const size_t& size ) : _policy_lfu_type<Key,Allocator>(size) {
-            this->age=Age;
-            this->_oldestEntry=time(NULL);
-        }
+        _policy_lfuaging_type(const _policy_lfuaging_type<Age,Key,Allocator>& x)  : _policy_lfu_type<Key,Allocator>(x), _timeKeeper(x._timeKeeper), _oldestEntry(x._oldestEntry), age(x.age) { }
+        explicit _policy_lfuaging_type(const size_t& size ) : _policy_lfu_type<Key,Allocator>(size), age(Age), _oldestEntry(time(NULL)) { }
 
         virtual void insert(const Key& _k) {
             _policy_lfu_type<Key,Allocator>::insert(_k);
@@ -57,7 +50,7 @@ namespace stlcache {
         }
         virtual void swap(policy<Key,Allocator>& _p) {
             try {
-                _policy_lfuaging_type<Age,Key,Allocator>& _pn=dynamic_cast<_policy_lfuaging_type<Age,Key,Allocator>& >(_p);
+                auto& _pn=dynamic_cast<_policy_lfuaging_type<Age,Key,Allocator>& >(_p);
                 _timeKeeper.swap(_pn._timeKeeper);
 
                 time_t _oldest=this->_oldestEntry;
@@ -142,7 +135,7 @@ namespace stlcache {
         template <typename Key, template <typename T> class Allocator>
             struct bind : _policy_lfuaging_type<Age,Key,Allocator> {
                 bind(const bind& x) : _policy_lfuaging_type<Age,Key,Allocator>(x),_policy_lfu_type<Key,Allocator>(x)  { }
-                bind(const size_t& size) : _policy_lfuaging_type<Age,Key,Allocator>(size),_policy_lfu_type<Key,Allocator>(size) { }
+                explicit bind(const size_t& size) : _policy_lfuaging_type<Age,Key,Allocator>(size),_policy_lfu_type<Key,Allocator>(size) { }
             };
     };
 }
