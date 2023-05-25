@@ -12,7 +12,7 @@
 #include <chrono>
 
 #include <stlcache/policy.hpp>
-//246/17/292
+
 namespace stlcache {
     template <unsigned int Age,class Key,template <typename T> class Allocator> class _policy_lfuaging_type : public virtual _policy_lfu_type<Key,Allocator> {
         map<Key,std::chrono::time_point<std::chrono::steady_clock>, less<Key>, Allocator<pair<const Key, std::chrono::time_point<std::chrono::steady_clock> > > > _timeKeeper;
@@ -74,35 +74,27 @@ namespace stlcache {
 		virtual void expire() {
             auto oldestEntryAge = std::chrono::steady_clock::now()-_oldestEntry;
             if (oldestEntryAge>age) {
-                list<Key,Allocator<Key> > toErase;
-                list<Key,Allocator<Key> > toInsert;
 
                 //Time to clean up
                 this->_oldestEntry=std::chrono::steady_clock::now();
-                for (auto it=_timeKeeper.begin();it!=_timeKeeper.end();++it) {
+                auto it = _timeKeeper.begin();
+                while (it != _timeKeeper.end()) {
                     if ((std::chrono::steady_clock::now()-(*it).second)>age) {
                         //Too old :(
-                        Key itCopy=(*it).first;
                         unsigned long long currentRef=this->untouch((*it).first);
-                        toErase.push_front(itCopy);
 
                         if (currentRef>1) {
-                            toInsert.push_front(itCopy);
+                            it->second = std::chrono::steady_clock::now(); //For expired, but still referenced items - just update age
+                            it++;
+                        } else {
+                            it = _timeKeeper.erase(it); //Otherwise - remove it
                         }
-                    } else {
+                    } else {//Use non-expired items as the _oldestEntry
                         if ((*it).second<this->_oldestEntry) {
                             this->_oldestEntry=(*it).second;
                         }
+                        it++;
                     }
-                }
-
-                //Delete entries
-                typedef typename list<Key,Allocator<Key> >::iterator listIterator;
-                for(listIterator it=toErase.begin();it!=toErase.end();++it) {
-                    _timeKeeper.erase(*it);
-                }
-                for(listIterator it=toInsert.begin();it!=toInsert.end();++it) {
-                    _timeKeeper.insert(std::make_pair(*it,std::chrono::steady_clock::now()));
                 }
             }
 		}
