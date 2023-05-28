@@ -39,7 +39,7 @@ namespace stlcache {
          * Constructs empty wrapper object, with no data in it.
          *
          */
-        _victim() : _isInitialized(false) { };
+        _victim() : _isInitialized(false), _value(Key()) { };
         /*!
          * \brief initializing constructor
          *
