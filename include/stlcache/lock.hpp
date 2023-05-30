@@ -38,7 +38,9 @@ namespace stlcache {
     public:
     	typedef WriteLock write;
     	typedef ReadLock read;
-		
+
+        virtual ~lock() = default;
+
 		virtual write lockWrite() const =0;
 
 		virtual read lockRead() const =0;

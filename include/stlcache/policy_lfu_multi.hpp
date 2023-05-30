@@ -56,10 +56,8 @@ namespace stlcache {
             this->_entries=x._entries;
             return *this;
         }
-        _policy_lfu_multi_type(const _policy_lfu_multi_type<Key,Allocator>& x) noexcept {
-            *this=x;
-        }
-        explicit _policy_lfu_multi_type(const size_t& size ) noexcept { }
+        _policy_lfu_multi_type(const _policy_lfu_multi_type<Key,Allocator>& x) noexcept : _entries(x._entries) { }
+        explicit _policy_lfu_multi_type(const size_t& ) noexcept : _entries(entriesType()) { }
 
         virtual void insert(const Key& _k,unsigned int refCount) noexcept(false){
             //1 - is initial reference value

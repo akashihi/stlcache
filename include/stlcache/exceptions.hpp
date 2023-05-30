@@ -31,7 +31,7 @@ namespace stlcache{
          *
          * \param what exception message
          */
-        exception_base(const std::string &what) : std::runtime_error(what) {  }
+        explicit exception_base(const std::string &what) : std::runtime_error(what) {  }
     };
 
     /*!
@@ -44,7 +44,7 @@ namespace stlcache{
      *
      * \author chollya (5/20/2011)
      */
-    class exception_empty_victim : public std::runtime_error {
+    class exception_empty_victim : public exception_base {
     public:
         /*!
          * \brief Exception constructor
@@ -53,7 +53,7 @@ namespace stlcache{
          *
          * \param what exception message
          */
-        exception_empty_victim(const std::string &what) : std::runtime_error(what) {  }
+        explicit exception_empty_victim(const std::string &what) : exception_base(what) {  }
     };
 
     /*!
@@ -68,9 +68,11 @@ namespace stlcache{
      *
      * \author chollya (5/20/2011)
      */
-    class exception_invalid_key : public std::runtime_error {
+    class exception_invalid_key : public exception_base {
         const void* k;
     public:
+        exception_invalid_key(exception_invalid_key&) = delete;
+        exception_invalid_key operator=(const exception_invalid_key&) = delete;
         /*!
          * \brief Exception constructor
          *
@@ -81,7 +83,7 @@ namespace stlcache{
          * \param what exception message
          * \param _k problematic key
          */
-        template <class Key>  exception_invalid_key(const std::string &what, const Key& _k) : std::runtime_error(what),k(&_k) {  }
+        template <class Key>  exception_invalid_key(const std::string &what, const Key& _k) : exception_base(what),k(&_k) {  }
         /*!
          * \brief Accessor for a problematic key
          *
@@ -104,7 +106,7 @@ namespace stlcache{
      *
      * \author chollya (5/20/2011)
      */
-    class exception_invalid_policy : public std::runtime_error {
+    class exception_invalid_policy : public exception_base {
     public:
         /*!
          * \brief Exception constructor
@@ -113,7 +115,7 @@ namespace stlcache{
          *
          * \param what exception message
          */
-        exception_invalid_policy(const std::string &what) : std::runtime_error(what) {  }
+        explicit exception_invalid_policy(const std::string &what) : exception_base(what) {  }
     };
 
     /*!
@@ -126,7 +128,7 @@ namespace stlcache{
      *
      * \author chollya (5/20/2011)
      */
-    class exception_cache_full : public std::runtime_error {
+    class exception_cache_full : public exception_base {
     public:
         /*!
          * \brief Exception constructor
@@ -135,7 +137,7 @@ namespace stlcache{
          *
          * \param what exception message
          */
-        exception_cache_full(const std::string &what) : std::runtime_error(what) {  }
+        explicit exception_cache_full(const std::string &what) : exception_base(what) {  }
     };
 
 }

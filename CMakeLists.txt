@@ -10,6 +10,10 @@ project(STLCache)
 
 #Environment detection
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+IF(MSVC)
+    add_definitions(-D_ENFORCE_MATCHING_ALLOCATORS=0)
+ENDIF()
+
 
 #Check for libraries presence
 FIND_PACKAGE(Boost 1.58.0)

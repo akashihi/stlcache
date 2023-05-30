@@ -10,22 +10,20 @@
 
 #include <list>
 
-using namespace std;
-
 #include <stlcache/policy.hpp>
 
 namespace stlcache {
     template <class Key,template <typename T> class Allocator> class _policy_adaptive_type : public policy<Key,Allocator> {
         size_t _size;
         _policy_lru_type<Key,Allocator> T1;
-        set<Key,less<Key>,Allocator<Key> > t1Entries;
+        std::set<Key,less<Key>,Allocator<Key> > t1Entries;
         _policy_lfu_type<Key,Allocator> T2;
-        set<Key,less<Key>,Allocator<Key> > t2Entries;
+        std::set<Key,less<Key>,Allocator<Key> > t2Entries;
 
         _policy_lru_type<Key,Allocator> B1;
-        set<Key,less<Key>,Allocator<Key> > b1Entries;
+        std::set<Key,less<Key>,Allocator<Key> > b1Entries;
         _policy_lfu_type<Key,Allocator> B2;
-        set<Key,less<Key>,Allocator<Key> > b2Entries;
+        std::set<Key,less<Key>,Allocator<Key> > b2Entries;
 
     public:
         _policy_adaptive_type<Key,Allocator>& operator= ( const _policy_adaptive_type<Key,Allocator>& x) {
@@ -42,17 +40,8 @@ namespace stlcache {
 
             return *this;
         }
-        _policy_adaptive_type(const _policy_adaptive_type<Key,Allocator>& x) : T1(x.T1),T2(x.T2),B1(x.B1),B2(x.B2) {
-            this->_size=x._size;
-
-            this->t1Entries=x.t1Entries;
-            this->b1Entries=x.b1Entries;
-            this->t2Entries=x.t2Entries;
-            this->b2Entries=x.b2Entries;
-        }
-        _policy_adaptive_type(const size_t& size ) : T1(size),T2(size),B1(size),B2(size) {
-            this->_size=size;
-        }
+        _policy_adaptive_type(const _policy_adaptive_type<Key,Allocator>& x) : _size(x._size), T1(x.T1),t1Entries(x.t1Entries),T2(x.T2),t2Entries(x.t2Entries), B1(x.B1),b1Entries(x.b1Entries),B2(x.B2),b2Entries(x.b2Entries) { }
+        explicit _policy_adaptive_type(const size_t& size ) : _size(size), T1(size), t1Entries(std::set<Key,less<Key>,Allocator<Key> >()), T2(size), t2Entries(std::set<Key,less<Key>,Allocator<Key> >()), B1(size), b1Entries(std::set<Key,less<Key>,Allocator<Key> >()), B2(size), b2Entries(std::set<Key,less<Key>,Allocator<Key> >()) { }
 
         virtual void insert(const Key& _k) {
             if (b1Entries.find(_k)!=b1Entries.end()) {
@@ -122,7 +111,7 @@ namespace stlcache {
         }
         virtual void swap(policy<Key,Allocator>& _p) {
             try {
-                _policy_adaptive_type<Key,Allocator>& _pn=dynamic_cast<_policy_adaptive_type<Key,Allocator>& >(_p);
+                auto& _pn=dynamic_cast<_policy_adaptive_type<Key,Allocator>& >(_p);
                 T1.swap(_pn.T1);
                 T2.swap(_pn.T2);
                 B1.swap(_pn.B1);
@@ -161,7 +150,7 @@ namespace stlcache {
         template <typename Key, template <typename T> class Allocator>
             struct bind : _policy_adaptive_type<Key,Allocator> {
                 bind(const bind& x) : _policy_adaptive_type<Key,Allocator>(x)  { }
-                bind(const size_t& size) : _policy_adaptive_type<Key,Allocator>(size) { }
+                explicit bind(const size_t& size) : _policy_adaptive_type<Key,Allocator>(size) { }
             };
     };
 }

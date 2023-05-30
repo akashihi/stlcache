@@ -67,6 +67,7 @@ namespace stlcache {
      */
     template <class Key,template <typename T> class Allocator> class policy {
     public:
+        virtual ~policy() = default;
         /*!
          * \brief handles insertion of a key to the cache
          *
@@ -155,10 +156,8 @@ namespace stlcache {
             this->_entries=x._entries;
             return *this;
         }
-        _policy_none_type(const _policy_none_type<Key,Allocator>& x) {
-            *this=x;
-        }
-        _policy_none_type(const size_t& size ) { }
+        _policy_none_type(const _policy_none_type<Key,Allocator>& x): _entries(x._entries) { }
+        explicit _policy_none_type(const size_t&  ) { }
 
         virtual void insert(const Key& _k) {
             _entries.insert(_k);
@@ -172,7 +171,7 @@ namespace stlcache {
         }
         virtual void swap(policy<Key,Allocator>& _p) {
             try {
-                _policy_none_type<Key,Allocator>& _pn=dynamic_cast<_policy_none_type<Key,Allocator>& >(_p);
+                auto& _pn=dynamic_cast<_policy_none_type<Key,Allocator>& >(_p);
                 _entries.swap(_pn._entries);
             } catch (const std::bad_cast& ) {
                 throw exception_invalid_policy("Attempted to swap incompatible policies");
@@ -198,7 +197,7 @@ namespace stlcache {
         template <typename Key, template <typename T> class Allocator>
             struct bind : _policy_none_type<Key,Allocator> {
                 bind(const bind& x) : _policy_none_type<Key,Allocator>(x)  { }
-                bind(const size_t& size) : _policy_none_type<Key,Allocator>(size) { }
+                explicit bind(const size_t& size) : _policy_none_type<Key,Allocator>(size) { }
             };
     };
 }

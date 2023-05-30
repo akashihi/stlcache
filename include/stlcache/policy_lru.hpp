@@ -28,10 +28,10 @@ namespace stlcache {
             }
             return *this;
         }
-        _policy_lru_type(const _policy_lru_type<Key,Allocator>& x) {
-            *this=x;
+        _policy_lru_type(const _policy_lru_type<Key,Allocator>& x): _entries(x._entries), _entriesMap(std::unordered_map<Key,entriesIterator,std::hash<Key>,std::equal_to<Key>,Allocator<pair<Key,entriesIterator> > >()) {
+            *this = x;
         }
-        explicit _policy_lru_type(const size_t& size ) { }
+        explicit _policy_lru_type(const size_t& ): _entries(std::list<Key,Allocator<Key> >()), _entriesMap(std::unordered_map<Key,entriesIterator,std::hash<Key>,std::equal_to<Key>,Allocator<pair<Key,entriesIterator> > >()){ }
 
         virtual void insert(const Key& _k) {
             auto entryIter = _entries.insert(_entries.begin(),_k);
