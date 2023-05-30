@@ -67,6 +67,7 @@ namespace stlcache {
      */
     template <class Key,template <typename T> class Allocator> class policy {
     public:
+        virtual ~policy() = default;
         /*!
          * \brief handles insertion of a key to the cache
          *
