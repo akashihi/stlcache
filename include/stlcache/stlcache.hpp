@@ -964,9 +964,7 @@ namespace stlcache {
          * \param <comp> Comparator object, compatible with Compare type. Defaults to Compare()
          *
          */
-        explicit cache(const size_type size, const Compare& comp = Compare()) : _maxEntries(size), _currEntries(0) {
-            this->_storage=storageType(comp, Allocator<pair<const Key, Data> >());
-
+        explicit cache(const size_type size, const Compare& comp = Compare()) : _maxEntries(size), _currEntries(0), _storage(storageType(comp, Allocator<pair<const Key, Data> >())), lock(Lock()) {
             policy_type localPolicy(size);
             this->_policy = policyAlloc.allocate(1);
             policyAlloc.construct(this->_policy,localPolicy);
