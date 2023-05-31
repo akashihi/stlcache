@@ -15,7 +15,8 @@
 
 namespace stlcache {
     template <unsigned int Age,class Key,template <typename T> class Allocator> class _policy_lfuaging_type : public virtual _policy_lfu_type<Key,Allocator> {
-        map<Key,std::chrono::time_point<std::chrono::steady_clock>, less<Key>, Allocator<pair<const Key, std::chrono::time_point<std::chrono::steady_clock> > > > _timeKeeper;
+        typedef std::map<Key,std::chrono::time_point<std::chrono::steady_clock>, std::less<Key>, Allocator<std::pair<const Key, std::chrono::time_point<std::chrono::steady_clock> > > > timeKeeperType;
+        timeKeeperType _timeKeeper;
         std::chrono::time_point<std::chrono::steady_clock> _oldestEntry;
         std::chrono::seconds age;
     public:
@@ -27,7 +28,7 @@ namespace stlcache {
             return *this;
         }
         _policy_lfuaging_type(const _policy_lfuaging_type<Age,Key,Allocator>& x)  : _policy_lfu_type<Key,Allocator>(x), _timeKeeper(x._timeKeeper), _oldestEntry(x._oldestEntry), age(x.age) { }
-        explicit _policy_lfuaging_type(const size_t& size ) : _policy_lfu_type<Key,Allocator>(size), age(Age), _oldestEntry(std::chrono::steady_clock::now()) { }
+        explicit _policy_lfuaging_type(const size_t& size ) : _policy_lfu_type<Key,Allocator>(size), age(Age), _oldestEntry(std::chrono::steady_clock::now()), _timeKeeper(timeKeeperType()) { }
 
         virtual void insert(const Key& _k) {
             _policy_lfu_type<Key,Allocator>::insert(_k);

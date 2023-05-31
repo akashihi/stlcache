@@ -12,7 +12,7 @@ using namespace stlcache;
 using namespace Catch::Matchers;
 
 TEST_CASE("Policy size limiting", "[policy]") {
-    cache<int,string,policy_none> c1(3);
+    cache<int,std::string,policy_none> c1(3);
 
     c1.insert(1,"data1");
     c1.insert(2,"data2");

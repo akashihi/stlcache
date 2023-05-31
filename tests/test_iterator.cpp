@@ -12,12 +12,12 @@ using namespace stlcache;
 using namespace Catch::Matchers;
 
 TEST_CASE("Empty iterator", "[iterator]") {
-    cache<int,string,policy_none> c(10);
+    cache<int,std::string,policy_none> c(10);
 
     CHECK(c.empty());
     REQUIRE(c.begin() == c.end());
 
-    c.insert(1, string("test"));
+    c.insert(1, std::string("test"));
 
     REQUIRE(c.begin() != c.end());
 
@@ -25,7 +25,7 @@ TEST_CASE("Empty iterator", "[iterator]") {
 
 
 TEST_CASE("Iterator operations", "[itarator]") {
-    cache<int,string,policy_lru> c(3);
+    cache<int,std::string,policy_lru> c(3);
 
     c.insert(1,"data1");
     c.insert(2,"data2");

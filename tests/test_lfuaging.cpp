@@ -16,7 +16,7 @@ using namespace std::chrono_literals;
 
 TEST_CASE("LFU Aging", "[policy,lfu]") {
     SECTION("Default eviction") {
-        cache<int,string,policy_lfuaging<3600> > c1(3);
+        cache<int,std::string,policy_lfuaging<3600> > c1(3);
 
         c1.insert(1,"data1");
         c1.insert(2,"data2");
@@ -27,7 +27,7 @@ TEST_CASE("LFU Aging", "[policy,lfu]") {
     }
 
     SECTION("String keys") {
-        cache<string, int, policy_lfuaging<3600> > c1(3);
+        cache<std::string, int, policy_lfuaging<3600> > c1(3);
 
         c1.insert("data1",1);
         c1.insert("data2",2);
@@ -38,7 +38,7 @@ TEST_CASE("LFU Aging", "[policy,lfu]") {
     }
 
     SECTION("LFU eviction") {
-        cache<int,string,policy_lfuaging<3600> > c1(3);
+        cache<int,std::string,policy_lfuaging<3600> > c1(3);
 
         c1.insert(1,"data1");
         c1.insert(2,"data2");
@@ -53,7 +53,7 @@ TEST_CASE("LFU Aging", "[policy,lfu]") {
     }
 
     SECTION("Items aging") {
-        cache<int,string,policy_lfuaging<1> > c1(3);
+        cache<int,std::string,policy_lfuaging<1> > c1(3);
 
         c1.insert(1,"data1");
         c1.insert(2,"data2");
@@ -76,7 +76,7 @@ TEST_CASE("LFU Aging", "[policy,lfu]") {
     }
 
     SECTION("String keys aging") {
-        cache<string, int, policy_lfuaging<1> > c1(3);
+        cache<std::string, int, policy_lfuaging<1> > c1(3);
 
         c1.insert("data1",1);
         c1.insert("data2",2);

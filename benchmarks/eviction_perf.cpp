@@ -24,7 +24,7 @@ static std::vector<int> get_data_vec() {
         return dist(mersenne_engine);
     };
 
-    vector<int> values(NO_ITEMS);
+    std::vector<int> values(NO_ITEMS);
     generate(begin(values), end(values), gen);
 
     return values;

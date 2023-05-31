@@ -339,12 +339,12 @@ namespace stlcache {
         class Key,
         class Data,
         class Policy,
-        class Compare = less<Key>,
-        template <typename T> class Allocator = allocator,
+        class Compare = std::less<Key>,
+        template <typename T> class Allocator = std::allocator,
         class Lock = lock_none
     >
     class cache {
-        typedef map<Key,Data,Compare,Allocator<pair<const Key, Data> > > storageType;
+        typedef std::map<Key,Data,Compare,Allocator<std::pair<const Key, Data> > > storageType;
          storageType _storage;
          std::size_t _maxEntries;
          std::size_t _currEntries;
@@ -364,13 +364,13 @@ namespace stlcache {
         typedef Data                                                               mapped_type;
         /*! \brief Combined key,value type
           */
-        typedef pair<const Key, Data>                                         value_type;
+        typedef std::pair<const Key, Data>                                         value_type;
         /*! \brief Compare type used by this instance
           */
         typedef Compare                                                          key_compare;
         /*! \brief Allocator type used by this instance
           */
-        typedef Allocator<pair<const Key, Data> >                          allocator_type;
+        typedef Allocator<std::pair<const Key, Data> >                          allocator_type;
         /*! \brief Nested class to compare elements (see member function value_comp)
           */
         typedef typename storageType::value_compare                                value_compare;
@@ -404,7 +404,7 @@ namespace stlcache {
           typedef typename storageType::difference_type                               difference_type;
           /*! \brief Combined key,value type
            */
-          typedef pair<const Key, Data>                                         value_type;
+          typedef std::pair<const Key, Data>                                         value_type;
           /*! \brief Allocator::reference
            */
           typedef typename storageType::reference                                        reference;
@@ -723,7 +723,7 @@ namespace stlcache {
         Data& at(const Key& _k) {
           write_lock_type l = lock.lockWrite();
           if (!this->_check(_k)) { //Call to the _check automatically touches entry.
-            throw out_of_range("Key is not in cache");
+            throw std::out_of_range("Key is not in cache");
           }
           return (*(_storage.find(_k))).second;
         }
@@ -976,7 +976,7 @@ namespace stlcache {
          * \param <comp> Comparator object, compatible with Compare type. Defaults to Compare()
          *
          */
-        explicit cache(const size_type size, const Compare& comp = Compare()) : _maxEntries(size), _currEntries(0), _storage(storageType(comp, Allocator<pair<const Key, Data> >())), lock(Lock()) {
+        explicit cache(const size_type size, const Compare& comp = Compare()) : _maxEntries(size), _currEntries(0), _storage(storageType(comp, Allocator<std::pair<const Key, Data> >())), lock(Lock()) {
             policy_type localPolicy(size);
             this->_policy = std::allocator_traits<Allocator<policy_type>>::allocate(policyAlloc, 1);
             std::allocator_traits<Allocator<policy_type>>::construct(policyAlloc, this->_policy,localPolicy);

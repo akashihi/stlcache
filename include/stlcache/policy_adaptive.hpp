@@ -16,14 +16,14 @@ namespace stlcache {
     template <class Key,template <typename T> class Allocator> class _policy_adaptive_type : public policy<Key,Allocator> {
         size_t _size;
         _policy_lru_type<Key,Allocator> T1;
-        std::set<Key,less<Key>,Allocator<Key> > t1Entries;
+        std::set<Key,std::less<Key>,Allocator<Key> > t1Entries;
         _policy_lfu_type<Key,Allocator> T2;
-        std::set<Key,less<Key>,Allocator<Key> > t2Entries;
+        std::set<Key,std::less<Key>,Allocator<Key> > t2Entries;
 
         _policy_lru_type<Key,Allocator> B1;
-        std::set<Key,less<Key>,Allocator<Key> > b1Entries;
+        std::set<Key,std::less<Key>,Allocator<Key> > b1Entries;
         _policy_lfu_type<Key,Allocator> B2;
-        std::set<Key,less<Key>,Allocator<Key> > b2Entries;
+        std::set<Key,std::less<Key>,Allocator<Key> > b2Entries;
 
     public:
         _policy_adaptive_type<Key,Allocator>& operator= ( const _policy_adaptive_type<Key,Allocator>& x) {
@@ -41,7 +41,7 @@ namespace stlcache {
             return *this;
         }
         _policy_adaptive_type(const _policy_adaptive_type<Key,Allocator>& x) : _size(x._size), T1(x.T1),t1Entries(x.t1Entries),T2(x.T2),t2Entries(x.t2Entries), B1(x.B1),b1Entries(x.b1Entries),B2(x.B2),b2Entries(x.b2Entries) { }
-        explicit _policy_adaptive_type(const size_t& size ) : _size(size), T1(size), t1Entries(std::set<Key,less<Key>,Allocator<Key> >()), T2(size), t2Entries(std::set<Key,less<Key>,Allocator<Key> >()), B1(size), b1Entries(std::set<Key,less<Key>,Allocator<Key> >()), B2(size), b2Entries(std::set<Key,less<Key>,Allocator<Key> >()) { }
+        explicit _policy_adaptive_type(const size_t& size ) : _size(size), T1(size), t1Entries(std::set<Key,std::less<Key>,Allocator<Key> >()), T2(size), t2Entries(std::set<Key,std::less<Key>,Allocator<Key> >()), B1(size), b1Entries(std::set<Key,std::less<Key>,Allocator<Key> >()), B2(size), b2Entries(std::set<Key,std::less<Key>,Allocator<Key> >()) { }
 
         virtual void insert(const Key& _k) {
             if (b1Entries.find(_k)!=b1Entries.end()) {

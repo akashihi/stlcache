@@ -8,8 +8,6 @@
 #ifndef STLCACHE_LOCK_HPP_INCLUDED
 #define STLCACHE_LOCK_HPP_INCLUDED
 
-using namespace std;
-
 namespace stlcache {
     /*!
      * \brief Abstract interface for locking operations support.

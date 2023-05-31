@@ -13,7 +13,7 @@ using namespace Catch::Matchers;
 
 TEST_CASE("LRU", "[policy,lru]") {
     SECTION("First item evicted for untouched entries") {
-        cache<int,string,policy_lru> c1(3);
+        cache<int,std::string,policy_lru> c1(3);
 
         c1.insert(1,"data1");
         c1.insert(2,"data2");
@@ -24,7 +24,7 @@ TEST_CASE("LRU", "[policy,lru]") {
     }
 
     SECTION("Touching an entry prevents eviction") {
-        cache<int,string,policy_lru> c1(3);
+        cache<int,std::string,policy_lru> c1(3);
 
         c1.insert(1,"data1");
         c1.insert(2,"data2");
@@ -38,13 +38,13 @@ TEST_CASE("LRU", "[policy,lru]") {
     }
 
     SECTION("Touch information is copied") {
-        cache<int,string,policy_lru> c1(3);
+        cache<int,std::string,policy_lru> c1(3);
 
         c1.insert(1,"data1");
         c1.insert(2,"data2");
         c1.insert(3,"data3");
 
-        cache<int,string,policy_lru> c2(10);
+        cache<int,std::string,policy_lru> c2(10);
         c2=c1;
         c2.touch(1);
 
@@ -57,7 +57,7 @@ TEST_CASE("LRU", "[policy,lru]") {
     }
 
     SECTION("Clearing cache clears tracking") {
-        cache<int,string,policy_lru> c1(3);
+        cache<int,std::string,policy_lru> c1(3);
 
         c1.insert(1,"data1");
         c1.insert(2,"data2");
@@ -79,12 +79,12 @@ TEST_CASE("LRU", "[policy,lru]") {
         const int capacity = 10;
         const int duplicateEvery = 4;
         const int duplcateValue = -1;
-        cache<int,string,policy_lru> cache(capacity);
+        cache<int,std::string,policy_lru> cache(capacity);
 
         for (int i = 0; i < capacity * 10; i++) {
             bool doDuplicate = (i % duplicateEvery) == 0;
             int key = doDuplicate ? duplcateValue : i;
-            string value = std::to_string(static_cast<unsigned long long>(key));
+            std::string value = std::to_string(static_cast<unsigned long long>(key));
             cache.insert(key, value);
         }
     }

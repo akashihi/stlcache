@@ -12,14 +12,14 @@ using namespace stlcache;
 using namespace Catch::Matchers;
 
 TEST_CASE("Cache creation", "[map]") {
-    cache<int,string,policy_none> cache1(10);
+    cache<int,std::string,policy_none> cache1(10);
     SECTION("Construction with parameters") {
         REQUIRE(cache1.max_size() == 10);
         REQUIRE(cache1.size() == 0);
         CHECK(cache1.empty());
     }
     SECTION("Copying caches") {
-        cache<int,string,policy_none> cache2(5);
+        cache<int,std::string,policy_none> cache2(5);
         cache2=cache1;
 
         REQUIRE(cache2.max_size()==10);
@@ -29,14 +29,14 @@ TEST_CASE("Cache creation", "[map]") {
 }
 
 TEST_CASE("Cache data management", "[map") {
-    cache<int,string,policy_none> c(10);
+    cache<int,std::string,policy_none> c(10);
     SECTION("New cache is empty") {
         CHECK(c.empty());
         REQUIRE(c.size()==0);
     }
     SECTION("Data storage") {
-        CHECK(c.insert(1,string("test"))); //Insert returns true for new entries
-        CHECK_FALSE(c.insert(1,string("test2"))); //Insert returns false for existing keys and leaves value intact
+        CHECK(c.insert(1,std::string("test"))); //Insert returns true for new entries
+        CHECK_FALSE(c.insert(1,std::string("test2"))); //Insert returns false for existing keys and leaves value intact
 
         CHECK_FALSE(c.empty());
         REQUIRE(c.size()==1);
@@ -57,9 +57,9 @@ TEST_CASE("Cache data management", "[map") {
     }
 
     SECTION("Key management") {
-        CHECK(c.insert(1,string("test")));
-        CHECK_FALSE(c.insert(1,string("newtest"))); //Insert returns false for existing entries and doesn't updates them
-        CHECK(c.insert(2,string("testagain"))); //Insert returns true for new entries
+        CHECK(c.insert(1,std::string("test")));
+        CHECK_FALSE(c.insert(1,std::string("newtest"))); //Insert returns false for existing entries and doesn't updates them
+        CHECK(c.insert(2,std::string("testagain"))); //Insert returns true for new entries
 
         CHECK_FALSE(c.empty());
         REQUIRE(c.size()==2);
@@ -78,19 +78,19 @@ TEST_CASE("Cache data management", "[map") {
 }
 
 TEST_CASE("Cache copying", "[map]") {
-    cache<int,string,policy_none> c1(10);
+    cache<int,std::string,policy_none> c1(10);
     c1.insert(1,"data1");
     c1.insert(2,"data2");
 
     SECTION("Copying caches") {
-        cache<int,string,policy_none> c2(c1);
+        cache<int,std::string,policy_none> c2(c1);
 
         REQUIRE_THAT(c2.fetch(1), Equals("data1"));
         REQUIRE_THAT(c2.fetch(2), Equals("data2"));
     }
 
     SECTION("Swapping caches") {
-        cache<int,string,policy_none> c3(5);
+        cache<int,std::string,policy_none> c3(5);
         c3.insert(3,"data3");
         c3.insert(4,"data4");
 

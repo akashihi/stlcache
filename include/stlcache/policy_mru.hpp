@@ -10,8 +10,6 @@
 
 #include <list>
 
-using namespace std;
-
 #include <stlcache/policy_lru.hpp>
 
 namespace stlcache {

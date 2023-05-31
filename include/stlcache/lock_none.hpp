@@ -9,8 +9,6 @@
 #ifndef STLCACHE_LOCK_NONE_HPP_INCLUDED
 #define STLCACHE_LOCK_NONE_HPP_INCLUDED
 
-using namespace std;
-
 #include <stlcache/lock.hpp>
 
 namespace stlcache {

@@ -12,9 +12,9 @@ using namespace stlcache;
 using namespace Catch::Matchers;
 
 TEST_CASE("Optional", "[map]") {
-    cache<string,string,policy_none> c(10);
+    cache<std::string,std::string,policy_none> c(10);
 
-    CHECK(c.insert(string("key"),string("test"))); //Insert returns true for new entries
+    CHECK(c.insert(std::string("key"),std::string("test"))); //Insert returns true for new entries
 
     SECTION("Fetch value") {
         CHECK(c.get("key")); //Wrapper is not empty.

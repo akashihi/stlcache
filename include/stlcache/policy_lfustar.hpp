@@ -11,15 +11,13 @@
 #include <set>
 #include <map>
 
-using namespace std;
-
 #include <stlcache/policy.hpp>
 
 namespace stlcache {
     template <class Key,template <typename T> class Allocator> class _policy_lfustar_type : public virtual _policy_lfu_type<Key,Allocator> {
-        typedef set<Key,less<Key>,Allocator<Key> > keySet;
+        typedef std::set<Key,std::less<Key>,Allocator<Key> > keySet;
     public:
-        _policy_lfustar_type(const size_t& size ) : _policy_lfu_type<Key,Allocator>(size) { }
+        explicit _policy_lfustar_type(const size_t& size ) : _policy_lfu_type<Key,Allocator>(size) { }
         _policy_lfustar_type(const _policy_lfustar_type& x ) : _policy_lfu_type<Key,Allocator>(x) { }
 
         virtual const _victim<Key> victim()  {
@@ -61,7 +59,7 @@ namespace stlcache {
         template <typename Key, template <typename T> class Allocator>
             struct bind : _policy_lfustar_type<Key,Allocator> {
                 bind(const bind& x) : _policy_lfustar_type<Key,Allocator>(x),_policy_lfu_type<Key,Allocator>(x)  { }
-                bind(const size_t& size) : _policy_lfustar_type<Key,Allocator>(size),_policy_lfu_type<Key,Allocator>(size) { }
+                explicit bind(const size_t& size) : _policy_lfustar_type<Key,Allocator>(size),_policy_lfu_type<Key,Allocator>(size) { }
             };
     };
 }

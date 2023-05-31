@@ -13,7 +13,7 @@ using namespace Catch::Matchers;
 
 TEST_CASE("Adaptive", "[policy,adaptive]") {
     SECTION("Default eviction") {
-        cache<int,string,policy_adaptive> c1(3);
+        cache<int,std::string,policy_adaptive> c1(3);
 
         c1.insert(1,"data1");
         c1.insert(2,"data2");
@@ -24,7 +24,7 @@ TEST_CASE("Adaptive", "[policy,adaptive]") {
     }
 
     SECTION("String keys") {
-        cache<string, int, policy_adaptive > c1(3);
+        cache<std::string, int, policy_adaptive > c1(3);
 
         c1.insert("data1",1);
         c1.insert("data2",2);
@@ -35,7 +35,7 @@ TEST_CASE("Adaptive", "[policy,adaptive]") {
     }
 
     SECTION("T1 -> T2 transition") {
-        cache<int,string,policy_adaptive > c1(3);
+        cache<int,std::string,policy_adaptive > c1(3);
 
         c1.insert(1,"data1");
         c1.insert(2,"data2");
@@ -49,7 +49,7 @@ TEST_CASE("Adaptive", "[policy,adaptive]") {
     }
 
     SECTION("T2 preservation") {
-        cache<int,string,policy_adaptive> c1(3);
+        cache<int,std::string,policy_adaptive> c1(3);
 
         c1.insert(1,"data1");
         c1.insert(2,"data2");
@@ -65,7 +65,7 @@ TEST_CASE("Adaptive", "[policy,adaptive]") {
     }
 
     SECTION("B1 restore") {
-        cache<int,string,policy_adaptive> c1(4);
+        cache<int,std::string,policy_adaptive> c1(4);
 
         c1.insert(1,"data1");
         c1.insert(2,"data2");
@@ -78,7 +78,7 @@ TEST_CASE("Adaptive", "[policy,adaptive]") {
     }
 
     SECTION("B2 restore") {
-        cache<int,string,policy_adaptive> c1(4);
+        cache<int,std::string,policy_adaptive> c1(4);
 
         c1.insert(1,"data1");
         c1.insert(2,"data2");
