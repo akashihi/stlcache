@@ -10,11 +10,19 @@ on:
 
 jobs:
   unit-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
+      - name: Install Boost
+        uses: MarkusJx/install-boost@v2.4.1
+        id: install-boost
+        with:
+          platform_version: 20.04
+          boost_version: 1.73.0
+          boost_install_dir: /home/runner/boost
       - name: Test
         uses: nicledomaS/cmake_build_action@v1.4
         with:
           run_tests: ON
+          cmake_args: -DBOOST_ROOT=${{ steps.install-boost.outputs.BOOST_ROOT }}
 
