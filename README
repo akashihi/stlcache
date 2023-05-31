@@ -28,19 +28,26 @@ Getting and installing:
      * https://github.com/akashihi/stlcache/zipball/master (or zip
        format)
 
-   You could also clone the repository and check some unstable code:
+   You could also clone the repository:
      git clone git://github.com/akashihi/stlcache.git
 
-   The 'master' branch is always pointing to the latest stable release and
-   the 'next' branch is a unstable development branch.
+   Current development code is available at 'master' branch and (more) stable releases have been tagged.
 
-   The STL::Cache is header only and does not require any building. Just
-   copy the include/stlcache directory to your system's include
-   directories or add it to your project's include directories.
-   Alternatively you could build the sources and then install it, using
-   our build system.
+   The STL::Cache is header only and does not require any building. Recommended way of using it is by CMake integration:
 
-   Yes, as i told you, the STL::Cache itself is a header-only library
+        Include(FetchContent)
+        FetchContent_Declare(
+            STLCache
+            GIT_REPOSITORY git://github.com/akashihi/stlcache.git
+            GIT_TAG v0.4
+        )
+        FetchContent_MakeAvailable(STLCache)
+        add_executable(test test.cpp)
+        target_link_libraries(test PRIVATE STLCache)
+
+   Alternatively just get the sources and add 'include' directory to your project's include directories list.
+
+   As i told you, the STL::Cache itself is a header-only library
    and doesn't requires building. Indeed, it is shipped with tests,
    documentation and other stuff, that could be built and used. For
    STL::Cache building you need:
