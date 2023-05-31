@@ -41,22 +41,6 @@ jobs:
         with:
           run_tests: ON
           cmake_args: -DBOOST_ROOT=${{ steps.install-boost-windows.outputs.BOOST_ROOT }}
-  unit-test-macos:
-    runs-on: macos-11
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install Boost (MacOs)
-        uses: MarkusJx/install-boost@v2.4.1
-        id: install-boost-macos
-        with:
-          platform_version: 11
-          boost_version: 1.73.0
-          boost_install_dir: /Users/runner/boost
-      - name: Test
-        uses: nicledomaS/cmake_build_action@v1.4
-        with:
-          run_tests: ON
-          cmake_args: -DBOOST_ROOT=${{ steps.install-boost-macos.outputs.BOOST_ROOT }}
 
 
 
