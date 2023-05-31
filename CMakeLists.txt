@@ -6,7 +6,9 @@ IF (NOT DEFINED PROJECT_NAME)
     SET(NOT_SUBPROJECT ON)
 ENDIF ()
 
-project(STLCache)
+project(STLCache
+        LANGUAGES CXX
+        VERSION 0.4)
 
 #Environment detection
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
@@ -26,6 +28,12 @@ set(DOXYFILE_LATEX OFF)
 #Build configuration
 include_directories(${CMAKE_BINARY_DIR}
         ${CMAKE_SOURCE_DIR}/include
+        )
+
+add_library(STLCache INTERFACE)
+target_include_directories(STLCache INTERFACE
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
         )
 
 install(DIRECTORY include/stlcache DESTINATION include)

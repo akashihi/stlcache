@@ -16,8 +16,7 @@
 #include <typeinfo>
 #include <map>
 #include <optional>
-
-using namespace std;
+#include <cassert>
 
 #include <stlcache/exceptions.hpp>
 #include <stlcache/policy.hpp>
