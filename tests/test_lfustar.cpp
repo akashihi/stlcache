@@ -13,7 +13,7 @@ using namespace Catch::Matchers;
 
 TEST_CASE("LFU*", "[policy,lfu]") {
     SECTION("Default eviction") {
-        cache<int,string,policy_lfustar> c1(3);
+        cache<int,std::string,policy_lfustar> c1(3);
 
         c1.insert(1,"data1");
         c1.insert(2,"data2");
@@ -24,7 +24,7 @@ TEST_CASE("LFU*", "[policy,lfu]") {
     }
 
     SECTION("String keys") {
-        cache<string, int, policy_lfustar> c1(3);
+        cache<std::string, int, policy_lfustar> c1(3);
 
         c1.insert("data1",1);
         c1.insert("data2",2);
@@ -35,7 +35,7 @@ TEST_CASE("LFU*", "[policy,lfu]") {
     }
 
     SECTION("LFU* eviction") {
-        cache<int,string,policy_lfustar> c1(3);
+        cache<int,std::string,policy_lfustar> c1(3);
 
         c1.insert(1,"data1");
         c1.insert(2,"data2");
@@ -50,7 +50,7 @@ TEST_CASE("LFU*", "[policy,lfu]") {
     }
 
     SECTION("Preserve very frequent entries") {
-        cache<int,string,policy_lfustar> c1(3);
+        cache<int,std::string,policy_lfustar> c1(3);
 
         c1.insert(1,"data1");
         c1.insert(2,"data2");

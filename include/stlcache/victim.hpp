@@ -8,8 +8,6 @@
 #ifndef STLCACHE_VICTIM_HPP_INCLUDED
 #define STLCACHE_VICTIM_HPP_INCLUDED
 
-using namespace std;
-
 #include <stlcache/exceptions.hpp>
 
 namespace stlcache {

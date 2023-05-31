@@ -12,13 +12,13 @@ using namespace stlcache;
 using namespace Catch::Matchers;
 
 TEST_CASE("Map interface", "[map]") {
-    cache<int,string,policy_none> c(4);
+    cache<int,std::string,policy_none> c(4);
     CHECK(c.empty());
     c.insert(1,"data1");
     c.insert(2,"data2");
 
     SECTION("AT") {
-        CHECK(c.insert(3,string("test"))); //Insert returns true for new entries
+        CHECK(c.insert(3,std::string("test"))); //Insert returns true for new entries
 
         REQUIRE_THAT(c.at(3), Equals("test"));
         CHECK_THROWS_AS(c.at(4),std::out_of_range);
@@ -47,7 +47,7 @@ TEST_CASE("Map interface", "[map]") {
     }
 
     SECTION("BOUNDS") {
-        cache<int,string,policy_lfu> bounds_cache(10);
+        cache<int,std::string,policy_lfu> bounds_cache(10);
 
         bounds_cache.insert(1, "data1");
         bounds_cache.insert(2, "data2");

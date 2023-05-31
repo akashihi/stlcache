@@ -1,0 +1,47 @@
+name: "STL::Cache CI"
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+# Not using matrix here due to the different configuration of the Boost action
+jobs:
+  unit-test-linux:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Boost (Linux)
+        uses: MarkusJx/install-boost@v2.4.1
+        id: install-boost-linux
+        with:
+          platform_version: 20.04
+          boost_version: 1.73.0
+          boost_install_dir: /home/runner/boost
+      - name: Test
+        uses: nicledomaS/cmake_build_action@v1.4
+        with:
+          run_tests: ON
+          cmake_args: -DBOOST_ROOT=${{ steps.install-boost-linux.outputs.BOOST_ROOT }}
+  unit-test-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Boost (Windows)
+        uses: MarkusJx/install-boost@v2.4.1
+        id: install-boost-windows
+        with:
+          boost_version: 1.73.0
+          boost_install_dir: c:\boost
+      - name: Test
+        uses: nicledomaS/cmake_build_action@v1.4
+        with:
+          run_tests: ON
+          cmake_args: -DBOOST_ROOT=${{ steps.install-boost-windows.outputs.BOOST_ROOT }}
+
+
+
+

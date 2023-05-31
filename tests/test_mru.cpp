@@ -13,7 +13,7 @@ using namespace Catch::Matchers;
 
 TEST_CASE("MRU", "[policy,mru]") {
     SECTION("Last item evicted for untouched entries") {
-        cache<int,string,policy_mru> c1(3);
+        cache<int,std::string,policy_mru> c1(3);
 
         c1.insert(1,"data1");
         c1.insert(2,"data2");
@@ -24,7 +24,7 @@ TEST_CASE("MRU", "[policy,mru]") {
     }
 
     SECTION("Touching an entry causes eviction") {
-        cache<int,string,policy_mru> c1(3);
+        cache<int,std::string,policy_mru> c1(3);
 
         c1.insert(1,"data1");
         c1.insert(2,"data2");

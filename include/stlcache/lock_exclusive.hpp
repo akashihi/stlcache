@@ -17,8 +17,6 @@
 
 #include <mutex>
 
-using namespace std;
-
 namespace stlcache {
     /*!
      * \brief An exclusive only implementation of locking.
@@ -26,15 +24,15 @@ namespace stlcache {
      * This implementation supports only mutually exclusive locking, so only a single thread at a time can access the \link stlcache::cache cache \endlink
      */
 
-    class lock_exclusive : public lock<unique_lock<mutex>, unique_lock<mutex> > {
-        mutable mutex mtx;
+class lock_exclusive : public lock<std::unique_lock<std::mutex>, std::unique_lock<std::mutex> > {
+        mutable std::mutex mtx;
     public:
-		write lockWrite() const { 
-            return unique_lock<mutex>(mtx); 
+		write lockWrite() const override {
+            return std::unique_lock<std::mutex>(mtx);
         }
 
-		read lockRead() const { 
-            return unique_lock<mutex>(mtx);
+		read lockRead() const override {
+            return std::unique_lock<std::mutex>(mtx);
         }
     };
 }

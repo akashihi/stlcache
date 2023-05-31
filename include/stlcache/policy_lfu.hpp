@@ -17,12 +17,12 @@ namespace stlcache {
     template <class Key,template <typename T> class Allocator> class _policy_lfu_type : public policy<Key,Allocator> {
     protected:
         typedef std::pair<const unsigned int, Key> entriesPair;
-        typedef std::multimap<unsigned int, Key,less<unsigned int> ,Allocator<entriesPair> > entriesType;
+        typedef std::multimap<unsigned int, Key,std::less<unsigned int> ,Allocator<entriesPair> > entriesType;
         entriesType _entries;
 
         typedef typename entriesType::iterator entriesIterator;
         typedef std::pair<const Key,entriesIterator> backEntriesPair;
-        typedef std::map<Key,entriesIterator,less<Key>,Allocator<backEntriesPair> > backEntriesType;
+        typedef std::map<Key,entriesIterator,std::less<Key>,Allocator<backEntriesPair> > backEntriesType;
         backEntriesType _backEntries;
 
 
@@ -33,7 +33,7 @@ namespace stlcache {
             return *this;
         }
         _policy_lfu_type(const _policy_lfu_type<Key,Allocator>& x): _entries(x._entries), _backEntries(x._backEntries) { }
-        explicit _policy_lfu_type(const size_t& ): _entries(std::multimap<unsigned int, Key,less<unsigned int> ,Allocator<entriesPair> >()), _backEntries(std::map<Key,entriesIterator,less<Key>,Allocator<backEntriesPair> >())  { }
+        explicit _policy_lfu_type(const size_t& ): _entries(std::multimap<unsigned int, Key,std::less<unsigned int> ,Allocator<entriesPair> >()), _backEntries(std::map<Key,entriesIterator,std::less<Key>,Allocator<backEntriesPair> >())  { }
 
         virtual void insert(const Key& _k,unsigned int refCount) {
             //1 - is initial reference value

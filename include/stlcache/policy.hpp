@@ -10,8 +10,6 @@
 
 #include <set>
 
-using namespace std;
-
 #include <stlcache/exceptions.hpp>
 #include <stlcache/victim.hpp>
 
@@ -150,7 +148,7 @@ namespace stlcache {
     };
 
     template <class Key, template <typename T> class Allocator> class _policy_none_type : public policy<Key,Allocator> {
-        set<Key,less<Key>,Allocator<Key> > _entries;
+        std::set<Key,std::less<Key>,Allocator<Key> > _entries;
     public:
         _policy_none_type<Key,Allocator>& operator= ( const _policy_none_type<Key,Allocator>& x) {
             this->_entries=x._entries;

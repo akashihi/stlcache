@@ -13,7 +13,7 @@ using namespace Catch::Matchers;
 
 TEST_CASE("Insert/Assign/Merge", "[map]") {
     SECTION("Insert/Assign") {
-        cache<int, string, policy_none> c(10);
+        cache<int, std::string, policy_none> c(10);
 
         CHECK(c.insert_or_assign(1, "data1"));
         REQUIRE(c.fetch(1) == "data1");
@@ -31,8 +31,8 @@ TEST_CASE("Insert/Assign/Merge", "[map]") {
     }
 
     SECTION("Merge") {
-        cache<int, string, policy_none> c(2);
-        cache<int, string, policy_none> d(2);
+        cache<int, std::string, policy_none> c(2);
+        cache<int, std::string, policy_none> d(2);
         c.insert_or_assign(1, "data1");
         d.insert_or_assign(2, "data2");
         c.merge(d);
