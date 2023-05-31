@@ -978,8 +978,8 @@ namespace stlcache {
          */
         explicit cache(const size_type size, const Compare& comp = Compare()) : _maxEntries(size), _currEntries(0), _storage(storageType(comp, Allocator<pair<const Key, Data> >())), lock(Lock()) {
             policy_type localPolicy(size);
-            this->_policy = policyAlloc.allocate(1);
-            policyAlloc.construct(this->_policy,localPolicy);
+            this->_policy = std::allocator_traits<Allocator<policy_type>>::allocate(policyAlloc, 1);
+            std::allocator_traits<Allocator<policy_type>>::construct(policyAlloc, this->_policy,localPolicy);
         }
 
         /*!
@@ -989,8 +989,8 @@ namespace stlcache {
          *
          */
         ~cache() {
-            policyAlloc.destroy(this->_policy);
-            policyAlloc.deallocate(this->_policy,1);
+            std::allocator_traits<Allocator<policy_type>>::destroy(policyAlloc, this->_policy);
+            std::allocator_traits<Allocator<policy_type>>::deallocate(policyAlloc, this->_policy, 1);
         }
         //@}
     protected:
