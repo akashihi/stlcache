@@ -8,31 +8,44 @@ on:
     branches:
       - master
 
+# Not using matrix here due to the different configuration of the Boost action
 jobs:
-  unit-test:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-20.04, windows-latest, macos-11]
+  unit-test-linux:
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
       - name: Install Boost (Linux)
-        if: ${{ matrix.os == 'ubuntu-20.04' }}
         uses: MarkusJx/install-boost@v2.4.1
         id: install-boost-linux
         with:
           platform_version: 20.04
           boost_version: 1.73.0
           boost_install_dir: /home/runner/boost
+      - name: Test
+        uses: nicledomaS/cmake_build_action@v1.4
+        with:
+          run_tests: ON
+          cmake_args: -DBOOST_ROOT=${{ steps.install-boost-linux.outputs.BOOST_ROOT }}
+  unit-test-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
       - name: Install Boost (Windows)
-        if: ${{ matrix.os == 'windows-latest' }}
         uses: MarkusJx/install-boost@v2.4.1
         id: install-boost-windows
         with:
           boost_version: 1.73.0
           boost_install_dir: c:\boost
+      - name: Test
+        uses: nicledomaS/cmake_build_action@v1.4
+        with:
+          run_tests: ON
+          cmake_args: -DBOOST_ROOT=${{ steps.install-boost-windows.outputs.BOOST_ROOT }}
+  unit-test-macos:
+    runs-on: macos-11
+    steps:
+      - uses: actions/checkout@v3
       - name: Install Boost (MacOs)
-        if: ${{ matrix.os == 'macos-11' }}
         uses: MarkusJx/install-boost@v2.4.1
         id: install-boost-macos
         with:
@@ -43,5 +56,7 @@ jobs:
         uses: nicledomaS/cmake_build_action@v1.4
         with:
           run_tests: ON
-          cmake_args: -DBOOST_ROOT=${{ steps.*.outputs.BOOST_ROOT }}
+          cmake_args: -DBOOST_ROOT=${{ steps.install-boost-macos.outputs.BOOST_ROOT }}
+
+
 
